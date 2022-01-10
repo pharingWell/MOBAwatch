@@ -71,7 +71,3 @@ Use the code `_____` (Code to be added)
 Follow the instructions on how to compile, and modify or edit it to your heart's content. [^1]
 
 [^1]: You must keep both the link to this github, and the original author's name (PharingWell#7340) in the project files.
-
----
-
-[Back to top](https://github.com/pharingWell/MOBAWatch#mobawatch)
