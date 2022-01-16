@@ -237,8 +237,7 @@ rule "CursorStyle1":
     destroyInWorldText(eventPlayer.MovementGroundCursor)
     wait(0.01)
     eventPlayer.ControlledRef.CPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-    if("{0}".format(eventPlayer.CamAttach)=="0"):
-        eventPlayer.CamAttach=true
+
     async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     eventPlayer.ControlledRef.startThrottleInDirection(vectorTowards(eventPlayer.ControlledRef.getEyePosition(), eventPlayer.ControlledRef.CPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
     eventPlayer.ControlledRef.startFacing(vectorTowards(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.getEyePosition().z),vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.CPos.z)),400,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
@@ -272,14 +271,16 @@ rule "Toggle CamAttach":
         stopChasingVariable(eventPlayer.CamLoc)
     else:   
         eventPlayer.CamAttach=true
-        if(distance(eventPlayer.ControlledRef.CPos,vect(eventPlayer.ControlledRef.getEyePosition().x,0,eventPlayer.ControlledRef.getEyePosition().z))<1.2):
-            chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=0.1,ChaseReeval.NONE)
-        else:
-            chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.CPos.z),duration=0.1,ChaseReeval.NONE)
+        
+        chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=0.3,ChaseReeval.DESTINATION_AND_DURATION)
+        wait(0.3)
+        chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.CPos.z),rate=eventPlayer.ControlledRef.getSpeed(),ChaseReeval.DESTINATION_AND_RATE)
+
+
 
 def moveCameraWithPlayer():
     if(eventPlayer.CamAttach):
-        chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),rate=eventPlayer.ControlledRef.getSpeed()+(not(eventPlayer.CamAttach)),ChaseReeval.DESTINATION_AND_RATE)
+        chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),rate=eventPlayer.ControlledRef.getSpeed(),ChaseReeval.DESTINATION_AND_RATE)
 
 def CameraSetup():
     @Name "S_CameraSetup"
@@ -287,6 +288,7 @@ def CameraSetup():
     eventPlayer.setFacing(vect(0,0,0),Relativity.TO_WORLD) #15,-4
     eventPlayer.startCamera(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z-0.01), vect(eventPlayer.CamLoc.x, 0, eventPlayer.CamLoc.z), 30)
     eventPlayer.ControlledRef.CPos=vect(0,0,0)
+    eventPlayer.CamAttach=true
     eventPlayer.setInvisibility(Invis.ALL)
     eventPlayer.setDamageReceived(0)
     
@@ -308,17 +310,17 @@ rule "Camera Bounds":
 
     #if the mouse is out of bounds horizontally, bring it back in bounds (take current Horizontal angle and convert it back into facing direction to put a hard limit on look angle (hopefully))
     if(not HoriBounds):
-        eventPlayer.setFacing(angleToDirection((180/Math.PI)*0.95*(HoriLimit)*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])),eventPlayer.eyeAxis[1]*-1*(180/Math.PI)),Relativity.TO_WORLD)
+        eventPlayer.setFacing(angleToDirection((180/Math.PI)*0.97*(HoriLimit)*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])),eventPlayer.eyeAxis[1]*-1*(180/Math.PI)),Relativity.TO_WORLD)
         #eventPlayer.setFacing(vect(sin(*1)), eventPlayer.i, cos(ScreenLimits[0]*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])*1))),Relativity.TO_WORLD)
     elif(not VertBounds):
-        eventPlayer.setFacing(angleToDirection((180/Math.PI)*eventPlayer.eyeAxis[0],(180/Math.PI)*-0.95*(VertLimit)*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))),Relativity.TO_WORLD)
+        eventPlayer.setFacing(angleToDirection((180/Math.PI)*eventPlayer.eyeAxis[0],(180/Math.PI)*-0.97*(VertLimit)*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))),Relativity.TO_WORLD)
         #Don't move the screen if your camera is locked
     if(not eventPlayer.CamAttach):
         #If mouse outside normal range(and camera unlocked), move screen that direction a given rate
-        if(abs(eventPlayer.eyeAxis[0])>=HoriLimit*0.969):
+        if(abs(eventPlayer.eyeAxis[0])>=HoriLimit*0.93):
             eventPlayer.CamLoc=(vect(eventPlayer.CamLoc.x+Setting_CamSpeed*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])),eventPlayer.CamLoc.y,eventPlayer.CamLoc.z))
         #If mouse outside normal range(and camera unlocked), move screen that direction a given rate
-        if(abs(eventPlayer.eyeAxis[1])>=VertLimit*0.969):
+        if(abs(eventPlayer.eyeAxis[1])>=VertLimit*0.93):
             eventPlayer.CamLoc=(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z+Setting_CamSpeed*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))))
     ##
     eventPlayer.cursorNew=vect((eventPlayer.CamLoc.y*2.750)*(eventPlayer.eyeAxis[0]/Math.PI)+eventPlayer.CamLoc.x,0,((eventPlayer.eyeAxis[1])/(Math.PI/2))*(eventPlayer.CamLoc.y*0.775)+eventPlayer.CamLoc.z)
