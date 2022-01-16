@@ -45,59 +45,10 @@ settings {
 #!extension spawnMoreDummyBots
 #!extension beamEffects
 
-#Global variables
-
-globalvar Team1 0
-globalvar Team2 1
-globalvar TeamSize 2
-globalvar ScreenLimits 3
-globalvar Characters 4
-globalvar MinionQualities 20
-globalvar MinionTypes 21
-globalvar MWeapons 22
-globalvar MinionTypesQualities 23
-globalvar i 28
-globalvar j 29
-globalvar k 30
-globalvar l 31
-globalvar textcount 32
-#--settings--#
-globalvar Setting_CamSpeed 120
-
-#Player variables
-
-playervar Slot 0
-playervar ControlledSlot 1
-playervar CPos 2
-playervar CamLoc 3
-playervar CamAttach 4
-playervar ControlledRef 5
-playervar Alive 6
-playervar CHero 7
-playervar Owner 8
-playervar MovementGroundCursor 10
-playervar cursorNew 11
-playervar cursor 12  
-playervar eyeAxis 13
-playervar UIContainer 17
-playervar UIIstanceHandler 18
-playervar UICursorStyles 19
-playervar i 20
-playervar Hidden 21
-
-
-
-#Subroutine names
-
-subroutine CameraSetup 0
-subroutine UI_Process 1
-subroutine UI_Setup 2
-subroutine moveCameraWithPlayer 3
-subroutine chaseCursorValues 4
-subroutine OnHero 5
-subroutine HealthHandle 8
-
+#!include "variables.opy"
 #!include "minions.opy"
+#!include "heroes/generic.opy"
+
 #!define loopt if(RULE_CONDITION):\
     goto RULE_START
 #!define loopf if(not RULE_CONDITION):\
@@ -113,12 +64,13 @@ rule "Set setting vars":
 
 rule "InitiateGame":
     @Condition len(Team1) + len(Team2) < len(getAllPlayers())
+    hudHeader(getAllPlayers(),w"Loading...",HudPosition.TOP,1,Color.RED,HudReeval.NONE)
+    Ready=getLastCreatedText()-3
     Minions=[[-1],[-1]]
     Team1 = []
     Team2 = []
-    ScreenLimits = [1.3,1.45]
+    ScreenLimits = [1.3,1.40]
     ThreadClear=true
-    Minions_Init()
     for i in range(len(getPlayers(Team.1))):
         if(getPlayers(Team.1)[i].isDummy()):
             getPlayers(Team.1)[i].Slot=i
@@ -131,8 +83,10 @@ rule "InitiateGame":
         returnToLobby()
     #set to floor
     TeamSize = ceil(len(getAllPlayers()) / 2)
+    Minions_Init()
     async(HealthHandle(),AsyncBehavior.NOOP)
-    #Minions_Init()
+    
+    
 
 rule "Debug Mode Check":
     @Condition not eventPlayer.isDummy()
@@ -153,16 +107,16 @@ rule "Display server performance characteristics":
     */      
 
 rule "Minions Tick":
+    @Condition Ready == true
     Minions_Main()
-    wait(1)
     top
     
 
 
-rule "Create Minions":
-    Minions_Create()
+rule "Inspector":
+    @Condition Ready == true
     disableInspector()
-    wait(15)
+    wait(4)
     enableInspector()
     top
 
@@ -181,7 +135,7 @@ rule "Check Hero Change":
         eventPlayer.CHero = Hero.ZARYA
         eventPlayer.CHero =eventPlayer.getCurrentHero()
         
-        createDummy(eventPlayer.getCurrentHero(), eventPlayer.getTeam(), -1, vect(0,0,0),vect(0,0.5,1))
+        createDummy(eventPlayer.getCurrentHero(), eventPlayer.getTeam(), -1, vect(0,0,0),vect(0,0,0))
         eventPlayer.ControlledSlot = TeamSize+eventPlayer.Slot
         #printLog("H:{0},T:{1},S:{2},CS:{3}".format(eventPlayer.getCurrentHero(),eventPlayer.getTeam(),eventPlayer.Slot,eventPlayer.ControlledSlot))
         eventPlayer.ControlledRef = getPlayersInSlot(eventPlayer.ControlledSlot,eventPlayer.getTeam())
@@ -237,6 +191,7 @@ def UI_Setup():
     eventPlayer.disallowButton(Button.ABILITY_2)
     eventPlayer.disallowButton(Button.RELOAD)
     eventPlayer.disallowButton(Button.MELEE)
+    eventPlayer.disallowButton(Button.JUMP)
 #!define sidebar(index,hero,player,position,color) if(eventPlayer().UIContainer[eventPlayer().UIIstanceHandler+1]!=index):\
         destroyHudText(eventPlayer().UIContainer[eventPlayer().UIIstanceHandler])\
         hudHeader(getAllPlayers(), player, position, 0, color, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)\
@@ -259,43 +214,48 @@ def UI_Process():
     wait(0.1)
     top
 
-def chaseCursorValues():
-    #eventPlayer.cursor= eventPlayer.cursorNew
-    chase((eventPlayer.cursor), eventPlayer.cursorNew, duration=0.01, ChaseReeval.NONE)
-    wait(0.01)
-    top
+
 
 rule "Cursor": 
     @Event eachPlayer
+    @Condition Ready == true
     @Condition not eventPlayer.isDummy()
+
     #createInWorldText(eventPlayer,"{0}".format(eventPlayer.cursor),eventPlayer.cursor,1.0,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,Color.RED,SpecVisibility.NEVER)
     eventPlayer.UICursorStyles = [Color.WHITE,true,Color.RED,0.10]
-    createInWorldText(eventPlayer,"•",vect(1.349*(9.75)*(eventPlayer.eyeAxis[0])+eventPlayer.CamLoc.x,0,0.775*(9.75)*(eventPlayer.eyeAxis[1]+0.25)+eventPlayer.CamLoc.z-1.25),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
+    createInWorldText(eventPlayer,"•",vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z-eventPlayer.CamLoc.y/12.5),2.5,Clip.SURFACES,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
+    #createInWorldText(eventPlayer,"•",vect(1.349*(9.75)*(eventPlayer.eyeAxis[0])+eventPlayer.CamLoc.x,0,0.775*(9.75)*(eventPlayer.eyeAxis[1]+0.25)+eventPlayer.CamLoc.z-1.25),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
     #raycast(eventPlayer.CamLoc,vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),getAllPlayers(),null,true).getHitPosition().y
     #createEffect(eventPlayer,Effect.SPHERE,eventPlayer.UICursorStyles[2],vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),eventPlayer.UICursorStyles[3],EffectReeval.POSITION_AND_RADIUS)
 
 rule "CursorStyle1":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.isDummy()
-    eventPlayer.UICursorStyles[0]=Color.YELLOW
+    @Condition Ready == true
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+    @Condition not eventPlayer.isDummy()
+    @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z))>1
     destroyInWorldText(eventPlayer.MovementGroundCursor)
     wait(0.01)
     eventPlayer.ControlledRef.CPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-    if(distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),vect(eventPlayer.ControlledRef.CPos.x,0,eventPlayer.ControlledRef.CPos.z))>1):
-        async(moveCameraWithPlayer,AsyncBehavior.RESTART)
-        eventPlayer.ControlledRef.startThrottleInDirection(vectorTowards(eventPlayer.ControlledRef.getEyePosition(), eventPlayer.ControlledRef.CPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
-        eventPlayer.ControlledRef.startFacing(vectorTowards(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.getEyePosition().z),vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.CPos.z)),400,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
-        createInWorldText(eventPlayer,"¤",vect(eventPlayer.ControlledRef.CPos.x,0,eventPlayer.ControlledRef.CPos.z-1.05),2.0,Clip.NONE,WorldTextReeval.NONE,Color.SKY_BLUE,SpecVisibility.NEVER)
+    if("{0}".format(eventPlayer.CamAttach)=="0"):
+        eventPlayer.CamAttach=true
+    async(moveCameraWithPlayer,AsyncBehavior.RESTART)
+    eventPlayer.ControlledRef.startThrottleInDirection(vectorTowards(eventPlayer.ControlledRef.getEyePosition(), eventPlayer.ControlledRef.CPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
+    eventPlayer.ControlledRef.startFacing(vectorTowards(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.getEyePosition().z),vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.CPos.z)),400,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
+    createInWorldText(eventPlayer,"¤",vect(eventPlayer.ControlledRef.CPos.x,0,eventPlayer.ControlledRef.CPos.z-eventPlayer.CamLoc.y/12.5),2.0,Clip.NONE,WorldTextReeval.NONE,Color.SKY_BLUE,SpecVisibility.NEVER)
     eventPlayer.MovementGroundCursor = getLastCreatedText()
     wait(0.25)
-    eventPlayer.UICursorStyles[0]=Color.WHITE
     loopt
 
 rule "Throttling Bot":
     @Event eachPlayer
-    @Condition eventPlayer.isDummy() and eventPlayer in getPlayersInRadius(eventPlayer.CPos,0.5,Team.ALL,LosCheck.OFF)
+    @Condition Ready == true
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer in getPlayersInRadius(eventPlayer.CPos,0.5,Team.ALL,LosCheck.OFF)
     destroyInWorldText(eventPlayer.Owner.MovementGroundCursor)
-    eventPlayer.stopFacing()
+    eventPlayer.startTransformingThrottle(0.5,0.5,eventPlayer.getFacingDirection())
+    eventPlayer.stopFacing()    
+    wait(0.1)
     eventPlayer.stopThrottleInDirection()
     #smallMessage(eventPlayer,"{0}_".format(eventPlayer.MovementGroundCursor))
 
@@ -323,10 +283,10 @@ def moveCameraWithPlayer():
 
 def CameraSetup():
     @Name "S_CameraSetup"
-    eventPlayer.CamLoc = vect(eventPlayer.CamLoc.x,15,eventPlayer.CamLoc.z)
-    eventPlayer.CamAttach=true
-    eventPlayer.setFacing(vect(1,0.5,0),Relativity.TO_WORLD)
-    eventPlayer.startCamera(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z-4.01), vect(eventPlayer.CamLoc.x, 0, eventPlayer.CamLoc.z), 30)
+    eventPlayer.CamLoc = vect(0,15,0)
+    eventPlayer.setFacing(vect(0,0,0),Relativity.TO_WORLD) #15,-4
+    eventPlayer.startCamera(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z-0.01), vect(eventPlayer.CamLoc.x, 0, eventPlayer.CamLoc.z), 30)
+    eventPlayer.ControlledRef.CPos=vect(0,0,0)
     eventPlayer.setInvisibility(Invis.ALL)
     eventPlayer.setDamageReceived(0)
     
@@ -336,40 +296,43 @@ rule "Camera Bounds":
     #
     #!define Hori atan2(eventPlayer.getFacingDirection().x,eventPlayer.getFacingDirection().z)
     #!define Vert asin(eventPlayer.getFacingDirection().y)
-    #!define HoriLimit (ScreenLimits[0]+eventPlayer.eyeAxis[1]*-0.258*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])))
+    #!define HoriLimit (ScreenLimits[0])+eventPlayer.eyeAxis[1]*0.1*eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1])
     #!define VertLimit ScreenLimits[1]
     #!define HoriBounds (abs(eventPlayer.eyeAxis[0])<HoriLimit)
     #!define VertBounds (abs(eventPlayer.eyeAxis[1]<VertLimit))
     @Event eachPlayer
+    @Condition Ready == true
     @Condition not eventPlayer.isDummy()
-    eventPlayer.eyeAxis[2]=Hori-eventPlayer.eyeAxis[0]
-    eventPlayer.eyeAxis[3]=Vert-eventPlayer.eyeAxis[1]
     eventPlayer.eyeAxis[0]=Hori
     eventPlayer.eyeAxis[1]=Vert
-    /*if((eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0]+eventPlayer.eyeAxis[2]))!=(eventPlayer.eyeAxis[0]/(eventPlayer.eyeAxis[0]+eventPlayer.eyeAxis[2]))):
-        eventPlayer.setFacing(vect( sin(ScreenLimits[0]*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])*0.85)), eventPlayer.getFacingDirection().y, cos(ScreenLimits[0]*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])*0.85)) ),Relativity.TO_WORLD)
-        bigMessage(eventPlayer,"0")*/
+
     #if the mouse is out of bounds horizontally, bring it back in bounds (take current Horizontal angle and convert it back into facing direction to put a hard limit on look angle (hopefully))
     if(not HoriBounds):
-        #printLog("{0}".format(ScreenLimits[0]+eventPlayer.eyeAxis[1]*sin(0.261)*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0]))))
-        eventPlayer.setFacing(angleToDirection((180/Math.PI)*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0]))*0.95*(HoriLimit),eventPlayer.eyeAxis[1]*-1*(180/Math.PI)),Relativity.TO_WORLD)
+        eventPlayer.setFacing(angleToDirection((180/Math.PI)*0.95*(HoriLimit)*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])),eventPlayer.eyeAxis[1]*-1*(180/Math.PI)),Relativity.TO_WORLD)
         #eventPlayer.setFacing(vect(sin(*1)), eventPlayer.i, cos(ScreenLimits[0]*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])*1))),Relativity.TO_WORLD)
-    if(not VertBounds):
-        #eventPlayer.setFacing(angleToDirection((180/Math.PI)*eventPlayer.eyeAxis[0],(180/Math.PI)*-0.95*(VertLimit)*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))),Relativity.TO_WORLD)
+    elif(not VertBounds):
+        eventPlayer.setFacing(angleToDirection((180/Math.PI)*eventPlayer.eyeAxis[0],(180/Math.PI)*-0.95*(VertLimit)*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))),Relativity.TO_WORLD)
         #Don't move the screen if your camera is locked
     if(not eventPlayer.CamAttach):
         #If mouse outside normal range(and camera unlocked), move screen that direction a given rate
-        if(abs(eventPlayer.eyeAxis[0])>=HoriLimit*0.93):
+        if(abs(eventPlayer.eyeAxis[0])>=HoriLimit*0.969):
             eventPlayer.CamLoc=(vect(eventPlayer.CamLoc.x+Setting_CamSpeed*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])),eventPlayer.CamLoc.y,eventPlayer.CamLoc.z))
         #If mouse outside normal range(and camera unlocked), move screen that direction a given rate
-        if(abs(eventPlayer.eyeAxis[1])>=VertLimit*0.97):
+        if(abs(eventPlayer.eyeAxis[1])>=VertLimit*0.969):
             eventPlayer.CamLoc=(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z+Setting_CamSpeed*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))))
     ##
-    eventPlayer.cursorNew=vect((eventPlayer.CamLoc.y*2.750)*(eventPlayer.eyeAxis[0]/Math.PI)+eventPlayer.CamLoc.x,0,((eventPlayer.eyeAxis[1]+0.25)/(Math.PI/2))*(eventPlayer.CamLoc.y*0.775)+eventPlayer.CamLoc.z)
+    eventPlayer.cursorNew=vect((eventPlayer.CamLoc.y*2.750)*(eventPlayer.eyeAxis[0]/Math.PI)+eventPlayer.CamLoc.x,0,((eventPlayer.eyeAxis[1])/(Math.PI/2))*(eventPlayer.CamLoc.y*0.775)+eventPlayer.CamLoc.z)
     if(eventPlayer.cursor==0):
         eventPlayer.cursor=vect(0,0,0)
         #starts chaseCursor subroutine once per player
         async(chaseCursorValues, AsyncBehavior.NOOP)
     wait(0.03)
     top
-   
+
+
+def chaseCursorValues():
+    #eventPlayer.cursor= eventPlayer.cursorNew
+    if(HoriBounds and VertBounds):
+        eventPlayer.cursor=eventPlayer.cursorNew
+    wait(0.001)
+    top

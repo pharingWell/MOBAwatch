@@ -1,53 +1,34 @@
 #!mainFile "main.opy"
-#4
-#
-globalvar Minions 5
-globalvar MinionRanges 6
-globalvar MR_HelperBot 7
-globalvar MR_HelperTop 8
-globalvar HealthChange 9 #(id, health change amt (+ = dmg, - = healing), tick duration of either)
-globalvar Structures 10 #id, health, blank
-globalvar StructuresMP 11 #midpoint of structure (id,x,z)
-globalvar StructuresWH 12 #width and height (id,w,h)
-globalvar ThreadClear 13 #is thread clear for damaging minions 
-globalvar M_tTemp 14
-globalvar M_DataTemp 15
-globalvar MA_Temp 16 #Minions Array Temp
-globalvar PA_Temp 17 #Player Array Temp
-globalvar MR_Temp 18 #Minion ranges temp array
-globalvar Temp_ID 19
-globalvar MinionWaves 33
-globalvar TextEffectHandling 34
-globalvar TextEH_Temp 35
-globalvar PrintText_Temp 36
-globalvar PrintData_Temp 37
-subroutine Minions_Main 6
-subroutine Minions_Init 7
-subroutine Minions_Create 9
-subroutine PrintMinions 10
-subroutine Minion_Renderer 11
-#33
-
-
 #!define println(a)  wait(0.1)\
 enableInspector()\
 printLog(a)\
 disableInspector()
 
-#MinionRanges: [t1 lane1 start, t1 lane1 end, t1 lane2 start, t1 lane2 end, t1 lane3 start, t1 lane3 end, t2 lane1 start, t2 lane1 end, t2 lane2 start, t2 lane2 end, t2 lane3 start, t2 lane3 end]
-#[0,1],[2,3],[4,5],[6,7],[8,9],[10,11]
-# L1    L2  L3   L1    L2     L3  
-
-#Minion Ranges: [t1 lane2 start, t2 lane2 start], [t1 lane 2 length, t2 lane 2 length]
 
 #!defineMember ln(a) (100*((a)**0.01)-100)
-#!define MinionPositionLane1n3(t,j) (((t)/8)+(3-j-1)*50*sqrt(ln(1-abs((t)-100)/138.75)/1.3635+(0.967**2))-2) #MOBA Map, Desmos
+#!define MinionPositionLane1n3(t,j) (((t)/8)+(3-j-1)*50*sqrt(ln(1-abs((t)-100)/138.75)/1.3635+(0.967**2))-2) 
+#MOBA Map, Desmos
 #!define MinionPositionLane2(t) (((t)/8)*(4 < (t) and (t) < 16))
-#!define t1(a) ((a)+0.02)
-#!define t2(a) (19.98-(a)) #199.998
+#!define M_id(i,k) 10+(i+1)+k/100
+#!define ft(a,i) (((a)+0.02)*(1-i)+(i)*(19.98-(a)))
+#!define MinionLimit(a) a*0+(1-a)*20
+#range(0,96) is min          k             2-type[1=min,2=struct]            team               structures
+#!define NonPLoc(id) (id % floor(id))*100   + (2-floor(id/10))     *  48*(floor(id-1) % 10) + (id-1)*(floor(id-1) % 10)*36
+#i*48+k
 
+#floor(id/10)
+#floor(id) % 10
+#id % floor(id)
 
+def Minions_Move():
+    for LocTemp_i in range(len(LocationChange)):
+        LocTemp_var=floor(LocationChange[LocTemp_i].x * 1000) % 100
+        if (NonPlayer_Loc[LocTemp_var].x!=LocationChange[LocTemp_i].x):
+            LocTemp_var=NonPlayer_Loc.index([elem for elem in NonPlayer_Loc if elem.x==LocationChange[LocTemp_i].x][0])
+        NonPlayer_Loc[LocTemp_var]=NonPlayer_Loc[LocTemp_var]+vect(0,LocationChange[LocTemp_i].y,LocationChange[LocTemp_i].z) #don't want to add the id twice, so we add 0
+    wait(0.1)
 def Minions_Main():
+    /*
     M_tTemp=0
     Temp_ID=0
     M_DataTemp=0
@@ -71,13 +52,15 @@ def Minions_Main():
                         #MOVE Minion
                         if(i==0):
                             #increase time by one
-                            MR_Temp[1] = t1(MR_Temp[1]+0.1)
+                            if(t1(MR_Temp[1]+0.1)<MinionLimit(0)):
+                                MR_Temp[1] = t1(MR_Temp[1]+0.1)
                         elif(i==1):
                             #increase time by one
-                            MR_Temp[1] = t2(MR_Temp[1]+0.1)
+                            if(t2(MR_Temp[1]+0.1)>MinionLimit(1)):
+                                MR_Temp[1] = t2(MR_Temp[1]+0.1)
                         #handle f(t)
                         MR_Temp[2]=MinionPositionLane2(M_tTemp)
-                        /*
+                        
                         M_tTemp = 0
                         for l in range(len(Structures)):
                             if(structDist(l)<=dist**2):
@@ -124,7 +107,7 @@ def Minions_Main():
                     if(i == 0):
                         M_tTemp = (Color.TEAM_1)
                     elif(i==1):
-                        M_tTemp = (Color.TEAM_2)*/
+                        M_tTemp = (Color.TEAM_2)
                 else:
                     MR_Temp[6]=false
             else:
@@ -135,7 +118,8 @@ def Minions_Main():
             MA_Temp[len(MA_Temp)-1]=MR_Temp
         if(i<2):
             Minions[i]=MA_Temp     
-    ThreadClear = true
+    ThreadClear = true*/
+    wait(1)
     
 def PrintMinions():
     waitUntil(ThreadClear==true,100)
@@ -162,59 +146,42 @@ def PrintMinions():
         PrintText_Temp="{0}]{1}".format(PrintText_Temp,PrintData_Temp)
         println("{0} Team {1}, Length {2}".format(PrintText_Temp,i+1,j))
     println("\n\n\n\n\n\n\n\n\n\n")
-    ThreadClear=true
+    ThreadClear=true 
 
-def Minions_Create():
+def Minion_Wave():
     waitUntil(ThreadClear==true,100)
-    ThreadClear = false
-    MR_Temp=[]
-    for i in range(0,2): #iterates through teams
-        for l in range(0,evalOnce(MinionWaves[0])):
-            if(l<4):
-                Temp_ID=0
-            elif(l==5):
-                Temp_ID=2
-            else:
-                Temp_ID=1
-            if(i==0):
-                M_tTemp=t1(0)
-            elif(i==1):
-                M_tTemp=t2(0)
-            MR_Temp=[(Temp_ID),(M_tTemp),(MinionPositionLane2(M_tTemp)),MinionTypes[Temp_ID*MinionTypesQualities+4],0,i,true]
-            if(len(MR_Temp)!=MinionQualities):
-                println("Error: MinionCreate is wrong size")
-            if(Minions[i]==-1):
-                Minions[i]=[MR_Temp]
-            else:
-                Minions[i].append([MR_Temp])
-
+    ThreadClear=false
+    for i in range(2):
+        for l in range(MinionWaves[i]*6,(MinionWaves[i]+1)*6):
             if(i==0):
                 M_tTemp=Color.TEAM_1
             elif(i==1):
                 M_tTemp=Color.TEAM_2
-            TextEffectHandling[len(Minions[i])-1]=[len(Minions[i])-1,0,0,vect(0,0,0),vect(0,0,0),getAllPlayers()] #id,textid,effectid,textlocation(v3):(0,x,z),effectlocation(v3):(x1,x2,z),visibility
-            createInWorldText(TextEffectHandling[evalOnce(len(Minions[i])-1)][6],MinionTypes[Minions[k]*MinionTypesQualities],vect(TextEffectHandling[evalOnce(len(Minions[i])-1)][3].y,0,TextEffectHandling[evalOnce(len(Minions[i])-1)][3].z),3,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,evalOnce(M_tTemp),SpecVisibility.NEVER)
-            j=getLastCreatedText()
-            createBeam(TextEffectHandling[evalOnce(len(Minions[i])-1)][6],Beam.GOOD,vect(TextEffectHandling[evalOnce(len(Minions[i])-1)][4].x,1,TextEffectHandling[evalOnce(len(Minions[i])-1)][4].z),vect(TextEffectHandling[evalOnce(len(Minions[i])-1)][4].y,1,TextEffectHandling[evalOnce(len(Minions[i])-1)][4].z),M_tTemp,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-            k=getLastCreatedEntity()
-            TextEffectHandling[len(Minions[i])-1]=[len(Minions[i])-1,j,k,vect(0,0,0),vect(0,0,0),getAllPlayers()] #id,textid,effectid,textlocation(v3):(0,x,z),effectlocation(v3):(x1,x2,z),visibility
-  
-    ThreadClear=true
-        
-
-
-def Minion_Renderer():
-    for i in range(len(Minions)):
-        for j in range(len(Minions[i])):
-            TextEffectHandling[j]=[j,TextEffectHandling[j][1],TextEffectHandling[j][2],vect(0,Minions[i][j][1],Minions[i][j][2]),vect(Minions[i][j][1]-0.5,Minions[i][j][1]-0.5+(Minions[i][j][3]/MinionTypes[Minions[i][j][0]*MinionTypesQualities+4]),Minions[i][j][1]),getAllPlayers()]
-  
+            #createInWorldText(,MinionTypes[Minions[i][k][0]*MinionTypesQualities],vect(NonPlayer_Loc[evalOnce(k)][1],0,Minions[evalOnce(i)][evalOnce(k)][2]),3,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,M_tTemp,SpecVisibility.NEVER)
+            MinionRenders[i] = [len(Minions[i])-1,getLastCreatedText,getLastCreatedEntity]
 def Minions_Init():
-                           # 0    , 1   ,  2   , 3  ,                 4                            5       6    
-    MinionQualities = len(["Type","time","f(t)","hp","ID of Minion being fought or Player name","team","isAlive"]) #t is the time the minion has been moving (place on function lane(t))
+                           # 0    , 1   ,  2   , 3  ,                 4                            5       6        7              8                  9    
+    MinionQualities = len(["Type","id","hp","ID of Minion being fought or Player name","isAlive","Visbility"]) #t is the time the minion has been moving (place on function lane(t))
     MinionTypesQualities=len(["icon", "name", "range", "damage","base_hp"])
     MinionTypes = ["ι","Minion",2,10,80,"ί","Mage",6,16,60,"ϊ","Seige",12,40,150,"ΐ","Brute",3,80,400]
     MWeapons = [["ο","ơ","δ","σ"],["Y","ϒ","ϔ", "Ẏ"]]
-    MinionWaves = [6]
-/*
+    for i in range(0,2):
+        for k in range(48):
+            MR_Temp=[(Temp_ID),M_id(i,k),MinionTypes[Temp_ID*MinionTypesQualities+4],0,false,null]
+            if(len(MR_Temp)!=MinionQualities):
+                println("Error: MinionCreate is wrong size")
+            
+            if(Minions[i]==-1):
+                Minions[i]=[MR_Temp]
+            else:
+                Minions[i].append([MR_Temp])
+            NonPlayer_Loc[i*48+k]=vect(M_id(i,k),ft(0,i),0)
+    destroyHudText(Ready+3)
+    Ready=true        
+/*  
 (j==1 or j==3): M_DataTemp=MinionPositionLane1n3(M_tTemp,j)
 */
+
+            /**/
+            #createBeam(Minions[evalOnce(i)][evalOnce(k)][7],Beam.GRAPPLE,vect(Minions[evalOnce(i)][evalOnce(k)][1]-0.25,1,Minions[evalOnce(i)][evalOnce(k)][2]),vect(Minions[evalOnce(i)][evalOnce(k)][1]+0.5*(Minions[evalOnce(i)][evalOnce(k)][3]/MinionTypes[Minions[evalOnce(i)][evalOnce(k)][0]*MinionTypesQualities+4]),1,Minions[evalOnce(i)][evalOnce(k)][2]),null,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+            
