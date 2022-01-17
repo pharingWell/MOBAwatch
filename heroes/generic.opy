@@ -8,6 +8,10 @@ rule "Target":
     @Condition Ready==true
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
     @Condition not eventPlayer.isDummy()
-    eventPlayer.UICursorStyles[0]=Color.RED
-    eventPlayer.Temp_DistanceSort=sorted(NonPlayer_Loc, lambda elem: (evalOnce(eventPlayer.cursor.x)-elem.y)**2 + (evalOnce(eventPlayer.cursor.z)+elem.z)**2)
-    println(eventPlayer.Temp_DistanceSort)
+    eventPlayer.Temp_DistanceSort=[vect((eventPlayer.cursor.x-i.y)**2 + (eventPlayer.cursor.z-i.z)**2,i.y,i.z) for i in random.shuffle(NonPlayer_Loc)]
+    #sorted([vect((eventPlayer.cursor.x-i.y)**2 + (eventPlayer.cursor.z-i.z)**2,i.x,0) for i in random.shuffle(NonPlayer_Loc)], lambda elem: elem.x)
+    if(eventPlayer.Temp_DistanceSort[0].x<0.5):
+        println("{0}, {1}".format(eventPlayer.Temp_DistanceSort[0],eventPlayer.cursor))
+        eventPlayer.UICursorStyles[0]=Color.RED
+        wait(0.5)
+        eventPlayer.UICursorStyles[0]=Color.WHITE

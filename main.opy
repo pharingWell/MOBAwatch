@@ -153,7 +153,11 @@ rule "Check Hero Change":
             eventPlayer().UIContainer = eventPlayer().UIContainer.concat([-1,-1])
         OnHero()
         UI_Setup()
-        UI_Process()
+        async(UI_Process,AsyncBehavior.NOOP)
+        waitUntil(eventPlayer.cursor!=vect(0,0.01,0),1000)
+        wait(0.5)
+        eventPlayer.CamAttach=true
+        moveCameraWithPlayer()
     else:
         top
 
@@ -162,10 +166,6 @@ def OnHero():
     #disabled hero ults from the player's perspective
     if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]):
         eventPlayer.disallowButton(Button.ULTIMATE)
-    wait(0.5)
-    
-    
-
 
 rule "Bot - Hero Connection":
     @Event eachPlayer
@@ -182,8 +182,6 @@ rule "Bot - Hero Connection":
 def UI_Setup():
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableGamemodeHud()
-    #disableInspector()
-    #eventPlayer.disableHeroHUD()
     createInWorldText(eventPlayer,"<•>",updateEveryTick(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y+0.0,eventPlayer.ControlledRef.getEyePosition().z+0.2)),1.5*(not eventPlayer.ControlledRef.Hidden),Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,Color.RED,SpecVisibility.NEVER)
     eventPlayer.disallowButton(Button.PRIMARY_FIRE)
     eventPlayer.disallowButton(Button.SECONDARY_FIRE)
@@ -192,6 +190,9 @@ def UI_Setup():
     eventPlayer.disallowButton(Button.RELOAD)
     eventPlayer.disallowButton(Button.MELEE)
     eventPlayer.disallowButton(Button.JUMP)
+
+
+
 #!define sidebar(index,hero,player,position,color) if(eventPlayer().UIContainer[eventPlayer().UIIstanceHandler+1]!=index):\
         destroyHudText(eventPlayer().UIContainer[eventPlayer().UIIstanceHandler])\
         hudHeader(getAllPlayers(), player, position, 0, color, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)\
@@ -235,9 +236,8 @@ rule "CursorStyle1":
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z))>1
     destroyInWorldText(eventPlayer.MovementGroundCursor)
-    wait(0.01)
+    wait(0.1)
     eventPlayer.ControlledRef.CPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-
     async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     eventPlayer.ControlledRef.startThrottleInDirection(vectorTowards(eventPlayer.ControlledRef.getEyePosition(), eventPlayer.ControlledRef.CPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
     eventPlayer.ControlledRef.startFacing(vectorTowards(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.getEyePosition().z),vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.CPos.z)),400,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
@@ -276,8 +276,6 @@ rule "Toggle CamAttach":
         wait(0.3)
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.CPos.z),rate=eventPlayer.ControlledRef.getSpeed(),ChaseReeval.DESTINATION_AND_RATE)
 
-
-
 def moveCameraWithPlayer():
     if(eventPlayer.CamAttach):
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),rate=eventPlayer.ControlledRef.getSpeed(),ChaseReeval.DESTINATION_AND_RATE)
@@ -286,11 +284,12 @@ def CameraSetup():
     @Name "S_CameraSetup"
     eventPlayer.CamLoc = vect(0,15,0)
     eventPlayer.setFacing(vect(0,0,0),Relativity.TO_WORLD) #15,-4
-    eventPlayer.startCamera(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z-0.01), vect(eventPlayer.CamLoc.x, 0, eventPlayer.CamLoc.z), 30)
+
+    eventPlayer.startCamera(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z-0.01), vect(eventPlayer.CamLoc.x, 0, eventPlayer.CamLoc.z), 35)
     eventPlayer.ControlledRef.CPos=vect(0,0,0)
-    eventPlayer.CamAttach=true
     eventPlayer.setInvisibility(Invis.ALL)
     eventPlayer.setDamageReceived(0)
+    
     
 
 rule "Camera Bounds":
@@ -325,7 +324,7 @@ rule "Camera Bounds":
     ##
     eventPlayer.cursorNew=vect((eventPlayer.CamLoc.y*2.750)*(eventPlayer.eyeAxis[0]/Math.PI)+eventPlayer.CamLoc.x,0,((eventPlayer.eyeAxis[1])/(Math.PI/2))*(eventPlayer.CamLoc.y*0.775)+eventPlayer.CamLoc.z)
     if(eventPlayer.cursor==0):
-        eventPlayer.cursor=vect(0,0,0)
+        eventPlayer.cursor=vect(0,0.01,0)
         #starts chaseCursor subroutine once per player
         async(chaseCursorValues, AsyncBehavior.NOOP)
     wait(0.03)
