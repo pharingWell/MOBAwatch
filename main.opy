@@ -63,12 +63,17 @@ rule "Set setting vars":
     Setting_CamSpeed=createWorkshopSetting(float[0.0:1.0],"Cosmetic","Unbound Camera Speed",0.5,23)
 
 rule "InitiateGame":
-    @Condition len(Team1) + len(Team2) < len(getAllPlayers())
+    @Condition len(CPlayers[0]) + len(CPlayers[1]) < len(getAllPlayers())
+    if(getNumberOfSlots(Team.ALL)/2!=getNumberOfSlots(Team.1) or (not getAllPlayers()[0] == hostPlayer and not len(getAllPlayers()) == 1)):
+        wait(2)
+        returnToLobby()
+    elif(getAllPlayers()[0] == hostPlayer and len(getAllPlayers()) == 1):
+            hudHeader(getAllPlayers(), "DEBUG MODE", HudPosition.TOP, 0, Color.GREEN, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(getAllPlayers(),w"Loading...",HudPosition.TOP,1,Color.RED,HudReeval.NONE)
     Ready=getLastCreatedText()-3
     Minions=[[-1],[-1]]
-    Team1 = []
-    Team2 = []
+    CPlayers=[-1]
+    Players=[-1]
     ScreenLimits = [1.3,1.40]
     ThreadClear=true
     for i in range(len(getPlayers(Team.1))):
@@ -77,27 +82,13 @@ rule "InitiateGame":
     for i in range(len(getPlayers(Team.2))):
         if(getPlayers(Team.2)[i].isDummy()):
             getPlayers(Team.2)[i].Slot=i
-    if((len(getAllPlayers()) % 2 != 0) and isGameInProgress()):
-        wait(3)
-        #Returns to Lobby due to incorrect amount of players (Requires even number of players)
-        returnToLobby()
-    #set to floor
+
     TeamSize = ceil(len(getAllPlayers()) / 2)
     Minions_Init()
     async(HealthHandle(),AsyncBehavior.NOOP)
     
     
 
-rule "Debug Mode Check":
-    @Condition not eventPlayer.isDummy()
-    @Event playerJoined
-    #If Host Player not Debugging, yet game started in Debug Mode: Send to lobby
-    if (not isGameInProgress()):
-        if (not getAllPlayers()[0] == hostPlayer and not len(getAllPlayers()) == 1):
-            wait(2)
-            returnToLobby()
-        else:
-            hudHeader(getAllPlayers(), "DEBUG MODE", HudPosition.TOP, 0, Color.GREEN, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 rule "Display server performance characteristics":
     /*
@@ -144,9 +135,19 @@ rule "Check Hero Change":
         eventPlayer.ControlledRef.startForcingName(eventPlayer)
         #eventPlayer.ControlledRef.setInvisibility(Invis.ENEMIES)
         if(eventPlayer.getTeam()==Team.1):
-            Team1.append(eventPlayer.ControlledRef)
+            if(Players[0][0]==-1):
+                Players[0]=[eventPlayer]
+                CPlayers[0]=[eventPlayer.ControlledRef]
+            else:
+                Players[0].append(eventPlayer)
+                CPlayers[0].append(eventPlayer.ControlledRef)
         elif(eventPlayer.getTeam()==Team.2):
-            Team2.append(eventPlayer.ControlledRef)
+            if(Players[1][0]==-1):
+                Players[1]=[eventPlayer]
+                CPlayers[1]=[eventPlayer.ControlledRef]
+            else:
+                Players[1].append(eventPlayer)
+                CPlayers[1].append(eventPlayer.ControlledRef)
         CameraSetup()
         eventPlayer().UIContainer=[]
         for  eventPlayer().i in range(TeamSize*2):
@@ -224,7 +225,7 @@ rule "Cursor":
 
     #createInWorldText(eventPlayer,"{0}".format(eventPlayer.cursor),eventPlayer.cursor,1.0,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,Color.RED,SpecVisibility.NEVER)
     eventPlayer.UICursorStyles = [Color.WHITE,true,Color.RED,0.10]
-    createInWorldText(eventPlayer,"•",vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z-eventPlayer.CamLoc.y/12.5),2.5,Clip.SURFACES,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
+    createInWorldText(eventPlayer,"•",vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z-eventPlayer.CamLoc.y/12.5),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
     #createInWorldText(eventPlayer,"•",vect(1.349*(9.75)*(eventPlayer.eyeAxis[0])+eventPlayer.CamLoc.x,0,0.775*(9.75)*(eventPlayer.eyeAxis[1]+0.25)+eventPlayer.CamLoc.z-1.25),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
     #raycast(eventPlayer.CamLoc,vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),getAllPlayers(),null,true).getHitPosition().y
     #createEffect(eventPlayer,Effect.SPHERE,eventPlayer.UICursorStyles[2],vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),eventPlayer.UICursorStyles[3],EffectReeval.POSITION_AND_RADIUS)

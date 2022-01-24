@@ -12,7 +12,7 @@ disableInspector()
 #!define M_id(i,k) 10+(i+1)+k/100
 #!define ft(a,i) (((a)+0.02)*(1-i)+(i)*(19.98-(a)))
 #!define MinionLimit(a) a*0+(1-a)*20
-#range(0,96) is min          k             2-type[1=min,2=struct]            team               structures
+#range(0,48) is min          k             2-type[1=min,2=struct]            team               structures
 #!define NonPLoc(id) (id % floor(id))*100   + (2-floor(id/10))     *  48*(floor(id-1) % 10) + (id-1)*(floor(id-1) % 10)*36
 #i*48+k
 

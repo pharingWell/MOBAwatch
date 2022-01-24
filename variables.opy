@@ -1,6 +1,6 @@
 #!mainFile "main.opy"
-globalvar Team1 0
-globalvar Team2 1
+globalvar CPlayers 0
+globalvar Players 1
 globalvar TeamSize 2
 globalvar ScreenLimits 3
 globalvar Characters 4
@@ -69,6 +69,8 @@ playervar UIIstanceHandler 18
 playervar UICursorStyles 19
 playervar i 20
 playervar Hidden 21
+playervar Team 22 #1 or 2
+#playervar 
 playervar TargetHandling 25
 playervar Temp_DistanceSort 26
 globalvar HeroSpecs 50
