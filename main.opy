@@ -23,6 +23,7 @@ settings {
             "scoreToWin": 100
         },
         "general": {
+            "gamemodeStartTrigger": "immediately",
             "enableSelfInitiatedRespawn": false
         }
     },
@@ -49,15 +50,30 @@ settings {
 #!include "minions.opy"
 #!include "heroes/generic.opy"
 
+#!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice((i)+1,len(array)-1))
+#!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice(i,len(array)-1))
+
 #!define loopt if(RULE_CONDITION):\
     goto RULE_START
 #!define loopf if(not RULE_CONDITION):\
     goto RULE_START
 #!define top goto RULE_START
 #!define println(a) enableInspector()\
-printLog(a)\
-disableInspector()
+    printLog(a)\
+    disableInspector()
 
+
+#!define attachControlled #d\
+    createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
+    eventPlayer.ControlledRef=CPlayers[eventPlayer.Team-1][eventPlayer.Slot]\
+    eventPlayer.ControlledRef.startForcingPosition(vect(0,100,0),true)\
+    eventPlayer.ControlledRef.stopForcingPosition()\
+    eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
+    eventPlayer.ControlledRef.Owner = eventPlayer\
+    eventPlayer.ControlledRef.startForcingName(eventPlayer)\
+    eventPlayer.startForcingHero(eventPlayer.CHero)\
+    eventPlayer.ControlledRef.startForcingHero(eventPlayer.CHero)\
+    eventPlayer.ControlledRef.setAllowedHeroes(eventPlayer.CHero)\
 
 rule "Set setting vars":
     Setting_CamSpeed=createWorkshopSetting(float[0.0:1.0],"Cosmetic","Unbound Camera Speed",0.5,23)
@@ -76,19 +92,33 @@ rule "InitiateGame":
     Players=[-1]
     ScreenLimits = [1.3,1.40]
     ThreadClear=true
-    for i in range(len(getPlayers(Team.1))):
-        if(getPlayers(Team.1)[i].isDummy()):
-            getPlayers(Team.1)[i].Slot=i
-    for i in range(len(getPlayers(Team.2))):
-        if(getPlayers(Team.2)[i].isDummy()):
-            getPlayers(Team.2)[i].Slot=i
-
-    TeamSize = ceil(len(getAllPlayers()) / 2)
+    TeamSize = getNumberOfSlots(Team.1)
+    for i in range(TeamSize):
+        if(i==0):
+            Players[0]=["null"]
+            Players[1]=["null"]
+            /*makeControlled(Team.1,0)
+            CPlayers[0]=getLastCreatedEntity()
+            makeControlled(Team.2,0)
+            CPlayers[1]=getLastCreatedEntity()*/
+        else:
+            Players[0].append(["null"])
+            Players[1].append(["null"])
+            /*makeControlled(Team.1,i)
+            CPlayers[0].append(getLastCreatedEntity())
+            makeControlled(Team.2,i)
+            CPlayers[1].append(getLastCreatedEntity())*/
     Minions_Init()
     async(HealthHandle(),AsyncBehavior.NOOP)
-    
-    
+    setMatchTime(0)
+    pauseMatchTime()
 
+
+    
+def Ready():
+    destroyHudText(Ready+3)
+    Ready=true
+    
 
 rule "Display server performance characteristics":
     /*
@@ -99,9 +129,10 @@ rule "Display server performance characteristics":
 
 rule "Minions Tick":
     @Condition Ready == true
-    Minions_Main()
+    #Minions_Main()
+    wait(15)
+    Minion_Wave()
     top
-    
 
 
 rule "Inspector":
@@ -111,45 +142,65 @@ rule "Inspector":
     enableInspector()
     top
 
+rule "left":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+    if(eventPlayer.getTeam()==Team.1):
+        Players[0]=replace("null",Players[0].index(eventPlayer),Players[0])
+    else:
+        Players[1]=replace("null",Players[1].index(eventPlayer),Players[1])
+    Left()
+    j=""
+    for i in range(len(CPlayers[0])):
+        j=("{0},{1}".format(j,CPlayers[0][i]))
+    j="{0}\n".format(j)
+    for i in range(len(CPlayers[1])):
+        j=("{0},{1}".format(j,CPlayers[1][i]))
+    println(j)
+    
+rule "On Player Left":
+    @Event playerLeft
+    @Condition not eventPlayer.isDummy()
+    Left()
+
+def Left():
+    destroyDummy(eventPlayer.getTeam(),TeamSize+eventPlayer.getSlot())
+    /*
+    for PlayerLeft_i in range(len(CPlayers[0])):
+        if(CPlayers[0][PlayerLeft_i].Owner!=Players[0][PlayerLeft_i]):
+            destroyDummy(Team.1,TeamSize+PlayerLeft_i)
+            makeControlled(Team.1,0)
+            CPlayers[0]=replace(getLastCreatedEntity(),PlayerLeft_i,CPlayers[0])
+    for PlayerLeft_i in range(len(CPlayers[1])):
+        if(CPlayers[1][PlayerLeft_i].Owner!=Players[1][PlayerLeft_i]):
+            destroyDummy(Team.2,TeamSize+PlayerLeft_i)
+            /*makeControlled(Team.2,0)
+            CPlayers[1]=replace(getLastCreatedEntity(),PlayerLeft_i,CPlayers[1])
+    disableInspector()*/
+    
 rule "On Player Join":
     @Event playerJoined
     @Condition not eventPlayer.isDummy()
-
-    
+    eventPlayer.disableTextChat()
+    if(eventPlayer.getTeam()==Team.1):
+        eventPlayer.Team=1
+        eventPlayer().UIContainer=[Color.BLUE]
+    else:
+        eventPlayer.Team=2
+        eventPlayer().UIContainer=[Color.RED]
+    eventPlayer.Slot=eventPlayer.getSlot()
+    Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
+    println(Players[eventPlayer.Team-1])
 rule "Check Hero Change":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
     wait(0.1)
     ###INIT BOT###
-    if(eventPlayer.getCurrentHero()!=eventPlayer.CHero):
-        eventPlayer.CHero = Hero.ZARYA
-        eventPlayer.CHero =eventPlayer.getCurrentHero()
-        
-        createDummy(eventPlayer.getCurrentHero(), eventPlayer.getTeam(), -1, vect(0,0,0),vect(0,0,0))
-        eventPlayer.ControlledSlot = TeamSize+eventPlayer.Slot
-        #printLog("H:{0},T:{1},S:{2},CS:{3}".format(eventPlayer.getCurrentHero(),eventPlayer.getTeam(),eventPlayer.Slot,eventPlayer.ControlledSlot))
-        eventPlayer.ControlledRef = getPlayersInSlot(eventPlayer.ControlledSlot,eventPlayer.getTeam())
-        eventPlayer.ControlledRef.Owner = eventPlayer
-        eventPlayer.ControlledRef.startForcingOutlineFor(eventPlayer,true,Color.TEAM_1,OutlineVisibility.ALWAYS)
-        eventPlayer.ControlledRef.startForcingName(eventPlayer)
-        #eventPlayer.ControlledRef.setInvisibility(Invis.ENEMIES)
-        if(eventPlayer.getTeam()==Team.1):
-            if(Players[0][0]==-1):
-                Players[0]=[eventPlayer]
-                CPlayers[0]=[eventPlayer.ControlledRef]
-            else:
-                Players[0].append(eventPlayer)
-                CPlayers[0].append(eventPlayer.ControlledRef)
-        elif(eventPlayer.getTeam()==Team.2):
-            if(Players[1][0]==-1):
-                Players[1]=[eventPlayer]
-                CPlayers[1]=[eventPlayer.ControlledRef]
-            else:
-                Players[1].append(eventPlayer)
-                CPlayers[1].append(eventPlayer.ControlledRef)
+    if(eventPlayer.getCurrentHero()!=eventPlayer.CHero and Ready):
+        eventPlayer.CHero=eventPlayer.getCurrentHero()
+        attachControlled
         CameraSetup()
-        eventPlayer().UIContainer=[]
         for  eventPlayer().i in range(TeamSize*2):
             eventPlayer().UIContainer = eventPlayer().UIContainer.concat([-1,-1])
         OnHero()
@@ -171,7 +222,7 @@ def OnHero():
 rule "Bot - Hero Connection":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-15,eventPlayer.ControlledRef.getPosition().z),true)
+    eventPlayer.ControlledRef.startForcingHero(eventPlayer.CHero)
     if(eventPlayer.ControlledRef.Hidden):
         eventPlayer.ControlledRef.setInvisibility(Invis.ENEMIES)
     else:
@@ -191,21 +242,17 @@ def UI_Setup():
     eventPlayer.disallowButton(Button.RELOAD)
     eventPlayer.disallowButton(Button.MELEE)
     eventPlayer.disallowButton(Button.JUMP)
+    for(i in range(0,TeamSize)):
+        if(eventPlayer.Team==1):
+            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),Players[0][evalOnce(i)].getHealth(),null,HudPosition.LEFT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
+            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),Players[1][evalOnce(i)].getHealth(),null,HudPosition.RIGHT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
+        else:
+            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),Players[0][evalOnce(i)].getHealth(),null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
+            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),Players[1][evalOnce(i)].getHealth(),null,HudPosition.LEFT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
+    
 
-
-
-#!define sidebar(index,hero,player,position,color) if(eventPlayer().UIContainer[eventPlayer().UIIstanceHandler+1]!=index):\
-        destroyHudText(eventPlayer().UIContainer[eventPlayer().UIIstanceHandler])\
-        hudHeader(getAllPlayers(), player, position, 0, color, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)\
-        eventPlayer().UIContainer[eventPlayer().UIIstanceHandler]=getLastCreatedText()\
-        eventPlayer().UIContainer[eventPlayer().UIIstanceHandler+1]=index
 def UI_Process():
     @Name "S_UI_Process"
-    #for UIIstanceHandler in Team1:
-    #    sidebar(0,Team1[eventPlayer().].getCurrentHero(),Team1[eventPlayer().UIIstanceHandler],HudPosition.LEFT,Color.TEAM_1)
-    #sidebar(1,Team1[eventPlayer().UIIstanceHandler].getCurrentHero(),Team1[eventPlayer().UIIstanceHandler],HudPosition.LEFT,Color.GRAY)
-    
-    #
     updateCooldown(Button.ABILITY_1)
     updateCooldown(Button.ABILITY_2)
     updateCooldown(Button.JUMP)
@@ -332,8 +379,7 @@ rule "Camera Bounds":
     top
 
 
-def chaseCursorValues():
-    #eventPlayer.cursor= eventPlayer.cursorNew
+def chaseCursorValues():    
     if(HoriBounds and VertBounds):
         eventPlayer.cursor=eventPlayer.cursorNew
     wait(0.001)

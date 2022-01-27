@@ -18,10 +18,9 @@ rule "Target":
     eventPlayer.Temp_DistanceSort=sorted(random.shuffle(NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48).concat(eventPlayer.Temp_DistanceSort)), lambda i: (abs(eventPlayer.cursor.x-i.y))**2 + (abs(eventPlayer.cursor.z-i.z))**2)
     #sorted([vect((eventPlayer.cursor.x-i.y)**2 + (eventPlayer.cursor.z-i.z)**2,i.x,0) for i in random.shuffle(NonPlayer_Loc)], lambda elem: elem.x)
     if((abs(eventPlayer.cursor.x-eventPlayer.Temp_DistanceSort[0].y))**2 + (abs(eventPlayer.cursor.z-eventPlayer.Temp_DistanceSort[0].z))**2<0.866):
-    
         println("{0}, {1}".format(eventPlayer.Temp_DistanceSort[0],eventPlayer.cursor))
         eventPlayer.UICursorStyles[0]=Color.RED
-        wait(0.1)
+        wait(0.1) 
         eventPlayer.UICursorStyles[0]=Color.WHITE
-        #eventPlayer.ControlledRef.startThrottleInDirection(vectorTowards(eventPlayer.ControlledRef.getPosition(),eventPlayer.Temp_DistanceSort[0]), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
+        eventPlayer.ControlledRef.startThrottleInDirection(vectorTowards(eventPlayer.ControlledRef.getPosition(),eventPlayer.Temp_DistanceSort[0]), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
         

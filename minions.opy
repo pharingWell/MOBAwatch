@@ -146,7 +146,7 @@ def PrintMinions():
         PrintText_Temp="{0}]{1}".format(PrintText_Temp,PrintData_Temp)
         println("{0} Team {1}, Length {2}".format(PrintText_Temp,i+1,j))
     println("\n\n\n\n\n\n\n\n\n\n")
-    ThreadClear=true 
+    ThreadClear=true
 
 def Minion_Wave():
     waitUntil(ThreadClear==true,100)
@@ -176,8 +176,7 @@ def Minions_Init():
             else:
                 Minions[i].append([MR_Temp])
             NonPlayer_Loc[i*48+k]=vect(M_id(i,k),ft(0,i),0)
-    destroyHudText(Ready+3)
-    Ready=true        
+    Ready()  
 /*  
 (j==1 or j==3): M_DataTemp=MinionPositionLane1n3(M_tTemp,j)
 */

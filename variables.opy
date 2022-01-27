@@ -1,91 +1,95 @@
 #!mainFile "main.opy"
-globalvar CPlayers 0
-globalvar Players 1
-globalvar TeamSize 2
-globalvar ScreenLimits 3
-globalvar Characters 4
-globalvar Minions 5
-globalvar LocationChange 6 #vect3(MinionID, x change, z change)
-globalvar HealthChange 7 #(id, health change amt (+ = dmg, - = healing), damage dealer)
-globalvar NonPlayer_Loc 8 #(id,x,z) minions are registered as 1,[team][2 digit id], structures are 2.[team][2 digit id] (e.g. 1.234, 2.124)
+globalvar CPlayers
+globalvar Players
+globalvar TeamSize
+globalvar ScreenLimits
+globalvar Characters
+globalvar Minions
+globalvar LocationChange #vect3(MinionID, x change, z change)
+globalvar HealthChange #(id, health change amt (+ = dmg, - = healing), damage dealer)
+globalvar NonPlayer_Loc #(id,x,z) minions are registered as 1,[team][2 digit id], structures are 2.[team][2 digit id] (e.g. 1.234, 2.124)
 #...
 #Structures
-globalvar Structures 10 #id, health, blank
-globalvar StructuresMP 11 #midpoint of structure (id,x,z)
-globalvar StructuresWH 12 #width and height (id,w,h)
+globalvar Structures #id, health, blank
+globalvar StructuresMP #midpoint of structure (id,x,z)
+globalvar StructuresWH #width and height (id,w,h)
 #Minions
-globalvar M_tTemp 14
-globalvar M_DataTemp 15
-globalvar MA_Temp 16 #Minions Array Temp
-globalvar PA_Temp 17 #Player Array Temp
-globalvar MR_Temp 18 #Minion ranges temp array
-globalvar Temp_ID 19
-globalvar MinionQualities 20
-globalvar MinionTypes 21
-globalvar MWeapons 22
-globalvar MinionTypesQualities 23
+globalvar M_tTemp
+globalvar M_DataTemp
+globalvar MA_Temp #Minions Array Temp
+globalvar PA_Temp #Player Array Temp
+globalvar MR_Temp #Minion ranges temp array
+globalvar Temp_ID
+globalvar MinionQualities
+globalvar MinionTypes
+globalvar MWeapons
+globalvar MinionTypesQualities
 #Minion Waves
-globalvar MinionWaves 25
-globalvar MinionRenders 26
+globalvar MinionWaves
+globalvar MinionRenders
 #General variables
-globalvar ThreadClear 27 #is thread clear for damaging minions 
-globalvar i 28
-globalvar j 29
-globalvar k 30
-globalvar l 31
-globalvar textcount 32 #not used
+globalvar ThreadClear #is thread clear for damaging minions 
+globalvar i
+globalvar j
+globalvar k
+globalvar l
 #PrintLn
-globalvar PrintText_Temp 36
-globalvar PrintData_Temp 37
+globalvar PrintText_Temp
+globalvar PrintData_Temp
+#UI 
+globalvar UIContainer
 #...
-globalvar DoT_In 39
+globalvar DoT_In
 #...
-globalvar LocTemp_var 45
-globalvar LocTemp_i 46
+globalvar LocTemp_var
+globalvar LocTemp_i
 
-globalvar Ready 49
-#50-80 Players
-
+globalvar Ready
+#Players
+globalvar PlayerLeft_i
+globalvar HeroSpecs
 #--settings--#
-globalvar Setting_CamSpeed 120
+globalvar Setting_CamSpeed
 
 #Player variables
 
-playervar Slot 0
-playervar ControlledSlot 1
-playervar CPos 2
-playervar CamLoc 3
-playervar CamAttach 4
-playervar ControlledRef 5
-playervar Alive 6
-playervar CHero 7
-playervar Owner 8
-playervar MovementGroundCursor 10
-playervar cursorNew 11
-playervar cursor 12  
-playervar eyeAxis 13
-playervar UIContainer 17
-playervar UIIstanceHandler 18
-playervar UICursorStyles 19
-playervar i 20
-playervar Hidden 21
-playervar Team 22 #1 or 2
+playervar Slot
+playervar ControlledSlot
+playervar CPos
+playervar CamLoc
+playervar CamAttach
+playervar ControlledRef
+playervar Alive
+playervar CHero
+playervar Owner
+playervar MovementGroundCursor
+playervar cursorNew
+playervar cursor
+playervar eyeAxis
+playervar UIContainer
+playervar UIIstanceHandler
+playervar UICursorStyles
+playervar i
+playervar Hidden
+playervar Team #1 or 2
 #playervar 
-playervar TargetHandling 25
-playervar Temp_DistanceSort 26
-globalvar HeroSpecs 50
+playervar TargetHandling
+playervar Temp_DistanceSort
+
 
 #Subroutine names
 
-subroutine CameraSetup 0
-subroutine UI_Process 1
-subroutine UI_Setup 2
-subroutine moveCameraWithPlayer 3
-subroutine chaseCursorValues 4
-subroutine OnHero 5 
-subroutine Minions_Main 6
-subroutine Minions_Init 7
-subroutine HealthHandle 8
-subroutine Minion_Wave 9
-subroutine Minions_Move 10
-subroutine PrintMinions 35
+subroutine CameraSetup 
+subroutine UI_Process 
+subroutine UI_Setup 
+subroutine moveCameraWithPlayer 
+subroutine chaseCursorValues 
+subroutine OnHero 
+subroutine Minions_Main
+subroutine Minions_Init
+subroutine HealthHandle
+subroutine Minion_Wave 
+subroutine Minions_Move 
+subroutine Ready
+subroutine PrintMinions
+subroutine Left
