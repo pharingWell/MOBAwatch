@@ -23,6 +23,7 @@ settings {
             "scoreToWin": 100
         },
         "general": {
+            "enableSkins": false,
             "gamemodeStartTrigger": "immediately",
             "enableSelfInitiatedRespawn": false
         }
@@ -48,43 +49,19 @@ settings {
 
 #!include "variables.opy"
 #!include "minions.opy"
+#!include "controlled.opy"
 #!include "heroes/generic.opy"
 
-#!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice((i)+1,len(array)-1))
-#!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice(i,len(array)-1))
-
-#!define loopt if(RULE_CONDITION):\
-    goto RULE_START
-#!define loopf if(not RULE_CONDITION):\
-    goto RULE_START
-#!define top goto RULE_START
-#!define println(a) enableInspector()\
-    printLog(a)\
-    disableInspector()
-
-
-#!define attachControlled #d\
-    createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
-    eventPlayer.ControlledRef=CPlayers[eventPlayer.Team-1][eventPlayer.Slot]\
-    eventPlayer.ControlledRef.startForcingPosition(vect(0,100,0),true)\
-    eventPlayer.ControlledRef.stopForcingPosition()\
-    eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
-    eventPlayer.ControlledRef.Owner = eventPlayer\
-    eventPlayer.ControlledRef.startForcingName(eventPlayer)\
-    eventPlayer.startForcingHero(eventPlayer.CHero)\
-    eventPlayer.ControlledRef.startForcingHero(eventPlayer.CHero)\
-    eventPlayer.ControlledRef.setAllowedHeroes(eventPlayer.CHero)\
 
 rule "Set setting vars":
     Setting_CamSpeed=createWorkshopSetting(float[0.0:1.0],"Cosmetic","Unbound Camera Speed",0.5,23)
+    Setting_Mode=createWorkshopSetting(enum["Open","Standalone"],"Significant","Open: Allow players to join mid-game, Standalone: Full match",1,63)
 
 rule "InitiateGame":
     @Condition len(CPlayers[0]) + len(CPlayers[1]) < len(getAllPlayers())
     if(getNumberOfSlots(Team.ALL)/2!=getNumberOfSlots(Team.1) or (not getAllPlayers()[0] == hostPlayer and not len(getAllPlayers()) == 1)):
         wait(2)
         returnToLobby()
-    elif(getAllPlayers()[0] == hostPlayer and len(getAllPlayers()) == 1):
-            hudHeader(getAllPlayers(), "DEBUG MODE", HudPosition.TOP, 0, Color.GREEN, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(getAllPlayers(),w"Loading...",HudPosition.TOP,1,Color.RED,HudReeval.NONE)
     Ready=getLastCreatedText()-3
     Minions=[[-1],[-1]]
@@ -97,21 +74,21 @@ rule "InitiateGame":
         if(i==0):
             Players[0]=["null"]
             Players[1]=["null"]
-            /*makeControlled(Team.1,0)
-            CPlayers[0]=getLastCreatedEntity()
-            makeControlled(Team.2,0)
-            CPlayers[1]=getLastCreatedEntity()*/
         else:
             Players[0].append(["null"])
             Players[1].append(["null"])
-            /*makeControlled(Team.1,i)
-            CPlayers[0].append(getLastCreatedEntity())
-            makeControlled(Team.2,i)
-            CPlayers[1].append(getLastCreatedEntity())*/
     Minions_Init()
     async(HealthHandle(),AsyncBehavior.NOOP)
-    setMatchTime(0)
+    setMatchTime(0) #change to 15 later
+    wait(15)
     pauseMatchTime()
+    wait(1)
+    disableAnnouncer()
+    if(Setting_Mode==1): #Standalone
+        unpauseMatchTime()
+        setMatchTime(2700)
+    else:
+        disableGamemodeCompletion()
 
 
     
@@ -122,10 +99,10 @@ def Ready():
 
 rule "Display server performance characteristics":
     /*
-    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load", l"{0}%".format(getServerLoad())), HudPosition.RIGHT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load Average", l"{0}%".format(getAverageServerLoad())), HudPosition.RIGHT, 1, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load Peak", l"{0}%".format(getPeakServerLoad())), HudPosition.RIGHT, 2, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    */      
+    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load", l"{0}%".format(getServerLoad())), HudPosition.TOP, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load Average", l"{0}%".format(getAverageServerLoad())), HudPosition.TOP, 1, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load Peak", l"{0}%".format(getPeakServerLoad())), HudPosition.TOP, 2, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    */ 
 
 rule "Minions Tick":
     @Condition Ready == true
@@ -138,7 +115,7 @@ rule "Minions Tick":
 rule "Inspector":
     @Condition Ready == true
     disableInspector()
-    wait(4)
+    wait(1)
     enableInspector()
     top
 
@@ -164,73 +141,18 @@ rule "On Player Left":
     Left()
 
 def Left():
-    destroyDummy(eventPlayer.getTeam(),TeamSize+eventPlayer.getSlot())
-    /*
     for PlayerLeft_i in range(len(CPlayers[0])):
         if(CPlayers[0][PlayerLeft_i].Owner!=Players[0][PlayerLeft_i]):
-            destroyDummy(Team.1,TeamSize+PlayerLeft_i)
-            makeControlled(Team.1,0)
-            CPlayers[0]=replace(getLastCreatedEntity(),PlayerLeft_i,CPlayers[0])
+            Players[0]=Players[0]
+            #destroyDummy(Team.1,TeamSize+PlayerLeft_i)
+            #CPlayers[0]=replace(CPlayers[0][PlayerLeft_i])
     for PlayerLeft_i in range(len(CPlayers[1])):
         if(CPlayers[1][PlayerLeft_i].Owner!=Players[1][PlayerLeft_i]):
-            destroyDummy(Team.2,TeamSize+PlayerLeft_i)
-            /*makeControlled(Team.2,0)
-            CPlayers[1]=replace(getLastCreatedEntity(),PlayerLeft_i,CPlayers[1])
-    disableInspector()*/
-    
-rule "On Player Join":
-    @Event playerJoined
-    @Condition not eventPlayer.isDummy()
-    eventPlayer.disableTextChat()
-    if(eventPlayer.getTeam()==Team.1):
-        eventPlayer.Team=1
-        eventPlayer().UIContainer=[Color.BLUE]
-    else:
-        eventPlayer.Team=2
-        eventPlayer().UIContainer=[Color.RED]
-    eventPlayer.Slot=eventPlayer.getSlot()
-    Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
-    println(Players[eventPlayer.Team-1])
-rule "Check Hero Change":
-    @Event eachPlayer
-    @Condition not eventPlayer.isDummy()
-    eventPlayer.CHero = eventPlayer.getCurrentHero()
-    wait(0.1)
-    ###INIT BOT###
-    if(eventPlayer.getCurrentHero()!=eventPlayer.CHero and Ready):
-        eventPlayer.CHero=eventPlayer.getCurrentHero()
-        attachControlled
-        CameraSetup()
-        for  eventPlayer().i in range(TeamSize*2):
-            eventPlayer().UIContainer = eventPlayer().UIContainer.concat([-1,-1])
-        OnHero()
-        UI_Setup()
-        async(UI_Process,AsyncBehavior.NOOP)
-        waitUntil(eventPlayer.cursor!=vect(0,0.01,0),1000)
-        wait(0.5)
-        eventPlayer.CamAttach=true
-        moveCameraWithPlayer()
-    else:
-        top
+            #destroyDummy(Team.2,TeamSize+PlayerLeft_i)
+            #CPlayers[1]=CPlayers[0].exclude(CPlayers[1][PlayerLeft_i])
+    disableInspector()
 
 
-def OnHero():
-    #disabled hero ults from the player's perspective
-    if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]):
-        eventPlayer.disallowButton(Button.ULTIMATE)
-
-rule "Bot - Hero Connection":
-    @Event eachPlayer
-    @Condition not eventPlayer.isDummy()
-    eventPlayer.ControlledRef.startForcingHero(eventPlayer.CHero)
-    if(eventPlayer.ControlledRef.Hidden):
-        eventPlayer.ControlledRef.setInvisibility(Invis.ENEMIES)
-    else:
-        eventPlayer.ControlledRef.setInvisibility(Invis.NONE)
-    wait(1)
-    top
-
-    #!define updateCooldown(button) eventPlayer.setAbilityCooldown(button,eventPlayer.ControlledRef.getAbilityCooldown(button))
 def UI_Setup():
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableGamemodeHud()
@@ -245,11 +167,11 @@ def UI_Setup():
     for(i in range(0,TeamSize)):
         if(eventPlayer.Team==1):
             hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),Players[0][evalOnce(i)].getHealth(),null,HudPosition.LEFT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
-            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),Players[1][evalOnce(i)].getHealth(),null,HudPosition.RIGHT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
+            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
         else:
-            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),Players[0][evalOnce(i)].getHealth(),null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
             hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),Players[1][evalOnce(i)].getHealth(),null,HudPosition.LEFT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
-    
+            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
+            
 
 def UI_Process():
     @Name "S_UI_Process"
@@ -286,23 +208,18 @@ rule "CursorStyle1":
     destroyInWorldText(eventPlayer.MovementGroundCursor)
     wait(0.1)
     eventPlayer.ControlledRef.CPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-    async(moveCameraWithPlayer,AsyncBehavior.RESTART)
-    eventPlayer.ControlledRef.startThrottleInDirection(vectorTowards(eventPlayer.ControlledRef.getEyePosition(), eventPlayer.ControlledRef.CPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
-    eventPlayer.ControlledRef.startFacing(vectorTowards(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.getEyePosition().z),vect(eventPlayer.ControlledRef.CPos.x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.CPos.z)),400,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
+    startAction(0,eventPlayer.ControlledRef)
     createInWorldText(eventPlayer,"¤",vect(eventPlayer.ControlledRef.CPos.x,0,eventPlayer.ControlledRef.CPos.z-eventPlayer.CamLoc.y/12.5),2.0,Clip.NONE,WorldTextReeval.NONE,Color.SKY_BLUE,SpecVisibility.NEVER)
     eventPlayer.MovementGroundCursor = getLastCreatedText()
-    wait(0.25)
-    loopt
+
 
 rule "Throttling Bot":
     @Event eachPlayer
     @Condition Ready == true
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer in getPlayersInRadius(eventPlayer.CPos,0.5,Team.ALL,LosCheck.OFF)
+    @Condition getPlayersInRadius(eventPlayer.CPos,0.5,Team.ALL,LosCheck.OFF)
     destroyInWorldText(eventPlayer.Owner.MovementGroundCursor)
-    eventPlayer.startTransformingThrottle(0.5,0.5,eventPlayer.getFacingDirection())
-    eventPlayer.stopFacing()    
-    wait(0.1)
+    eventPlayer.stopFacing() 
     eventPlayer.stopThrottleInDirection()
     #smallMessage(eventPlayer,"{0}_".format(eventPlayer.MovementGroundCursor))
 
@@ -336,13 +253,10 @@ def CameraSetup():
     eventPlayer.startCamera(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z-0.01), vect(eventPlayer.CamLoc.x, 0, eventPlayer.CamLoc.z), 35)
     eventPlayer.ControlledRef.CPos=vect(0,0,0)
     eventPlayer.setInvisibility(Invis.ALL)
+    eventPlayer.setStatusEffect(null,Status.PHASED_OUT,9999)
     eventPlayer.setDamageReceived(0)
-    
-    
 
 rule "Camera Bounds":
-    #!define clamp(n, smallest, largest) (max(smallest, min(n, largest)))
-    #
     #!define Hori atan2(eventPlayer.getFacingDirection().x,eventPlayer.getFacingDirection().z)
     #!define Vert asin(eventPlayer.getFacingDirection().y)
     #!define HoriLimit (ScreenLimits[0])+eventPlayer.eyeAxis[1]*0.1*eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1])

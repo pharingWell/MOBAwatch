@@ -1,4 +1,33 @@
 #!mainFile "main.opy"
+
+#!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice((i)+1,len(array)-1))
+#!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice(i,len(array)-1))
+
+#!define loopt if(RULE_CONDITION):\
+    goto RULE_START
+#!define loopf if(not RULE_CONDITION):\
+    goto RULE_START
+#!define top goto RULE_START
+#!define println(a) enableInspector()\
+    printLog(a)\
+    #disableInspector()
+
+
+#!define attachControlled createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
+    CPlayers[eventPlayer.Team-1]=insert(getLastCreatedEntity(),eventPlayer.Slot,CPlayers[eventPlayer.Team-1])\
+    eventPlayer.ControlledRef=CPlayers[eventPlayer.Team-1][eventPlayer.Slot]\
+    eventPlayer.ControlledRef.startForcingPosition(vect(0,100,0),true)\
+    eventPlayer.ControlledRef.stopForcingPosition()\
+    eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
+    eventPlayer.ControlledRef.Owner = eventPlayer\
+    #eventPlayer.ControlledRef.startForcingName(eventPlayer)\
+    eventPlayer.startForcingHero(eventPlayer.CHero)\
+
+
+
+
+
+
 globalvar CPlayers
 globalvar Players
 globalvar TeamSize
@@ -48,30 +77,40 @@ globalvar Ready
 #Players
 globalvar PlayerLeft_i
 globalvar HeroSpecs
-#--settings--#
+
+
+
+#settings
+
 globalvar Setting_CamSpeed
+globalvar Setting_Mode
+
+
 
 #Player variables
 
-playervar Slot
+playervar Slot #P
+playervar CamLoc #P
+playervar CamAttach #P
+playervar ControlledRef #P
+playervar MovementGroundCursor #P
+playervar cursorNew #P
+playervar cursor #P
+playervar eyeAxis #P
+playervar UIContainer #P
+playervar UIIstanceHandler #P
+playervar UICursorStyles #P
+
+playervar Actions
 playervar ControlledSlot
 playervar CPos
-playervar CamLoc
-playervar CamAttach
-playervar ControlledRef
 playervar Alive
 playervar CHero
 playervar Owner
-playervar MovementGroundCursor
-playervar cursorNew
-playervar cursor
-playervar eyeAxis
-playervar UIContainer
-playervar UIIstanceHandler
-playervar UICursorStyles
 playervar i
 playervar Hidden
-playervar Team #1 or 2
+playervar Team #1 or 2 
+playervar Target
 #playervar 
 playervar TargetHandling
 playervar Temp_DistanceSort
@@ -93,3 +132,4 @@ subroutine Minions_Move
 subroutine Ready
 subroutine PrintMinions
 subroutine Left
+
