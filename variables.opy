@@ -1,5 +1,7 @@
 #!mainFile "main.opy"
 
+#stores variables, global macros and enums
+
 #!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice((i)+1,len(array)-1))
 #!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice(i,len(array)-1))
 
@@ -11,20 +13,27 @@
 #!define println(a) enableInspector()\
     printLog(a)\
     #disableInspector()
+#!define clamp(val,min_,max_) max((min_),min((val),(max_)))
 
-
-#!define attachControlled createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
-    CPlayers[eventPlayer.Team-1]=insert(getLastCreatedEntity(),eventPlayer.Slot,CPlayers[eventPlayer.Team-1])\
-    eventPlayer.ControlledRef=CPlayers[eventPlayer.Team-1][eventPlayer.Slot]\
-    eventPlayer.ControlledRef.startForcingPosition(vect(0,100,0),true)\
-    eventPlayer.ControlledRef.stopForcingPosition()\
-    eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
-    eventPlayer.ControlledRef.Owner = eventPlayer\
-    #eventPlayer.ControlledRef.startForcingName(eventPlayer)\
-    eventPlayer.startForcingHero(eventPlayer.CHero)\
-
-
-
+enum CastMode:
+    CONFIRM,
+    QUICK,
+    RELEASE
+enum CastType:
+    SELF,
+    GROUND,
+    CURSOR,
+    TARGET
+enum TargetState:
+    NONE,
+    SELF,
+    ALLY,
+    ENEMY,
+enum AbilityState:
+    NONE,
+    PREP,
+    CAST,
+    COMPLETE,
 
 
 
@@ -75,6 +84,7 @@ globalvar LocTemp_i
 
 globalvar Ready
 #Players
+globalvar CD_Buttons
 globalvar PlayerLeft_i
 globalvar HeroSpecs
 
@@ -100,18 +110,23 @@ playervar eyeAxis #P
 playervar UIContainer #P
 playervar UIIstanceHandler #P
 playervar UICursorStyles #P
-
+playervar CD_i
 playervar Actions
 playervar ControlledSlot
 playervar CPos
+playervar MovetoPos
 playervar Alive
 playervar CHero
+playervar CHero_Index
 playervar Owner
 playervar i
 playervar Hidden
 playervar Team #1 or 2 
 playervar Target
-#playervar 
+playervar AbilityVerify #[waiting for ability verify, cancelled]
+playervar Hero_Ability #casts ability from the perspective of the hero. e.g: ability1 is called with eventPlayer.ControlledRef as the event player with Ability Verify. It is then cast to the specific hero based on this variable
+playervar HA_temp 
+playervar Ability_UI
 playervar TargetHandling
 playervar Temp_DistanceSort
 
@@ -121,8 +136,10 @@ playervar Temp_DistanceSort
 subroutine CameraSetup 
 subroutine UI_Process 
 subroutine UI_Setup 
-subroutine moveCameraWithPlayer 
-subroutine chaseCursorValues 
+subroutine moveCameraWithPlayer
+subroutine teleportCamera
+subroutine chaseCursorValues
+subroutine AbilityConfirm 
 subroutine OnHero 
 subroutine Minions_Main
 subroutine Minions_Init
@@ -132,4 +149,6 @@ subroutine Minions_Move
 subroutine Ready
 subroutine PrintMinions
 subroutine Left
+subroutine defaultEffectUI
+subroutine clearEffectUI
 

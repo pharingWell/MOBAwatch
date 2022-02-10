@@ -1,0 +1,73 @@
+#!mainFile "../main.opy"
+#you can declare hero specific variables here. Do not make them global
+rule "Hero - Init":
+    @Event eachPlayer
+    @Hero reaper
+    @Condition eventPlayer.isDummy()
+    print("{}, {}".format(eventPlayer.Hero_Ability[0],eventPlayer.Hero_Ability[1]))
+    
+rule "Hero - UI Prep":
+    @Event eachPlayer
+    @Hero reaper
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.Hero_Ability[0]==AbilityState.PREP #show ui for
+    clearEffectUI()
+    switch eventPlayer.Hero_Ability[1]:
+        /*
+        case 1:
+            break
+        */
+        
+        case 2:
+            AreaHighlight(Effect.RING,1)
+            eventPlayer.Owner.cursorNew=eventPlayer.MovetoPos
+            defaultEffectUI()
+            break
+        /*
+        case 3:
+            break
+        */
+        /*
+        case 4:
+            break
+        */  
+        default:
+            defaultEffectUI()
+
+rule "Hero - Cast":
+    @Event eachPlayer
+    @Hero reaper
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.Hero_Ability[0]==AbilityState.CAST #otherwise show ui
+    clearEffectUI()
+    switch eventPlayer.Hero_Ability[1]:
+        case 1: 
+            Ability(Button.ABILITY_1,false)
+            break
+        case 2:
+            Ability(Button.ABILITY_2,true)
+            wait(1) #teleport camera to player after 1 sec
+            if(eventPlayer.Owner and eventPlayer.isUsingAbility2()):
+                eventPlayer.Owner.CamLoc=vect(eventPlayer.CPos.x,eventPlayer.Owner.CamLoc.y,eventPlayer.CPos.z)
+            break
+        case 3:
+            Ability(Button.ULTIMATE,false)
+            wait()
+            if(eventPlayer.isUsingUltimate()):
+
+                createEffect(eventPlayer.Owner,Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+                addUI(getLastCreatedEntity(),AbilityState.COMPLETE)
+                wait(3.1)
+            break
+        case 4:
+            break
+    eventPlayer.Hero_Ability[0]=AbilityState.COMPLETE
+
+
+rule "Hero - Complete":
+    @Event eachPlayer
+    @Hero reaper
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.Hero_Ability[0]==AbilityState.COMPLETE 
+    clearEffectUI()
+    
