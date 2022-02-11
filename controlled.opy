@@ -72,6 +72,10 @@ rule "Target":
                 waitUntil(eventPlayer.ArrivedAtM2P==-1 or eventPlayer.MoveAbilityCancel,99)\
         if(HeroSpecs[eventPlayer.CHero_Index][(abilitynum)+2][1]==CastType.GROUND): /*is ability looking at ground*/\
             eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,0,eventPlayer.CPos.z)),9999,Relativity.TO_WORLD,FacingReeval.NONE)\
+        elif(HeroSpecs[eventPlayer.CHero_Index][(abilitynum)+2][1]==CastType.DIRECTION): /*is ability looking at ground*/\
+            if(eventPlayer.Owner):\
+                    eventPlayer.CPos=eventPlayer.Owner.cursor\
+            eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.getEyePosition().y,eventPlayer.CPos.z)),Relativity.TO_WORLD)\
         elif(HeroSpecs[eventPlayer.CHero_Index][(abilitynum)+2][2]!=TargetState.NONE): /*is targeted*/ \
             /*if(HeroSpecs[eventPlayer.CHero_Index][(abilitynum)+2][2]=TargetState.ENEMY)*/\
             if(floor(eventPlayer.Target.x/10)==HeroSpecs[eventPlayer.CHero_Index][(abilitynum)+2][2] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target.y,0,eventPlayer.Target.z))<=HeroSpecs[eventPlayer.CHero_Index][(abilitynum)+2][0]):\

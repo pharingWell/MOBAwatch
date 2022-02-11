@@ -47,27 +47,23 @@ rule "Hero - Cast":
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         case 1:
-            eventPlayer.stopForcingThrottle()
-            eventPlayer.stopThrottleInDirection()
-            if(eventPlayer.Owner): 
-                eventPlayer.setFacing(directionTowards(eventPlayer.getPosition(),eventPlayer.Owner.cursor),Relativity.TO_WORLD)
+            eventPlayer.MovetoPos=(eventPlayer.getPosition())
             Ability(Button.ABILITY_1,false)
             wait(0.1)
-            eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
+            if(eventPlayer.Owner):
+                eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
             break
         case 2:
             Ability(Button.ABILITY_2,false)
             wait(0.6)
-            eventPlayer.stopForcingThrottle()
-            eventPlayer.stopThrottleInDirection()
-            eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
+            eventPlayer.MovetoPos=(eventPlayer.getPosition())
+            if(eventPlayer.Owner):
+                eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
             break
         case 3:
             Ability(Button.RELOAD,false)
             break
         case 4:
-            if(eventPlayer.Owner):
-                eventPlayer.setFacing(directionTowards(eventPlayer.getPosition(),eventPlayer.Owner.cursor),Relativity.TO_WORLD)
             Ability(Button.ULTIMATE,false)
             break
     eventPlayer.Hero_Ability[0]=AbilityState.COMPLETE

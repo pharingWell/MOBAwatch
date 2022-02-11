@@ -16,11 +16,13 @@
 #!define clamp(val,min_,max_) max((min_),min((val),(max_)))
 
 enum CastMode:
-    CONFIRM=1,
-    QUICK=2,
-    RELEASE=3
+    NULL,
+    CONFIRM,
+    QUICK,
+    RELEASE
 enum CastType:
     SELF,
+    DIRECTION,
     GROUND,
     CURSOR,
     TARGET
@@ -35,7 +37,9 @@ enum AbilityState:
     MOVETO,
     CAST,
     COMPLETE,
-
+enum Activation:
+    NONE,
+    M1 #TODO: good way to handle activation
 
 
 globalvar CPlayers

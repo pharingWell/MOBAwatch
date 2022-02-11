@@ -18,31 +18,15 @@ addUI(getLastCreatedEntity(),AbilityState.MOVETO)
 #!include "heroes/reaper.opy"
 #!include "heroes/tracer.opy"
 
-enum CastMode:
-    NULL,
-    CONFIRM,
-    QUICK,
-    RELEASE
-enum CastType:
-    SELF,
-    GROUND,
-    CURSOR,
-    TARGET
-enum TargetState:
-    NONE,
-    SELF,
-    ALLY,
-    ENEMY,
-enum Activation:
-    NONE,
-    M1 #TODO: good way to handle activation
+
+
 rule "Heroes_Init":                                            #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
     #[hp,mana],other,basic atk[range,dmg],ability[cast mode, cast type, [optional] range, [optional] target], 
     
 
     HeroSpecs=[
     /*Reaper*/         [[250,-1],"other",[2,30],[CastMode.QUICK,CastType.SELF,TargetState.NONE],[CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10],null,[CastMode.RELEASE,CastType.SELF,TargetState.NONE]], #
-    /*Tracer*/         [[150,100],"other",[8,8],[CastMode.QUICK,CastType.SELF,TargetState.NONE],[CastMode.QUICK,CastType.SELF,TargetState.NONE],null,[CastMode.RELEASE,CastType.SELF,TargetState.NONE]], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Tracer*/         [[150,100],"other",[8,8],[CastMode.QUICK,CastType.DIRECTION,TargetState.NONE],[CastMode.QUICK,CastType.SELF,TargetState.NONE],null,[CastMode.RELEASE,CastType.DIRECTION,TargetState.NONE]], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          [],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],

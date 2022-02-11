@@ -34,12 +34,15 @@ def UI_Setup():
             hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
             
 
+#!define updateCooldown(button) eventPlayer.setAbilityCooldown(button,eventPlayer.ControlledRef.getAbilityCooldown(button))\
+    eventPlayer.setAbilityCharge(button,eventPlayer.ControlledRef.getAbilityCharge(button))\
+    eventPlayer.setAbilityResource(button,eventPlayer.ControlledRef.getAbilityResource(button))
 def UI_Process():
     @Name "S_UI_Process"
-    #!define updateCooldown(button) eventPlayer.setAbilityCooldown(button,eventPlayer.ControlledRef.getAbilityCooldown(button))
     for eventPlayer.CD_i in range(len(CD_Buttons)):
         if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.CD_i]):
             updateCooldown(CD_Buttons[eventPlayer.CD_i])
+            
             eventPlayer.setUltCharge(eventPlayer.ControlledRef.getUltCharge())
         else:
             if(eventPlayer.getAbilityCooldown(eventPlayer.AbilityVerify[2])<=1.1 and not eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
