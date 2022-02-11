@@ -16,9 +16,9 @@
 #!define clamp(val,min_,max_) max((min_),min((val),(max_)))
 
 enum CastMode:
-    CONFIRM,
-    QUICK,
-    RELEASE
+    CONFIRM=1,
+    QUICK=2,
+    RELEASE=3
 enum CastType:
     SELF,
     GROUND,
@@ -32,6 +32,7 @@ enum TargetState:
 enum AbilityState:
     NONE,
     PREP,
+    MOVETO,
     CAST,
     COMPLETE,
 
@@ -119,17 +120,18 @@ playervar Alive
 playervar CHero
 playervar CHero_Index
 playervar Owner
-playervar i
+playervar ArrivedAtM2P
 playervar Hidden
 playervar Team #1 or 2 
 playervar Target
 playervar AbilityVerify #[waiting for ability verify, cancelled]
 playervar Hero_Ability #casts ability from the perspective of the hero. e.g: ability1 is called with eventPlayer.ControlledRef as the event player with Ability Verify. It is then cast to the specific hero based on this variable
-playervar HA_temp 
+playervar HA_temp
+playervar MoveAbilityCancel #cancel planned cast on move
 playervar Ability_UI
 playervar TargetHandling
 playervar Temp_DistanceSort
-
+playervar ClearAllUI
 
 #Subroutine names
 

@@ -45,7 +45,7 @@ This project accomplishes this by:
     - [ ] Implement brutes/some jungle reward
 - [ ] Damage abstraction
 - [ ] Targeting system / basic attacks
-- [ ] Translate Hero abilities
+- [-] Translate Hero abilities
   - [ ] Implement mana
 - [ ] UI
 

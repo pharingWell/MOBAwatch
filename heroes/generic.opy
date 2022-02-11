@@ -11,14 +11,15 @@ if(activate[0]):\
     else:\
         eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
 #!define addUI(UI_id,DestroyAt) eventPlayer.Ability_UI[DestroyAt]=eventPlayer.Ability_UI[DestroyAt].concat(UI_id)
-#!define AreaHighlight(effect,radius) createEffect(eventPlayer.Owner,effect,Color.GREEN,updateEveryTick(eventPlayer.Owner.cursor),(radius),EffectReeval.VISIBILITY_POSITION_AND_RADIUS)/*vect(eventPlayer.getEyePosition().x+min(distance(eventPlayer.Owner.cursor,eventPlayer.getEyePosition()),9)*cos(atan2((eventPlayer.Owner.cursor.z-eventPlayer.getEyePosition().z),(eventPlayer.Owner.cursor.x-eventPlayer.getEyePosition().x))),0,eventPlayer.getPosition().z+min(distance(eventPlayer.Owner.cursor,eventPlayer.getPosition()),9)*sin(atan2((eventPlayer.Owner.cursor.z-eventPlayer.getEyePosition().z),(eventPlayer.Owner.cursor.x-eventPlayer.getEyePosition().x))))*/\
-addUI(getLastCreatedEntity(),AbilityState.CAST)
+#!define AreaHighlight(effect,radius) createEffect(eventPlayer.Owner,effect,Color.GREEN,updateEveryTick(eventPlayer.Owner.cursor),(radius),EffectReeval.VISIBILITY_POSITION_AND_RADIUS)\
+addUI(getLastCreatedEntity(),AbilityState.MOVETO)
 
 
 #!include "heroes/reaper.opy"
-
+#!include "heroes/tracer.opy"
 
 enum CastMode:
+    NULL,
     CONFIRM,
     QUICK,
     RELEASE
@@ -36,13 +37,12 @@ enum Activation:
     NONE,
     M1 #TODO: good way to handle activation
 rule "Heroes_Init":                                            #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-    #hp,mana,basic atk[range,dmg],ability[cast mode, cast type, [optional] range, [optional] target], 
-    createEffect(getAllPlayers(),Effect.RING,Color.WHITE,vect(0,0,0.01),0.75,EffectReeval.VISIBILITY)
+    #[hp,mana],other,basic atk[range,dmg],ability[cast mode, cast type, [optional] range, [optional] target], 
     
 
     HeroSpecs=[
-    /*Reaper*/         [250,-1,[2,30],[CastMode.QUICK,CastType.SELF,TargetState.NONE],[CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10],[CastMode.RELEASE,CastType.SELF,TargetState.NONE]], #
-    /*Tracer*/         [],
+    /*Reaper*/         [[250,-1],"other",[2,30],[CastMode.QUICK,CastType.SELF,TargetState.NONE],[CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10],null,[CastMode.RELEASE,CastType.SELF,TargetState.NONE]], #
+    /*Tracer*/         [[150,100],"other",[8,8],[CastMode.QUICK,CastType.SELF,TargetState.NONE],[CastMode.QUICK,CastType.SELF,TargetState.NONE],null,[CastMode.RELEASE,CastType.SELF,TargetState.NONE]], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          [],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
@@ -124,7 +124,6 @@ def OnHero():
     if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]): #Replace their UI with in-game progress bar
         eventPlayer.disallowButton(Button.ULTIMATE)
     
-    
 
 rule "Target":
     @Event eachPlayer
@@ -151,34 +150,38 @@ rule "Target":
             wait(0.1)
             eventPlayer.UICursorStyles[0]=Color.WHITE
 
-#!define cast(abilitynum,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][0]==CastMode.QUICK):\
-        startAction(abilitynum,eventPlayer.ControlledRef)\
-    elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][0]==CastMode.RELEASE):\
-        eventPlayer.ControlledRef.Hero_Ability=[AbilityState.PREP,abilitynum-2,0]\
-        waitUntil(eventPlayer.isHoldingButton(button)==false,99)\
-        startAction(abilitynum,eventPlayer.ControlledRef)\
-    elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][0]==CastMode.CONFIRM):\
-     eventPlayer.ControlledRef.Hero_Ability=[AbilityState.PREP,abilitynum-2,0]\
-        eventPlayer.AbilityVerify[2]=(button)\
-        eventPlayer.AbilityVerify[3]=abilitynum\
-        async(AbilityConfirm,AsyncBehavior.RESTART)\
-    else:\
-        eventPlayer.CPos=eventPlayer.cursor\
-        startAction(abilitynum,eventPlayer.ControlledRef)
+#!define cast(abilityplus2,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2]):/*if exists*/\
+        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0]==CastMode.QUICK):\
+            startAction(abilityplus2,eventPlayer.ControlledRef)\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0]==CastMode.RELEASE):\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityState.PREP,abilityplus2-2,0]\
+            waitUntil(eventPlayer.isHoldingButton(button)==false,99)\
+            startAction(abilityplus2,eventPlayer.ControlledRef)\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0]==CastMode.CONFIRM):\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityState.PREP,abilityplus2-2,0]\
+            eventPlayer.AbilityVerify[2]=(button)\
+            eventPlayer.AbilityVerify[3]=abilityplus2\
+            async(AbilityConfirm,AsyncBehavior.RESTART)\
+        else:\
+            eventPlayer.CPos=eventPlayer.cursor\
+            startAction(abilityplus2,eventPlayer.ControlledRef)\
+
 
 rule "Use Ability":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) or eventPlayer.isHoldingButton(Button.ABILITY_2) or eventPlayer.isHoldingButton(Button.ULTIMATE)
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) or eventPlayer.isHoldingButton(Button.ABILITY_2) or eventPlayer.isHoldingButton(Button.RELOAD) or eventPlayer.isHoldingButton(Button.ULTIMATE)
     if(eventPlayer.AbilityVerify[0]):
         eventPlayer.AbilityVerify=[false,true,null]
     if(eventPlayer.isHoldingButton(Button.ABILITY_1)):
         cast(3,Button.ABILITY_1)
     elif(eventPlayer.isHoldingButton(Button.ABILITY_2)):
         cast(4,Button.ABILITY_2)
+    elif(eventPlayer.isHoldingButton(Button.RELOAD)):
+        cast(5,Button.RELOAD)
     elif(eventPlayer.isHoldingButton(Button.ULTIMATE)):
-        cast(5,Button.ULTIMATE)
+        cast(6,Button.ULTIMATE)
 
 def AbilityConfirm():
     #this has to be async because of the waitUntil
@@ -199,10 +202,16 @@ def defaultEffectUI():
     if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[1]+2]!=[]): #does referenced ability number even exist
         if(HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][3]>0):
             createEffect(eventPlayer.Owner,Effect.RING,Color.YELLOW,updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][3], EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-            addUI(getLastCreatedEntity(),AbilityState.CAST)
+            addUI(getLastCreatedEntity(),AbilityState.MOVETO)
 
 def clearEffectUI():
-    for eventPlayer.HA_temp in range(len(eventPlayer.Ability_UI[eventPlayer.Hero_Ability[0]])):
-        destroyEffect(eventPlayer.Ability_UI[eventPlayer.Hero_Ability[0]][eventPlayer.HA_temp])
-    eventPlayer.Ability_UI[eventPlayer.Hero_Ability[0]]=[]
-    
+    if(eventPlayer.ClearAllUI):
+        eventPlayer.ClearAllUI=false
+        for eventPlayer.ArrivedAtM2P in range(len(eventPlayer.Ability_UI)):
+            for eventPlayer.HA_temp in range(len(eventPlayer.Ability_UI[eventPlayer.ArrivedAtM2P])):
+                destroyEffect(eventPlayer.Ability_UI[eventPlayer.ArrivedAtM2P][eventPlayer.HA_temp])
+        eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])]=[]
+    else:
+        for eventPlayer.HA_temp in range(len(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])])):
+            destroyEffect(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])][eventPlayer.HA_temp])
+        eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])]=[] 

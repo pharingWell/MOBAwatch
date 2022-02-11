@@ -126,9 +126,9 @@ rule "left":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
     if(eventPlayer.getTeam()==Team.1):
-        Players[0]=replace("null",Players[0].index(eventPlayer),Players[0])
+        Players[0]=replace(null,Players[0].index(eventPlayer),Players[0])
     else:
-        Players[1]=replace("null",Players[1].index(eventPlayer),Players[1])
+        Players[1]=replace(null,Players[1].index(eventPlayer),Players[1])
     Left()
     j=""
     for i in range(len(CPlayers[0])):
@@ -146,7 +146,7 @@ rule "On Player Left":
 def Left():
     for PlayerLeft_i in range(len(CPlayers[0])):
         if(CPlayers[0][PlayerLeft_i].Owner not in Players[0]):
-            CPlayers[0][PlayerLeft_i].Owner="null"
+            CPlayers[0][PlayerLeft_i].Owner=null
             startAction(8,CPlayers[0][PlayerLeft_i])
             #destroyDummy(Team.1,TeamSize+PlayerLeft_i)
             #CPlayers[0]=replace(CPlayers[0][PlayerLeft_i])
