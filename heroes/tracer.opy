@@ -9,7 +9,7 @@ rule "Hero - UI Prep":
     @Event eachPlayer
     @Hero tracer
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.PREP #show ui for
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         /*
@@ -35,7 +35,7 @@ rule "Hero - UI MoveTo":
     @Event eachPlayer
     @Hero tracer
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.MOVETO #show ui for
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.MOVETO #show ui for
     clearEffectUI()
     #does not pass to cast for obvious reasons
 
@@ -43,14 +43,18 @@ rule "Hero - Cast":
     @Event eachPlayer
     @Hero tracer
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.CAST #otherwise show ui
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         case 1:
-            eventPlayer.MovetoPos=(eventPlayer.getPosition())
+            
+            eventPlayer.startThrottleInDirection(eventPlayer.getFacingDirection(),1,Relativity.TO_WORLD,Throttle.REPLACE_EXISTING,ThrottleReeval.NONE)
             Ability(Button.ABILITY_1,false)
             wait(0.1)
             if(eventPlayer.Owner):
+                if(not eventPlayer.Owner.isHoldingButton(Button.SECONDARY_FIRE)):
+                    eventPlayer.stopThrottleInDirection()
+                eventPlayer.Owner.MovementGroundCursor=false
                 eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
             break
         case 2:
@@ -66,13 +70,12 @@ rule "Hero - Cast":
         case 4:
             Ability(Button.ULTIMATE,false)
             break
-    eventPlayer.Hero_Ability[0]=AbilityState.COMPLETE
 
 
 rule "Hero - Complete":
     @Event eachPlayer
     @Hero tracer
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.COMPLETE 
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()
-    eventPlayer.Hero_Ability[0]=AbilityState.NONE
+    eventPlayer.Hero_Ability[0]=AbilityStage.NONE

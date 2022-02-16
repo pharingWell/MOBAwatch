@@ -9,7 +9,7 @@ rule "Hero - UI Prep":
     @Event eachPlayer
     @Hero CHANGEME
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.PREP #show ui for
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         /*
@@ -35,7 +35,7 @@ rule "Hero - UI MoveTo":
     @Event eachPlayer
     @Hero CHANGEME
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.MOVETO #show ui for
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.MOVETO #show ui for
     clearEffectUI()
     #does not pass to cast for obvious reasons
 
@@ -43,7 +43,7 @@ rule "Hero - Cast":
     @Event eachPlayer
     @Hero CHANGEME
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.CAST #otherwise show ui
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         case 1: 
@@ -58,13 +58,12 @@ rule "Hero - Cast":
         case 4:
             Ability(Button.ULTIMATE,false)
             break
-    eventPlayer.Hero_Ability[0]=AbilityState.COMPLETE
 
 
 rule "Hero - Complete":
     @Event eachPlayer
     @Hero CHANGEME
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.COMPLETE 
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()
-    eventPlayer.Hero_Ability[0]=AbilityState.NONE
+    eventPlayer.Hero_Ability[0]=AbilityStage.NONE

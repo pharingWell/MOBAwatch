@@ -165,7 +165,7 @@ def Minions_Init():
     MinionTypesQualities=len(["icon", "name", "range", "damage","base_hp"])
     MinionTypes = ["ι","Minion",2,10,80,"ί","Mage",6,16,60,"ϊ","Seige",12,40,150,"ΐ","Brute",3,80,400]
     MWeapons = [["ο","ơ","δ","σ"],["Y","ϒ","ϔ", "Ẏ"]]
-    for i in range(0,2):
+    for i in range(0,2): 
         for k in range(48):
             MR_Temp=[(Temp_ID),M_id(i,k),MinionTypes[Temp_ID*MinionTypesQualities+4],0,false,null]
             if(len(MR_Temp)!=MinionQualities):

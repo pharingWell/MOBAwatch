@@ -2,17 +2,12 @@
 
 #This file is used for things regarding any hero and the player's input
 
-#!define Ability(button,activate) /*[activate?,activatebutton]*/\
-eventPlayer.forceButtonPress(button)\
-if(activate[0]):\
-    wait()\
-    if(len(activate)>1):\
-        eventPlayer.forceButtonPress(activate[1])\
-    else:\
-        eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
+#!define Ability(button,cost) eventPlayer.forceButtonPress(button)\
+AbilityProcess()
+
 #!define addUI(UI_id,DestroyAt) eventPlayer.Ability_UI[DestroyAt]=eventPlayer.Ability_UI[DestroyAt].concat(UI_id)
 #!define AreaHighlight(effect,radius) createEffect(eventPlayer.Owner,effect,Color.GREEN,updateEveryTick(eventPlayer.Owner.cursor),(radius),EffectReeval.VISIBILITY_POSITION_AND_RADIUS)\
-addUI(getLastCreatedEntity(),AbilityState.MOVETO)
+addUI(getLastCreatedEntity(),AbilityStage.MOVETO)
 
 
 #!include "heroes/reaper.opy"
@@ -20,14 +15,27 @@ addUI(getLastCreatedEntity(),AbilityState.MOVETO)
 
 
 
-rule "Heroes_Init":                                            #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-    #[hp,mana],other,basic atk[range,dmg],ability[cast mode, cast type, [optional] range, [optional] target], 
-    
+rule "Heroes_Init":                                            
+        /*
+        Ability Description:
+        Cast: 
+            Cast Mode dictates how and when the ability is cast, whether immediately after pressing the button, when releasing, or after an additional input to confirm
+            Cast Type dictates either where the ability will be cast (towards the cursor, at the cursor, or on the ground) or who the ability can be cast on. Who is only used for abilities with targets
+            These targets are defined by Target State
+        Cost: 
+            When using this ability, this value is checked in relation to the hero's given cost requirements. So far, this only means mana
+        Use:
+            This dictates how the ability acts, whether it is channeled, or if something else occurs, such as a delay before activating. Channel specifically means that it can be interrupted
+        Damage:
+            This shows how much damage the ability does with an optional rate per tick
+        */
 
+                        #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
+                        #[base hp,base mana],other,basic atk[range,damage,time between atks*10],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, delay, duration] damage[damage, rate]]
     HeroSpecs=[
-    /*Reaper*/         [[250,-1],"other",[2,30],[CastMode.QUICK,CastType.SELF,TargetState.NONE],[CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10],null,[CastMode.RELEASE,CastType.SELF,TargetState.NONE]], #
-    /*Tracer*/         [[150,100],"other",[8,8],[CastMode.QUICK,CastType.DIRECTION,TargetState.NONE],[CastMode.QUICK,CastType.SELF,TargetState.NONE],null,[CastMode.RELEASE,CastType.DIRECTION,TargetState.NONE]], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          [],
+    /*Reaper*/         [[250,0],"other",[2,3],[[CastMode.QUICK,CastType.SELF]],[[CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10]],null,[[CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3],[2.4,0.016]]], #
+    /*Tracer*/         [[150,0],"other",[5,0.5],[[CastMode.QUICK,CastType.DIRECTION]],[[CastMode.QUICK,CastType.SELF]],null,[[CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL,1,],[450]]], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Mercy*/          [[200,100],"other",[10,1],[[]],[[]],[[]],[[]]],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
     /*Reinhardt*/      [],
@@ -73,41 +81,38 @@ rule "Heroes_Init":                                            #range to end of 
 rule "Check Hero Change":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
+    @Condition eventPlayer.hasSpawned()
     eventPlayer.disableScoreboard()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
-    wait(0.1)
     ###INIT BOT###
-    if(eventPlayer.getCurrentHero()!=eventPlayer.CHero and Ready):
-        if(eventPlayer.getTeam()==Team.1):
-            eventPlayer.Team=1
-            eventPlayer().UIContainer=[Color.BLUE]
-        else:
-            eventPlayer.Team=2
-            eventPlayer().UIContainer=[Color.RED]
-        eventPlayer.Slot=eventPlayer.getSlot()
-        Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
-        if(eventPlayer.ControlledRef.CHero==0):
-            eventPlayer.CHero=eventPlayer.getCurrentHero()
-        else:
-            eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
-        attachControlled
-        CameraSetup()
-        OnHero()
-        UI_Setup()
-        async(UI_Process,AsyncBehavior.NOOP)
-        waitUntil(eventPlayer.cursor!=vect(0,0.01,0),1000)
-        wait(0.5)
-        eventPlayer.CamAttach=true
-        moveCameraWithPlayer()
-        eventPlayer.enableScoreboard()
+    if(eventPlayer.getTeam()==Team.1):
+        eventPlayer.Team=1
+        eventPlayer().UIContainer=[Color.BLUE]
     else:
-        top
+        eventPlayer.Team=2
+        eventPlayer().UIContainer=[Color.RED]
+    eventPlayer.Slot=eventPlayer.getSlot()
+    Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
+    if(eventPlayer.ControlledRef.CHero==0):
+        eventPlayer.CHero=eventPlayer.getCurrentHero()
+    else:
+        eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
+    attachControlled
+    CameraSetup()
+    OnHero()
+    UI_Setup()
+    async(UI_Process,AsyncBehavior.NOOP)
+    waitUntil(eventPlayer.cursor!=vect(0,0.01,0),1000)
+    wait(0.5)
+    eventPlayer.CamAttach=true
+    moveCameraWithPlayer()
+    eventPlayer.enableScoreboard()
 
 
 def OnHero():
     if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]): #Replace their UI with in-game progress bar
         eventPlayer.disallowButton(Button.ULTIMATE)
-    
+        eventPlayer.ControlledRef.Mana=[HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1],HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1],1]
 
 rule "Target":
     @Event eachPlayer
@@ -119,13 +124,10 @@ rule "Target":
         eventPlayer.AbilityVerify[0]=false
         eventPlayer.AbilityVerify[1]=false
     else:
-        for i in range(TeamSize):
-            if(i==0):
-                    eventPlayer.Temp_DistanceSort=vect(eventPlayer.ControlledRef.Team,CPlayers[eventPlayer.ControlledRef.Team-1][0].getPosition().x,CPlayers[eventPlayer.ControlledRef.Team-1][0].getPosition().z)
-            else:
-                eventPlayer.Temp_DistanceSort.append(vect(eventPlayer.ControlledRef.Team,CPlayers[eventPlayer.ControlledRef.Team-1][0].getPosition().x,CPlayers[eventPlayer.ControlledRef.Team-1][0].getPosition().z))
-        eventPlayer.Temp_DistanceSort=sorted(random.shuffle(NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48).concat(eventPlayer.Temp_DistanceSort)), lambda i: (abs(eventPlayer.cursor.x-i.y))**2 + (abs(eventPlayer.cursor.z-i.z))**2)
-        #sorted([vect((eventPlayer.cursor.x-i.y)**2 + (eventPlayer.cursor.z-i.z)**2,i.x,0) for i in random.shuffle(NonPlayer_Loc)], lambda elem: elem.x)
+        eventPlayer.Temp_DistanceSort=[]
+        for i in range(len(CPlayers[1-eventPlayer.ControlledRef.Team])):
+            eventPlayer.Temp_DistanceSort[i]=(vect(eventPlayer.ControlledRef.Team,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().x,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().z))
+        eventPlayer.Temp_DistanceSort=sorted(eventPlayer.Temp_DistanceSort.concat(random.shuffle(NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48))), lambda i: (abs(eventPlayer.cursor.x-i.y))**2 + (abs(eventPlayer.cursor.z-i.z))**2)
         if((abs(eventPlayer.cursor.x-eventPlayer.Temp_DistanceSort[0].y))**2 + (abs(eventPlayer.cursor.z-eventPlayer.Temp_DistanceSort[0].z))**2<0.866):
             eventPlayer.ControlledRef.Target=eventPlayer.Temp_DistanceSort[0]
             startAction(1,eventPlayer.ControlledRef)
@@ -136,17 +138,17 @@ rule "Target":
 
 #!define cast(abilityplus2,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2]):/*if exists*/\
-        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0]==CastMode.QUICK):\
+        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0][0]==CastMode.QUICK):\
             startAction(abilityplus2,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0]==CastMode.RELEASE):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityState.PREP,abilityplus2-2,0]\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0][0]==CastMode.RELEASE):\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilityplus2-2,0]\
             waitUntil(eventPlayer.isHoldingButton(button)==false,99)\
             startAction(abilityplus2,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0]==CastMode.CONFIRM):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityState.PREP,abilityplus2-2,0]\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0][0]==CastMode.CONFIRM):\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilityplus2-2,0]\
             eventPlayer.AbilityVerify[2]=(button)\
             eventPlayer.AbilityVerify[3]=abilityplus2\
-            async(AbilityConfirm,AsyncBehavior.RESTART)\
+            async(CastConfirm,AsyncBehavior.RESTART)\
         else:\
             eventPlayer.CPos=eventPlayer.cursor\
             startAction(abilityplus2,eventPlayer.ControlledRef)\
@@ -167,7 +169,7 @@ rule "Use Ability":
     elif(eventPlayer.isHoldingButton(Button.ULTIMATE)):
         cast(6,Button.ULTIMATE)
 
-def AbilityConfirm():
+def CastConfirm():
     #this has to be async because of the waitUntil
     eventPlayer.AbilityVerify[0]=true
     eventPlayer.AbilityVerify[1]=true
@@ -182,11 +184,15 @@ def AbilityConfirm():
         return /*ability cast cancelled*/
 
 
+
+
+
+
 def defaultEffectUI():
-    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[1]+2]!=[]): #does referenced ability number even exist
-        if(HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][3]>0):
-            createEffect(eventPlayer.Owner,Effect.RING,Color.YELLOW,updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][3], EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-            addUI(getLastCreatedEntity(),AbilityState.MOVETO)
+    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[1]+2]): #does referenced ability number even exist
+        if(HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][0][3]>0):
+            createEffect(eventPlayer.Owner,Effect.RING,Color.YELLOW,updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][0][3], EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+            addUI(getLastCreatedEntity(),AbilityStage.MOVETO)
 
 def clearEffectUI():
     if(eventPlayer.ClearAllUI):

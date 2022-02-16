@@ -14,6 +14,10 @@ rule "Mode":
     destroyHudText(eventPlayer.Temp_DistanceSort)
 
 def UI_Setup():
+    eventPlayer.setMaxAmmo(0,0)
+    eventPlayer.setMaxAmmo(1,0)
+    eventPlayer.setAmmo(0,0)
+    eventPlayer.setAmmo(1,0)
     CD_Buttons=[Button.ABILITY_1,Button.ABILITY_2,Button.JUMP,Button.CROUCH,Button.SECONDARY_FIRE]
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableGamemodeHud()
@@ -49,8 +53,10 @@ def UI_Process():
                 eventPlayer.setAbilityCooldown(CD_Buttons[eventPlayer.CD_i],1)
             elif(eventPlayer.getUltCharge()>98.5 and eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
                 eventPlayer.setUltCharge(99.9)
-    eventPlayer.setAmmo(0,1)
-    eventPlayer.setAmmo(1,1)
+
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1]>1):
+        eventPlayer.setMaxAmmo(0,eventPlayer.ControlledRef.Mana[1])
+        eventPlayer.setAmmo(0,eventPlayer.ControlledRef.Mana[1])
     wait(0.1)
     top
 
@@ -123,7 +129,6 @@ def CameraSetup():
     @Name "S_CameraSetup"
     eventPlayer.CamLoc = vect(0,15,0)
     eventPlayer.setFacing(vect(0,0,0),Relativity.TO_WORLD) #15,-4
-
     eventPlayer.startCamera(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z-0.01), vect(eventPlayer.CamLoc.x, 0, eventPlayer.CamLoc.z), 35)
     eventPlayer.ControlledRef.MovetoPos=vect(0,0,0)
     eventPlayer.setInvisibility(Invis.ALL)

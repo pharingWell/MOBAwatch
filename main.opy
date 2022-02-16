@@ -59,7 +59,8 @@ settings {
 rule "Set setting vars":
     Setting_CamSpeed=createWorkshopSetting(float[0.0:1.0],"Cosmetic","Unbound Camera Speed",0.5,23)
     Setting_Mode=createWorkshopSetting(enum["Open","Standalone"],"Significant","Open: Allow players to join mid-game, Standalone: Full match",1,63)
-
+    
+    
 rule "InitiateGame":
     @Condition len(CPlayers[0]) + len(CPlayers[1]) < len(getAllPlayers())
     if(getNumberOfSlots(Team.ALL)/2!=getNumberOfSlots(Team.1) or (not getAllPlayers()[0] == hostPlayer and not len(getAllPlayers()) == 1)):
@@ -67,9 +68,10 @@ rule "InitiateGame":
         returnToLobby()
     hudHeader(getAllPlayers(),w"Loading...",HudPosition.TOP,1,Color.RED,HudReeval.NONE)
     Ready=getLastCreatedText()-3
-    Minions=[[-1],[-1]]
-    CPlayers=[-1]
+    Minions=[[-1],[-1]] 
     Players=[-1]
+    createDummy(Hero.ROADHOG,Team.2,-1,vect(2,0,2),vect(0,0,0))
+    CPlayers[1]=[getLastCreatedEntity()]
     ScreenLimits = [1.3,1.40]
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
@@ -155,6 +157,5 @@ def Left():
             #destroyDummy(Team.2,TeamSize+PlayerLeft_i)
             #CPlayers[1]=CPlayers[0].exclude(CPlayers[1][PlayerLeft_i])
     disableInspector()
-
 
 

@@ -10,7 +10,7 @@ rule "Hero - UI Prep":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.PREP #show ui for
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         /*
@@ -38,14 +38,14 @@ rule "Hero - UI MoveTo":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.MOVETO #show ui for
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.MOVETO #show ui for
     clearEffectUI()
 
 rule "Hero - UI Prep":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.PREP #show ui for
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         /*
@@ -73,14 +73,16 @@ rule "Hero - Cast":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.CAST #otherwise show ui
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         case 1: 
             Ability(Button.ABILITY_1,false)
             break
         case 2:
-            Ability(Button.ABILITY_2,true)
+            Ability(Button.ABILITY_2,false)
+            wait()
+            eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
             wait(1) #teleport camera to player after 1 sec
             if(eventPlayer.Owner and eventPlayer.isUsingAbility2()):
                 eventPlayer.Owner.CamLoc=vect(eventPlayer.CPos.x,eventPlayer.Owner.CamLoc.y,eventPlayer.CPos.z)
@@ -90,17 +92,16 @@ rule "Hero - Cast":
             wait()
             if(eventPlayer.isUsingUltimate()):
 
-                createEffect(eventPlayer.Owner,Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-                addUI(getLastCreatedEntity(),AbilityState.COMPLETE)
+                createEffect(getAllPlayers(),Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+                addUI(getLastCreatedEntity(),AbilityStage.COMPLETE)
                 wait(3.1)
             break
-    eventPlayer.Hero_Ability[0]=AbilityState.COMPLETE
 
 
 rule "Hero - Complete":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityState.COMPLETE 
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()
-    eventPlayer.Hero_Ability[0]=AbilityState.NONE
+    eventPlayer.Hero_Ability[0]=AbilityStage.NONE

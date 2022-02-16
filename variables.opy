@@ -31,7 +31,10 @@ enum TargetState:
     SELF,
     ALLY,
     ENEMY,
-enum AbilityState:
+enum AbilityType:
+    NORMAL,
+    CHANNEL,
+enum AbilityStage:
     NONE,
     PREP,
     MOVETO,
@@ -94,7 +97,6 @@ globalvar PlayerLeft_i
 globalvar HeroSpecs
 
 
-
 #settings
 
 globalvar Setting_CamSpeed
@@ -118,12 +120,14 @@ playervar UICursorStyles #P
 playervar CD_i
 playervar Actions
 playervar ControlledSlot
+playervar Mana #current,max,regen
 playervar CPos
 playervar MovetoPos
 playervar Alive
 playervar CHero
 playervar CHero_Index
 playervar Owner
+playervar AbilityUse #passes vars to Ability_Used function
 playervar ArrivedAtM2P
 playervar Hidden
 playervar Team #1 or 2 
@@ -136,7 +140,7 @@ playervar Ability_UI
 playervar TargetHandling
 playervar Temp_DistanceSort
 playervar ClearAllUI
-
+playervar UltCD
 #Subroutine names
 
 subroutine CameraSetup 
@@ -145,7 +149,7 @@ subroutine UI_Setup
 subroutine moveCameraWithPlayer
 subroutine teleportCamera
 subroutine chaseCursorValues
-subroutine AbilityConfirm 
+subroutine CastConfirm 
 subroutine OnHero 
 subroutine Minions_Main
 subroutine Minions_Init
@@ -157,4 +161,5 @@ subroutine PrintMinions
 subroutine Left
 subroutine defaultEffectUI
 subroutine clearEffectUI
-
+subroutine AbilityUsedFunc
+subroutine AbilityProcess
