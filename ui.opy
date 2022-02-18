@@ -138,7 +138,7 @@ def CameraSetup():
 rule "Camera Bounds":
     #!define Hori atan2(eventPlayer.getFacingDirection().x,eventPlayer.getFacingDirection().z)
     #!define Vert asin(eventPlayer.getFacingDirection().y)
-    #!define HoriLimit (ScreenLimits[0])+eventPlayer.eyeAxis[1]*0.1*eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1])
+    #!define HoriLimit ((ScreenLimits[0])+eventPlayer.eyeAxis[1]*0.1*eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))
     #!define VertLimit ScreenLimits[1]
     #!define HoriBounds (abs(eventPlayer.eyeAxis[0])<HoriLimit)
     #!define VertBounds (abs(eventPlayer.eyeAxis[1]<VertLimit))

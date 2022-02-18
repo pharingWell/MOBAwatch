@@ -91,9 +91,10 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
 def AbilityProcess():
     if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][1][0]):
         eventPlayer.Mana[0]-=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][1][0]
-    if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][2][1]):
-        wait(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][2][1])
-        
+    if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][2][2]):
+        wait(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][2][2])
+    eventPlayer.startForcingButton(eventPlayer.AbilityUse[0])
+
 ### 0 ###
 rule "MoveToCPos":
     @Event eachPlayer
@@ -114,14 +115,9 @@ rule "Target":
     @Condition eventPlayer.isDummy()
     ifAction(1)
     #
-    eventPlayer.startFacing(vectorTowards(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y,eventPlayer.getEyePosition().z),vect(eventPlayer.Target.y,eventPlayer.getEyePosition().y,eventPlayer.Target.z)),700,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
-    if(distance(eventPlayer,eventPlayer.Owner.cursor)>HeroSpecs[eventPlayer.CHero_Index][2][0]):
-        eventPlayer.MovetoPos=directionTowards(eventPlayer.Owner.cursor,eventPlayer)*HeroSpecs[eventPlayer.CHero_Index][2]+eventPlayer.Owner.cursor
-        startAction(0,eventPlayer)
-        eventPlayer.ArrivedAtM2P=1
-        waitUntil(eventPlayer.ArrivedAtM2P==-1,99)
-        if(eventPlayer.ArrivedAtM2P==-1):
-            startAction(2,eventPlayer)
+
+
+    #getClosestPlayer(eventPlayer.CPos, )
 
 ### 2 ###
 rule "Use Basic Attack":
@@ -129,7 +125,10 @@ rule "Use Basic Attack":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(2)
-                   
+    while(eventPlayer.Target):
+        if(eventPlayer.Target<1):
+            #if(distance(eventPlayer.getPosition(),CPlayers[]))
+  
 
 ### 3 ###
 rule "Use Ability 1":

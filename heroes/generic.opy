@@ -2,7 +2,7 @@
 
 #This file is used for things regarding any hero and the player's input
 
-#!define Ability(button,cost) eventPlayer.forceButtonPress(button)\
+#!define Ability(button,cost) eventPlayer.AbilityUse[0]=button\
 AbilityProcess()
 
 #!define addUI(UI_id,DestroyAt) eventPlayer.Ability_UI[DestroyAt]=eventPlayer.Ability_UI[DestroyAt].concat(UI_id)
@@ -31,11 +31,11 @@ rule "Heroes_Init":
         */
 
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-                        #[base hp,base mana],other,basic atk[range,damage,time between atks*10],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, delay, duration] damage[damage, rate]]
-    HeroSpecs=[
-    /*Reaper*/         [[250,0],"other",[2,3],[[CastMode.QUICK,CastType.SELF]],[[CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10]],null,[[CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3],[2.4,0.016]]], #
-    /*Tracer*/         [[150,0],"other",[5,0.5],[[CastMode.QUICK,CastType.DIRECTION]],[[CastMode.QUICK,CastType.SELF]],null,[[CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL,1,],[450]]], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          [[200,100],"other",[10,1],[[]],[[]],[[]],[[]]],
+                        #[base hp,base mana],other,basic atk[range,damage,time between atks*10],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
+    HeroSpecs=[        #0        1       2       3  0                               4  0                                                       5    6  0                                1    2                         3
+    /*Reaper*/         [[250,0],"other",[2,30,3],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3],[2.4,0.016]  ]], #
+    /*Tracer*/         [[150,0],"other",[5,8,0.5],[[CastMode.QUICK,CastType.DIRECTION]],[[CastMode.QUICK,CastType.SELF]],null,[[CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL,1,],[450]]], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Mercy*/          [[200,100],"other",[10,12,1],[[]],[[]],[[]],[[]]],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
     /*Reinhardt*/      [],
@@ -77,12 +77,17 @@ rule "Heroes_Init":
     eventPlayer.ControlledRef.CHero=eventPlayer.CHero\
     eventPlayer.ControlledRef.CHero_Index=getAllHeroes().index(eventPlayer.ControlledRef.CHero)\
     eventPlayer.ControlledRef.startForcingHero(eventPlayer.ControlledRef.CHero)\
+    eventPlayer.ControlledRef.setDamageDealt(0)\
+    eventPlayer.ControlledRef.setDamageReceived(0)\
+    eventPlayer.setDamageDealt(0)\
+    eventPlayer.setDamageReceived(0)\
 
 rule "Check Hero Change":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()
     eventPlayer.disableScoreboard()
+    eventPlayer.startForcingHero( Hero.REAPER)
     eventPlayer.CHero = eventPlayer.getCurrentHero()
     ###INIT BOT###
     if(eventPlayer.getTeam()==Team.1):

@@ -72,12 +72,14 @@ rule "InitiateGame":
     Players=[-1]
     createDummy(Hero.ROADHOG,Team.2,-1,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]
+    createDummy(Hero.TORBJORN,Team.2,-1,vect(-2,0,2),vect(0,0,0))
+    CPlayers[1]=[CPlayers[1][0],getLastCreatedEntity()]
     ScreenLimits = [1.3,1.40]
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
     for i in range(TeamSize):
         if(i==0):
-            Players[0]=["null"]
+            Players[0]=["null"] 
             Players[1]=["null"]
         else:
             Players[0].append(["null"])

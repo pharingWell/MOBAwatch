@@ -72,7 +72,7 @@ rule "Hero - UI Prep":
 rule "Hero - Cast":
     @Event eachPlayer
     @Hero reaper
-    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.isDummy() 
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
@@ -91,10 +91,9 @@ rule "Hero - Cast":
             Ability(Button.ULTIMATE,false)
             wait()
             if(eventPlayer.isUsingUltimate()):
-
                 createEffect(getAllPlayers(),Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
                 addUI(getLastCreatedEntity(),AbilityStage.COMPLETE)
-                wait(3.1)
+                wait(HeroSpecs[0][6][2][1]+0.01)
             break
 
 
