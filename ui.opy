@@ -21,8 +21,7 @@ def UI_Setup():
     eventPlayer.setMaxAmmo(1,0)
     eventPlayer.setAmmo(0,0)
     eventPlayer.setAmmo(1,0)
-    eventPlayer.addHealthPool(Health.NORMAL,(eventPlayer.ControlledRef.Health[0])+eventPlayer.ControlledRef.Health[2][0]*(eventPlayer.ControlledRef.Health[2][0]<0)-2,true,true)
-    eventPlayer.addHealthPool(Health.ARMOR,0-eventPlayer.ControlledRef.Health[2][0] if eventPlayer.ControlledRef.Health[2][0]<0 else 1,true,true)
+    eventPlayer.addHealthPool(Health.ARMOR,abs(eventPlayer.ControlledRef.Health[2][0]) if eventPlayer.ControlledRef.Health[2][0]<0 else 1,true,true)
     eventPlayer.addHealthPool(Health.SHIELDS,eventPlayer.ControlledRef.Health[2][0] if eventPlayer.ControlledRef.Health[2][0]>0 else 1,true,true)
     CD_Buttons=[Button.ABILITY_1,Button.ABILITY_2,Button.JUMP,Button.CROUCH,Button.SECONDARY_FIRE]
     eventPlayer.disableGamemodeInWorldUi()
@@ -55,10 +54,8 @@ def UI_Setup():
     eventPlayer.setAbilityResource(button,eventPlayer.ControlledRef.getAbilityResource(button))
 def UI_Process():
     @Name "S_UI_Process"
-    #eventPlayer.setHealth(
-        
-    eventPlayer.setMaxHealth(40)
-    print(evalOnce(100*(eventPlayer.ControlledRef.Health[1])/eventPlayer.getMaxHealth()))
+    eventPlayer.setMaxHealth(updateEveryTick((eventPlayer.ControlledRef.Health[1]-abs(eventPlayer.ControlledRef.Health[2][0]))/eventPlayer.getMaxHealth()*100))
+    #eventPlayer.setHealth(updateEveryTick((eventPlayer.ControlledRef.Health[0])+eventPlayer.ControlledRef.Health[2][0]))
     for eventPlayer.CD_i in range(len(CD_Buttons)):
         if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.CD_i]):
             updateCooldown(CD_Buttons[eventPlayer.CD_i])
@@ -76,8 +73,18 @@ def UI_Process():
     wait(0.1)
     top
 
-
-
+rule "dmg/heal OT": 
+    @Event eachPlayer
+    @Condition Ready == true
+    @Condition not eventPlayer.isDummy()
+    wait(0.1)
+    if(eventPlayer.ControlledRef.Health[2][2]>0):
+        eventPlayer.ControlledRef.Health[2]=[eventPlayer.ControlledRef.Health[2][1]*(eventPlayer.ControlledRef.Health[2][2]-0.1)*eventPlayer.ControlledRef.Health[2][0]/abs(eventPlayer.ControlledRef.Health[2][0]),eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][2]-0.1]
+        if(eventPlayer.ControlledRef.Health[0]+eventPlayer.ControlledRef.Health[2][1]/10*eventPlayer.ControlledRef.Health[2][0]/abs(eventPlayer.ControlledRef.Health[2][0])<eventPlayer.ControlledRef.Health[1]):
+            eventPlayer.ControlledRef.Health[0]+=eventPlayer.ControlledRef.Health[2][1]/10*eventPlayer.ControlledRef.Health[2][0]/abs(eventPlayer.ControlledRef.Health[2][0])
+    else:
+        eventPlayer.ControlledRef.Health[2]=null
+    top
 rule "Cursor": 
     @Event eachPlayer
     @Condition Ready == true
