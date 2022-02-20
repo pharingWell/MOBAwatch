@@ -91,8 +91,6 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
 def AbilityProcess():
     if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][1][0]):
         eventPlayer.Mana[0]-=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][1][0]
-    if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][2][2]):
-        wait(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][2][2])
     eventPlayer.startForcingButton(eventPlayer.AbilityUse[0])
 
 ### 0 ###

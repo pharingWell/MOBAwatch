@@ -120,7 +120,9 @@ playervar UICursorStyles #P
 playervar CD_i
 playervar Actions
 playervar ControlledSlot
-playervar Mana #current,max,regen
+playervar Level
+playervar Health #current,max,[regen/dots,rate,duration], normalized
+playervar Mana #current,max
 playervar CPos
 playervar MovetoPos
 playervar Alive
@@ -141,6 +143,9 @@ playervar TargetHandling
 playervar Temp_DistanceSort
 playervar ClearAllUI
 playervar UltCD
+playervar DamageHandler
+playervar TimerHandler 
+playervar Disabled #[m1,m2,abilities[0]]
 #Subroutine names
 
 subroutine CameraSetup 

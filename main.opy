@@ -38,8 +38,6 @@ settings {
     }
 }
 
-
-
 #Activated extensions
 
 #!extension beamSounds
@@ -70,10 +68,14 @@ rule "InitiateGame":
     Ready=getLastCreatedText()-3
     Minions=[[-1],[-1]] 
     Players=[-1]
+    /*
     createDummy(Hero.ROADHOG,Team.2,-1,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]
+    getLastCreatedEntity().setDamageReceived(0)
     createDummy(Hero.TORBJORN,Team.2,-1,vect(-2,0,2),vect(0,0,0))
+    getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],getLastCreatedEntity()]
+    print(CPlayers[1][0].getHealth())*/
     ScreenLimits = [1.3,1.40]
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
@@ -87,7 +89,7 @@ rule "InitiateGame":
     Minions_Init()
     async(HealthHandle(),AsyncBehavior.NOOP)
     setMatchTime(0) #change to 15 later
-    wait(15)
+    #wait(15)
     pauseMatchTime()
     wait(1)
     disableAnnouncer()

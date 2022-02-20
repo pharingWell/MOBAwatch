@@ -2,6 +2,7 @@
 
 #This is used for any generic (non-hero specific) UI
 
+
 rule "Mode":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
@@ -9,19 +10,30 @@ rule "Mode":
         hudSubtext(getAllPlayers(),"MOBAwatch: Standalone",HudPosition.TOP,0,Color.ORANGE,HudReeval.VISIBILITY)
     else:
         hudSubtext(getAllPlayers(),"MOBAwatch: Open",HudPosition.TOP,0,Color.VIOLET,HudReeval.VISIBILITY)
+
     eventPlayer.Temp_DistanceSort = getLastCreatedText()
     wait(15)
     destroyHudText(eventPlayer.Temp_DistanceSort)
-
+    
 def UI_Setup():
+
     eventPlayer.setMaxAmmo(0,0)
     eventPlayer.setMaxAmmo(1,0)
     eventPlayer.setAmmo(0,0)
     eventPlayer.setAmmo(1,0)
+    eventPlayer.addHealthPool(Health.NORMAL,(eventPlayer.ControlledRef.Health[0])+eventPlayer.ControlledRef.Health[2][0]*(eventPlayer.ControlledRef.Health[2][0]<0)-2,true,true)
+    eventPlayer.addHealthPool(Health.ARMOR,0-eventPlayer.ControlledRef.Health[2][0] if eventPlayer.ControlledRef.Health[2][0]<0 else 1,true,true)
+    eventPlayer.addHealthPool(Health.SHIELDS,eventPlayer.ControlledRef.Health[2][0] if eventPlayer.ControlledRef.Health[2][0]>0 else 1,true,true)
     CD_Buttons=[Button.ABILITY_1,Button.ABILITY_2,Button.JUMP,Button.CROUCH,Button.SECONDARY_FIRE]
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableGamemodeHud()
-    createInWorldText(eventPlayer,"<•>",updateEveryTick(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y+0.0,eventPlayer.ControlledRef.getEyePosition().z+0.2)),1.5*(not eventPlayer.ControlledRef.Hidden),Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,Color.RED,SpecVisibility.NEVER)
+    print("{}, {}, {}".format(min(5,20*max(0,eventPlayer.ControlledRef.Health[3])),20*max(0,eventPlayer.ControlledRef.Health[3]),eventPlayer.ControlledRef.Health[3]))
+    createInWorldText(eventPlayer if eventPlayer.ControlledRef.isAlive() else null,"{}\n|{}|{}|{}|{}|".format("         <•>" if not eventPlayer.ControlledRef.Hidden else "",
+    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3])),4)),
+    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25)),4)),
+    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5)),4)),
+    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75)),4))
+    ),updateEveryTick(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y+0.0,eventPlayer.ControlledRef.getEyePosition().z+0.2)),1.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer) else Color.TEAM_1 ,SpecVisibility.NEVER)
     eventPlayer.disallowButton(Button.PRIMARY_FIRE)
     eventPlayer.disallowButton(Button.SECONDARY_FIRE)
     eventPlayer.disallowButton(Button.ABILITY_1)
@@ -43,6 +55,10 @@ def UI_Setup():
     eventPlayer.setAbilityResource(button,eventPlayer.ControlledRef.getAbilityResource(button))
 def UI_Process():
     @Name "S_UI_Process"
+    #eventPlayer.setHealth(
+        
+    eventPlayer.setMaxHealth(40)
+    print(evalOnce(100*(eventPlayer.ControlledRef.Health[1])/eventPlayer.getMaxHealth()))
     for eventPlayer.CD_i in range(len(CD_Buttons)):
         if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.CD_i]):
             updateCooldown(CD_Buttons[eventPlayer.CD_i])
@@ -53,10 +69,10 @@ def UI_Process():
                 eventPlayer.setAbilityCooldown(CD_Buttons[eventPlayer.CD_i],1)
             elif(eventPlayer.getUltCharge()>98.5 and eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
                 eventPlayer.setUltCharge(99.9)
-
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1]>1):
         eventPlayer.setMaxAmmo(0,eventPlayer.ControlledRef.Mana[1])
         eventPlayer.setAmmo(0,eventPlayer.ControlledRef.Mana[1])
+    eventPlayer.ControlledRef.Health[3]=eventPlayer.ControlledRef.Health[0]/eventPlayer.ControlledRef.Health[1] #sets normalized health
     wait(0.1)
     top
 

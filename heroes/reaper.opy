@@ -93,9 +93,13 @@ rule "Hero - Cast":
             if(eventPlayer.isUsingUltimate()):
                 createEffect(getAllPlayers(),Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
                 addUI(getLastCreatedEntity(),AbilityStage.COMPLETE)
-                wait(HeroSpecs[0][6][2][1]+0.01)
+                eventPlayer.TimerHandler=evalOnce(getTotalTimeElapsed())+HeroSpecs[0][6][2][1]
+                while(eventPlayer.TimerHandler > getTotalTimeElapsed()):
+                    wait(HeroSpecs[0][6][3][1])
+                    damageInRadius(8,eventPlayer.getPosition(),HeroSpecs[0][6][3][0])
+                    
             break
-
+    eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
 
 rule "Hero - Complete":
     @Event eachPlayer
