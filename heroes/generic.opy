@@ -112,11 +112,12 @@ rule "Check Hero Change":
     CameraSetup()
     OnHero()
     UI_Setup()
-    async(UI_Process,AsyncBehavior.NOOP)
     waitUntil(eventPlayer.cursor!=vect(0,0.01,0),1000)
     wait(0.5)
     eventPlayer.CamAttach=true
     moveCameraWithPlayer()
+    wait()
+    async(UI_Process,AsyncBehavior.NOOP)
     eventPlayer.enableScoreboard()
 
 
@@ -124,10 +125,11 @@ def OnHero():
     if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]): #Replace their UI with in-game progress bar
         eventPlayer.disallowButton(Button.ULTIMATE)
     eventPlayer.ControlledRef.Mana=[HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1],HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1],1]
-    #eventPlayer.ControlledRef.Health=[HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0],HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0],1]
-    eventPlayer.ControlledRef.Health=[51,100,[-10,2,10]]
+    eventPlayer.ControlledRef.Health=[HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0],HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0],1]
     print("{},{},[{},{},{}]".format(eventPlayer.ControlledRef.Health[0],eventPlayer.ControlledRef.Health[1],eventPlayer.ControlledRef.Health[2][0],eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][2]))
     eventPlayer.ControlledRef.Level=1
+
+
 rule "Target":
     @Event eachPlayer
     @Condition Ready==true

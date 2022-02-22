@@ -121,7 +121,7 @@ playervar CD_i
 playervar Actions
 playervar ControlledSlot
 playervar Level
-playervar Health #current,max,[regen/dots,rate,duration], normalized
+playervar Health #current,max,[regen/dots,duration,rate], normalized
 playervar Mana #current,max
 playervar CPos
 playervar MovetoPos

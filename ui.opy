@@ -21,17 +21,18 @@ def UI_Setup():
     eventPlayer.setMaxAmmo(1,0)
     eventPlayer.setAmmo(0,0)
     eventPlayer.setAmmo(1,0)
-    eventPlayer.addHealthPool(Health.ARMOR,abs(eventPlayer.ControlledRef.Health[2][0]) if eventPlayer.ControlledRef.Health[2][0]<0 else 1,true,true)
-    eventPlayer.addHealthPool(Health.SHIELDS,eventPlayer.ControlledRef.Health[2][0] if eventPlayer.ControlledRef.Health[2][0]>0 else 1,true,true)
+    eventPlayer.setHealth(3)
+    eventPlayer.ControlledRef.Hidden=true
+    eventPlayer.addHealthPool(Health.ARMOR,max(0,min(eventPlayer.ControlledRef.Health[1]-4,(abs(eventPlayer.ControlledRef.Health[2][0]) if eventPlayer.ControlledRef.Health[2][0]<0 else 1)+(eventPlayer.ControlledRef.Health[1]-eventPlayer.ControlledRef.Health[0]))),true,true)
+    eventPlayer.addHealthPool(Health.NORMAL,max(0,-3+eventPlayer.ControlledRef.Health[0]-(abs(eventPlayer.ControlledRef.Health[2][0]) if eventPlayer.ControlledRef.Health[2][0]<0 else 1)),true,true)
     CD_Buttons=[Button.ABILITY_1,Button.ABILITY_2,Button.JUMP,Button.CROUCH,Button.SECONDARY_FIRE]
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableGamemodeHud()
-    print("{}, {}, {}".format(min(5,20*max(0,eventPlayer.ControlledRef.Health[3])),20*max(0,eventPlayer.ControlledRef.Health[3]),eventPlayer.ControlledRef.Health[3]))
-    createInWorldText(eventPlayer if eventPlayer.ControlledRef.isAlive() else null,"{}\n|{}|{}|{}|{}|".format("         <•>" if not eventPlayer.ControlledRef.Hidden else "",
-    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3])),4)),
-    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25)),4)),
-    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5)),4)),
-    "{0}{1}".format(__substring__("IIIII",0,min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75))),__substring__(".....",min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75)),4))
+    createInWorldText(getAllPlayers() if eventPlayer.ControlledRef.isAlive() else null,"{}\n|{}|{}|{}|{}|".format("            <•>" if not eventPlayer.ControlledRef.Hidden else " ", 
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]))), __substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<0.25), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>0)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3])),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25))),__substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<0.5 and eventPlayer.ControlledRef.Health[3]>=0.25), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>=0.25)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25)),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5))), __substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<0.75 and eventPlayer.ControlledRef.Health[3]>=0.5), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>=0.5)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5)),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75))),__substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<1 and eventPlayer.ControlledRef.Health[3]>=0.75), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>=0.75)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75)),5))
     ),updateEveryTick(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y+0.0,eventPlayer.ControlledRef.getEyePosition().z+0.2)),1.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer) else Color.TEAM_1 ,SpecVisibility.NEVER)
     eventPlayer.disallowButton(Button.PRIMARY_FIRE)
     eventPlayer.disallowButton(Button.SECONDARY_FIRE)
@@ -47,15 +48,13 @@ def UI_Setup():
         else:
             hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),Players[1][evalOnce(i)].getHealth(),null,HudPosition.LEFT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
             hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
-            
-
 #!define updateCooldown(button) eventPlayer.setAbilityCooldown(button,eventPlayer.ControlledRef.getAbilityCooldown(button))\
     eventPlayer.setAbilityCharge(button,eventPlayer.ControlledRef.getAbilityCharge(button))\
     eventPlayer.setAbilityResource(button,eventPlayer.ControlledRef.getAbilityResource(button))
 def UI_Process():
     @Name "S_UI_Process"
-    eventPlayer.setMaxHealth(updateEveryTick((eventPlayer.ControlledRef.Health[1]-abs(eventPlayer.ControlledRef.Health[2][0]))/eventPlayer.getMaxHealth()*100))
-    #eventPlayer.setHealth(updateEveryTick((eventPlayer.ControlledRef.Health[0])+eventPlayer.ControlledRef.Health[2][0]))
+    eventPlayer.setMaxHealth(3*(100/HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0]))
+    eventPlayer.setHealth(eventPlayer.ControlledRef.Health[0])
     for eventPlayer.CD_i in range(len(CD_Buttons)):
         if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.CD_i]):
             updateCooldown(CD_Buttons[eventPlayer.CD_i])
@@ -73,15 +72,18 @@ def UI_Process():
     wait(0.1)
     top
 
-rule "dmg/heal OT": 
+rule "dmg/heal OT": #move this to controlled, TODO: fix UI health bar
     @Event eachPlayer
     @Condition Ready == true
     @Condition not eventPlayer.isDummy()
-    wait(0.1)
-    if(eventPlayer.ControlledRef.Health[2][2]>0):
-        eventPlayer.ControlledRef.Health[2]=[eventPlayer.ControlledRef.Health[2][1]*(eventPlayer.ControlledRef.Health[2][2]-0.1)*eventPlayer.ControlledRef.Health[2][0]/abs(eventPlayer.ControlledRef.Health[2][0]),eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][2]-0.1]
-        if(eventPlayer.ControlledRef.Health[0]+eventPlayer.ControlledRef.Health[2][1]/10*eventPlayer.ControlledRef.Health[2][0]/abs(eventPlayer.ControlledRef.Health[2][0])<eventPlayer.ControlledRef.Health[1]):
-            eventPlayer.ControlledRef.Health[0]+=eventPlayer.ControlledRef.Health[2][1]/10*eventPlayer.ControlledRef.Health[2][0]/abs(eventPlayer.ControlledRef.Health[2][0])
+    wait(0.2)
+    if(eventPlayer.ControlledRef.Health[2][1]>0):
+        if(not eventPlayer.ControlledRef.Health[2][2]):
+            eventPlayer.ControlledRef.Health[2]=[eventPlayer.ControlledRef.Health[2][0],eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][0]/eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][0]]
+        eventPlayer.ControlledRef.Health[2]=[eventPlayer.ControlledRef.Health[2][2]*(eventPlayer.ControlledRef.Health[2][1]-0.2),eventPlayer.ControlledRef.Health[2][1]-0.2,eventPlayer.ControlledRef.Health[2][2],eventPlayer.ControlledRef.Health[2][3]] #].concat(eventPlayer.ControlledRef.Health[2].slice(3,999))
+        if(eventPlayer.ControlledRef.Health[0]+eventPlayer.ControlledRef.Health[2][2]/5<eventPlayer.ControlledRef.Health[1]):
+            eventPlayer.ControlledRef.Health[0]+=(eventPlayer.ControlledRef.Health[2][2]/5)
+
     else:
         eventPlayer.ControlledRef.Health[2]=null
     top

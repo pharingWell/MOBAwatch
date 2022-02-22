@@ -126,9 +126,11 @@ rule "Minions Tick":
     Minion_Wave()
     top
 
-
-
-rule "left":
+rule "start dot":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+    eventPlayer.ControlledRef.Health[2]=[-250,5]
+/*rule "left":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
     if(eventPlayer.getTeam()==Team.1):
@@ -143,7 +145,7 @@ rule "left":
     for i in range(len(CPlayers[1])):
         j=("{0},{1}".format(j,CPlayers[1][i]))
     println(j)
-    
+*/
 rule "On Player Left":
     @Event playerLeft
     @Condition not eventPlayer.isDummy()

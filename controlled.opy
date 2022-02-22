@@ -150,7 +150,7 @@ rule "Use Secondary (e)":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(5)
-    Ability_Used(Button.SECONDARY_FIRE,4)
+    Ability_Used(Button.SECONDARY_FIRE,3)
 
 ### 6 ###
 rule "Use Ult":
@@ -159,6 +159,27 @@ rule "Use Ult":
     @Condition eventPlayer.isDummy()
     ifAction(6)
     Ability_Used(Button.ULTIMATE,4)         
+
+### 7 ###
+rule "(Re)spawn":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.hasSpawned()
+    @Condition eventPlayer.isAlive()
+    print("Spawned")
+
+### Death ###
+rule "Is Dead":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.Health[0]<=0
+    eventPlayer.setRespawnTime(eventPlayer.Level*2+4)
+    eventPlayer.setDamageReceived(1)
+    kill(eventPlayer,null)#fix this
+    eventPlayer.setDamageReceived(0)
+
 
 #!include "ai.opy"          
 

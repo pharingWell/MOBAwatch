@@ -4,7 +4,7 @@ rule "Hero - Init":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
-    print("{}, {}".format(eventPlayer.Hero_Ability[0],eventPlayer.Hero_Ability[1]))
+    #print("{}, {}".format(eventPlayer.Hero_Ability[0],eventPlayer.Hero_Ability[1]))
     
 rule "Hero - UI Prep":
     @Event eachPlayer
