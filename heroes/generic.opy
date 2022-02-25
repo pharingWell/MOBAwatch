@@ -38,11 +38,11 @@ rule "Heroes_Init":
         */
 
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-                        #[base hp,base mana],levelrate[[hp,mana],dmg[basic,1,2,3,4],],basic atk[range,damage,time between atks*10],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
-    HeroSpecs=[        #0       1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,0],[],[2,30,3],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
-    /*Tracer*/         [[150,0],[],[5,8,0.5],[[CastMode.QUICK,CastType.DIRECTION]],[[CastMode.QUICK,CastType.SELF]],null,[[CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL]]], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          [[200,100],[],[10,12,1],[[]],[[]],[[]],[[]]],
+                        #[base hp,base mana,damage type, [base armor]],levelrate[[hp,mana],basic atk[range,damage,time between atks*10],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
+    HeroSpecs=[        #0                                1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
+    /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,0,0]],[],[2,30,3],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
+    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[5,8,0.5],[[CastMode.QUICK,CastType.DIRECTION]],[[CastMode.QUICK,CastType.SELF]],null,[[CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL]]], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,0,0]],[10,12,1],[[]],[[]],[[]],[[]]],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
     /*Reinhardt*/      [],
@@ -80,34 +80,33 @@ rule "Heroes_Init":
     eventPlayer.ControlledRef.stopForcingPosition()\
     eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
     eventPlayer.ControlledRef.Owner = eventPlayer\
-    eventPlayer.ControlledRef.startForcingName(eventPlayer)\
+    eventPlayer.ControlledRef.startForcingName("{}".format(eventPlayer))\
+    eventPlayer.CHero=Hero.REAPER\
     eventPlayer.ControlledRef.CHero=eventPlayer.CHero\
-    eventPlayer.ControlledRef.CHero_Index=getAllHeroes().index(eventPlayer.ControlledRef.CHero)\
-    eventPlayer.ControlledRef.startForcingHero(eventPlayer.ControlledRef.CHero)\
+    eventPlayer.startForcingHero(eventPlayer.CHero)\
     eventPlayer.ControlledRef.setDamageDealt(0)\
     eventPlayer.ControlledRef.setDamageReceived(0)\
     eventPlayer.setDamageReceived(0)\
+    eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+1+eventPlayer.Slot/100\
+    
 
 rule "Check Hero Change":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()
     eventPlayer.disableScoreboard()
-    eventPlayer.startForcingHero( Hero.REAPER)
     eventPlayer.CHero = eventPlayer.getCurrentHero()
     ###INIT BOT###
     if(eventPlayer.getTeam()==Team.1):
         eventPlayer.Team=1
-        eventPlayer().UIContainer=[Color.BLUE]
     else:
         eventPlayer.Team=2
-        eventPlayer().UIContainer=[Color.RED]
     eventPlayer.Slot=eventPlayer.getSlot()
     Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
     if(eventPlayer.ControlledRef.CHero==0):
-        eventPlayer.CHero=eventPlayer.getCurrentHero()
-    else:
-        eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
+        eventPlayer.CHero=Hero.REAPER
+        #eventPlayer.getCurrentHero()
+    eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
     attachControlled
     CameraSetup()
     OnHero()
@@ -122,13 +121,45 @@ rule "Check Hero Change":
 
 
 def OnHero():
-    if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]): #Replace their UI with in-game progress bar
-        eventPlayer.disallowButton(Button.ULTIMATE)
-    eventPlayer.ControlledRef.Mana=[HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1],HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1],1]
-    eventPlayer.ControlledRef.Health=[HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0],HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0],1]
-    print("{},{},[{},{},{}]".format(eventPlayer.ControlledRef.Health[0],eventPlayer.ControlledRef.Health[1],eventPlayer.ControlledRef.Health[2][0],eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][2]))
-    eventPlayer.ControlledRef.Level=1
+    #Replace their UI with in-game progress bar
+    eventPlayer.disallowButton(Button.ULTIMATE)
 
+rule "Controlled Died":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition not eventPlayer.isDummy()
+    @Condition not eventPlayer.ControlledRef.isAlive()
+    eventPlayer.ClearAllUI=true
+    clearEffectUI()
+    eventPlayer.disableHeroHUD()
+    eventPlayer().UIContainer=[Color.GRAY,null]
+    eventPlayer.MovementGroundCursor=false
+    wait(1)
+    eventPlayer.MovementGroundCursor=false
+
+rule "Controlled Spawned":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition not eventPlayer.isDummy()
+    @Condition eventPlayer.ControlledRef.isAlive()
+    print("{}: {}, {}".format(eventPlayer.ControlledRef.Target[1],floor(eventPlayer.ControlledRef.Target[0].x),eventPlayer.ControlledRef.Target[0].x%1*100))
+    createEffect(eventPlayer,Effect.SPHERE,Color.WHITE,eventPlayer.ControlledRef.MovetoPos,0.2,EffectReeval.POSITION_AND_RADIUS)
+    if(eventPlayer.CamAttach):
+        chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=1,ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.enableHeroHud()
+    if(eventPlayer.getTeam()==Team.1):
+        eventPlayer().UIContainer=[Color.TEAM_1,Color.TEAM_1]
+    else:
+        eventPlayer().UIContainer=[Color.TEAM_2,Color.TEAM_2]
+    wait(0.5)
+    moveCameraWithPlayer()
+
+rule "Reset Target":
+    @Event eachPlayer
+    @Condition Ready == true
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) #or eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition eventPlayer.ControlledRef.Target[0].x > 0
+    eventPlayer.ControlledRef.Target = null
 
 rule "Target":
     @Event eachPlayer
@@ -140,13 +171,20 @@ rule "Target":
         eventPlayer.AbilityVerify[0]=false
         eventPlayer.AbilityVerify[1]=false
     else:
+        eventPlayer.ControlledRef.Target=null
+        wait()
         eventPlayer.Temp_DistanceSort=[]
-        for i in range(len(CPlayers[1-eventPlayer.ControlledRef.Team])):
-            eventPlayer.Temp_DistanceSort[i]=(vect(eventPlayer.ControlledRef.Team,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().x,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().z))
+        for i in range(0,len(CPlayers[1-eventPlayer.ControlledRef.Team])):
+            eventPlayer.Temp_DistanceSort[i]=(vect(1-eventPlayer.ControlledRef.Team+i/100,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().x,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().z))
         eventPlayer.Temp_DistanceSort=sorted(eventPlayer.Temp_DistanceSort.concat(random.shuffle(NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48))), lambda i: (abs(eventPlayer.cursor.x-i.y))**2 + (abs(eventPlayer.cursor.z-i.z))**2)
         if((abs(eventPlayer.cursor.x-eventPlayer.Temp_DistanceSort[0].y))**2 + (abs(eventPlayer.cursor.z-eventPlayer.Temp_DistanceSort[0].z))**2<0.866):
-            eventPlayer.ControlledRef.Target=eventPlayer.Temp_DistanceSort[0]
-            startAction(1,eventPlayer.ControlledRef)
+            eventPlayer.ControlledRef.Target[0]=eventPlayer.Temp_DistanceSort[0]
+            if(eventPlayer.Temp_DistanceSort[0].x<10):
+                eventPlayer.ControlledRef.Target[1] = CPlayers[floor(eventPlayer.Temp_DistanceSort[0].x)][eventPlayer.Temp_DistanceSort[0].x%1*100]
+
+            else:
+                eventPlayer.ControlledRef.Target[1]=null
+            startAction(2,eventPlayer.ControlledRef)
             println("{0}, {1}".format(eventPlayer.Temp_DistanceSort[0],eventPlayer.cursor))
             eventPlayer.UICursorStyles[0]=Color.RED
             wait(0.1)
@@ -199,13 +237,8 @@ def CastConfirm():
         eventPlayer.AbilityVerify=[]
         return /*ability cast cancelled*/
 
-
-
-
-
-
 def defaultEffectUI():
-    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[1]+2]): #does referenced ability number even exist
+    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[1]+2] and eventPlayer.Hero_Ability[1]!=0): #does referenced ability number even exist
         if(HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][0][3]>0):
             createEffect(eventPlayer.Owner,Effect.RING,Color.YELLOW,updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][0][3], EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
             addUI(getLastCreatedEntity(),AbilityStage.MOVETO)

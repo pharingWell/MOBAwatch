@@ -1,7 +1,7 @@
 #!mainFile "main.opy"
 
 #This is used for any generic (non-hero specific) UI
-
+#!define textPos(intended) (intended) + (vect(false, 0.8 - 0.075 * distance((intended), localPlayer), false))
 
 rule "Mode":
     @Event eachPlayer
@@ -22,18 +22,13 @@ def UI_Setup():
     eventPlayer.setAmmo(0,0)
     eventPlayer.setAmmo(1,0)
     eventPlayer.setHealth(3)
-    eventPlayer.ControlledRef.Hidden=true
+    eventPlayer.setMaxHealth(3*(100/HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0]))
+    #eventPlayer.ControlledRef.Hidden=true
     eventPlayer.addHealthPool(Health.ARMOR,max(0,min(eventPlayer.ControlledRef.Health[1]-4,(abs(eventPlayer.ControlledRef.Health[2][0]) if eventPlayer.ControlledRef.Health[2][0]<0 else 1)+(eventPlayer.ControlledRef.Health[1]-eventPlayer.ControlledRef.Health[0]))),true,true)
     eventPlayer.addHealthPool(Health.NORMAL,max(0,-3+eventPlayer.ControlledRef.Health[0]-(abs(eventPlayer.ControlledRef.Health[2][0]) if eventPlayer.ControlledRef.Health[2][0]<0 else 1)),true,true)
     CD_Buttons=[Button.ABILITY_1,Button.ABILITY_2,Button.JUMP,Button.CROUCH,Button.SECONDARY_FIRE]
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableGamemodeHud()
-    createInWorldText(getAllPlayers() if eventPlayer.ControlledRef.isAlive() else null,"{}\n|{}|{}|{}|{}|".format("            <•>" if not eventPlayer.ControlledRef.Hidden else " ", 
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]))), __substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<0.25), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>0)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3])),5)),
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25))),__substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<0.5 and eventPlayer.ControlledRef.Health[3]>=0.25), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>=0.25)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.25)),5)),
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5))), __substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<0.75 and eventPlayer.ControlledRef.Health[3]>=0.5), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>=0.5)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.5)),5)),
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75))),__substring__("-..::I",ceil(eventPlayer.ControlledRef.Health[3]*100%5),eventPlayer.ControlledRef.Health[3]<1 and eventPlayer.ControlledRef.Health[3]>=0.75), __substring__("-----",(eventPlayer.ControlledRef.Health[3]>=0.75)*0.5+min(5,20*max(0,eventPlayer.ControlledRef.Health[3]-0.75)),5))
-    ),updateEveryTick(vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.ControlledRef.getEyePosition().y+0.0,eventPlayer.ControlledRef.getEyePosition().z+0.2)),1.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer) else Color.TEAM_1 ,SpecVisibility.NEVER)
     eventPlayer.disallowButton(Button.PRIMARY_FIRE)
     eventPlayer.disallowButton(Button.SECONDARY_FIRE)
     eventPlayer.disallowButton(Button.ABILITY_1)
@@ -41,24 +36,20 @@ def UI_Setup():
     eventPlayer.disallowButton(Button.RELOAD)
     eventPlayer.disallowButton(Button.MELEE)
     eventPlayer.disallowButton(Button.JUMP)
-    for(i in range(0,TeamSize)):
-        if(eventPlayer.Team==1):
-            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),Players[0][evalOnce(i)].getHealth(),null,HudPosition.LEFT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
-            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
-        else:
-            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),Players[1][evalOnce(i)].getHealth(),null,HudPosition.LEFT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
-            hudText(eventPlayer,"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.STRING_AND_COLOR)
 #!define updateCooldown(button) eventPlayer.setAbilityCooldown(button,eventPlayer.ControlledRef.getAbilityCooldown(button))\
     eventPlayer.setAbilityCharge(button,eventPlayer.ControlledRef.getAbilityCharge(button))\
     eventPlayer.setAbilityResource(button,eventPlayer.ControlledRef.getAbilityResource(button))
+
 def UI_Process():
     @Name "S_UI_Process"
-    eventPlayer.setMaxHealth(3*(100/HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][0]))
-    eventPlayer.setHealth(eventPlayer.ControlledRef.Health[0])
+    if(eventPlayer.ControlledRef.isAlive()):
+        eventPlayer.setHealth(eventPlayer.ControlledRef.Health[0])
+    elif(eventPlayer.ControlledRef):
+        wait(1)
+        eventPlayer.setHealth(999)
     for eventPlayer.CD_i in range(len(CD_Buttons)):
         if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.CD_i]):
             updateCooldown(CD_Buttons[eventPlayer.CD_i])
-            
             eventPlayer.setUltCharge(eventPlayer.ControlledRef.getUltCharge())
         else:
             if(eventPlayer.getAbilityCooldown(eventPlayer.AbilityVerify[2])<=1.1 and not eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
@@ -68,25 +59,10 @@ def UI_Process():
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1]>1):
         eventPlayer.setMaxAmmo(0,eventPlayer.ControlledRef.Mana[1])
         eventPlayer.setAmmo(0,eventPlayer.ControlledRef.Mana[1])
-    eventPlayer.ControlledRef.Health[3]=eventPlayer.ControlledRef.Health[0]/eventPlayer.ControlledRef.Health[1] #sets normalized health
     wait(0.1)
     top
 
-rule "dmg/heal OT": #move this to controlled, TODO: fix UI health bar
-    @Event eachPlayer
-    @Condition Ready == true
-    @Condition not eventPlayer.isDummy()
-    wait(0.2)
-    if(eventPlayer.ControlledRef.Health[2][1]>0):
-        if(not eventPlayer.ControlledRef.Health[2][2]):
-            eventPlayer.ControlledRef.Health[2]=[eventPlayer.ControlledRef.Health[2][0],eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][0]/eventPlayer.ControlledRef.Health[2][1],eventPlayer.ControlledRef.Health[2][0]]
-        eventPlayer.ControlledRef.Health[2]=[eventPlayer.ControlledRef.Health[2][2]*(eventPlayer.ControlledRef.Health[2][1]-0.2),eventPlayer.ControlledRef.Health[2][1]-0.2,eventPlayer.ControlledRef.Health[2][2],eventPlayer.ControlledRef.Health[2][3]] #].concat(eventPlayer.ControlledRef.Health[2].slice(3,999))
-        if(eventPlayer.ControlledRef.Health[0]+eventPlayer.ControlledRef.Health[2][2]/5<eventPlayer.ControlledRef.Health[1]):
-            eventPlayer.ControlledRef.Health[0]+=(eventPlayer.ControlledRef.Health[2][2]/5)
 
-    else:
-        eventPlayer.ControlledRef.Health[2]=null
-    top
 rule "Cursor": 
     @Event eachPlayer
     @Condition Ready == true
@@ -94,13 +70,14 @@ rule "Cursor":
 
     #createInWorldText(eventPlayer,"{0}".format(eventPlayer.cursor),eventPlayer.cursor,1.0,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,Color.RED,SpecVisibility.NEVER)
     eventPlayer.UICursorStyles = [Color.WHITE,true,Color.RED,0.10]
-    createInWorldText(eventPlayer,"•",updateEveryTick(vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z-eventPlayer.CamLoc.y/12.5)),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
+    createInWorldText(eventPlayer if getTotalTimeElapsed()%0.032<0.016 else null,"•",updateEveryTick(vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z-eventPlayer.CamLoc.y/12.5)),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
+    createInWorldText(eventPlayer if getTotalTimeElapsed()%0.032>0.016 else null,"•",updateEveryTick(vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z-eventPlayer.CamLoc.y/12.5)),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
     createInWorldText(eventPlayer if eventPlayer.MovementGroundCursor else null,"¤",vect(eventPlayer.ControlledRef.MovetoPos.x,0,eventPlayer.ControlledRef.MovetoPos.z-eventPlayer.CamLoc.y/12.5),2.0,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,Color.SKY_BLUE,SpecVisibility.NEVER)
     #createInWorldText(eventPlayer,"•",vect(1.349*(9.75)*(eventPlayer.eyeAxis[0])+eventPlayer.CamLoc.x,0,0.775*(9.75)*(eventPlayer.eyeAxis[1]+0.25)+eventPlayer.CamLoc.z-1.25),2.5,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,eventPlayer.UICursorStyles[0],SpecVisibility.NEVER)
     #raycast(eventPlayer.CamLoc,vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),getAllPlayers(),null,true).getHitPosition().y
     #createEffect(eventPlayer,Effect.SPHERE,eventPlayer.UICursorStyles[2],vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),eventPlayer.UICursorStyles[3],EffectReeval.POSITION_AND_RADIUS)
 
-rule "CursorStyle1":
+rule "CursorStyle":
     @Event eachPlayer
     @Condition Ready == true
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
@@ -109,16 +86,18 @@ rule "CursorStyle1":
     if(eventPlayer.ControlledRef.ArrivedAtM2P==1):
         eventPlayer.ControlledRef.ArrivedAtM2P=0
         eventPlayer.ControlledRef.MoveAbilityCancel=true
+        return
     eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
     startAction(0,eventPlayer.ControlledRef)
     eventPlayer.MovementGroundCursor = true
-    wait(0.5)
+    waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
     while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
         eventPlayer.MovementGroundCursor = false
         eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
         startAction(0,eventPlayer.ControlledRef)
-        wait(0.3)
-    #smallMessage(eventPlayer,"{0}_".format(eventPlayer.MovementGroundCursor))
+        wait(0.1)
+    eventPlayer.MovementGroundCursor = true
+
 
 rule "Print":
     @Event eachPlayer

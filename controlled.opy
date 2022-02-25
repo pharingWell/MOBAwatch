@@ -8,11 +8,34 @@
 
 
 
-rule "On Player Join":
+rule "On Player Join - Ignores respawn":
     @Event playerJoined
     @Condition eventPlayer.isDummy()
     eventPlayer.Actions=[false,false,false,false,false,false,false,false] #moveToCPos, setTarget, use ability 1, use ability 2,use ultimate, ___ , Attach , Free
-    
+    createInWorldText(getAllPlayers() if not eventPlayer.Hidden else getPlayers(eventPlayer.getTeam()) if eventPlayer.isAlive() else null,"{}\n|{}|{}|{}|{}|\n{}".format("            <•>" if not eventPlayer.Hidden else " ", 
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>0)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1]))),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.25))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.5 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.25)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.25)),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.5))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.75 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.5), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.5)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.5)),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<1 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75)),5)),
+    "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if localPlayer.Owner.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
+    eventPlayer.ControlledRef.Level=1
+
+rule "On Player Join - Pre-spawn":
+    @Event eachPlayer
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.hasSpawned()==false
+    @Condition eventPlayer.isAlive()==true
+    eventPlayer.CHero=Hero.REAPER
+    eventPlayer.stopForcingCurrentHero()
+    wait()
+    eventPlayer.startForcingHero(eventPlayer.CHero)
+    eventPlayer.CHero_Index=getAllHeroes().index(eventPlayer.CHero)
+    eventPlayer.Mana=[HeroSpecs[eventPlayer.CHero_Index][0][1],HeroSpecs[eventPlayer.CHero_Index][0][1],1]
+    eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][0][0],HeroSpecs[eventPlayer.CHero_Index][0][0],1]
+    eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][0][3]
+    print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
+
+
 rule "Bot - Hero Connection":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
@@ -23,6 +46,8 @@ rule "Bot - Hero Connection":
         else:
             eventPlayer.setInvisibility(Invis.NONE)
     wait(1)
+    eventPlayer.disableNameplatesFor(getAllPlayers())
+    #eventPlayer.startForcingOutlineFor()
     goto RULE_START
 
 
@@ -30,7 +55,10 @@ rule "Throttling Bot":
     @Event eachPlayer
     @Condition Ready == true
     @Condition eventPlayer.isDummy()
-    @Condition getPlayersInRadius(eventPlayer.MovetoPos,0.5,Team.ALL,LosCheck.OFF)
+    @Condition getPlayersInRadius(eventPlayer.MovetoPos,0.5,eventPlayer.getTeam(),LosCheck.OFF)
+    Throttle()
+
+def Throttle():
     if(eventPlayer.Owner):
         eventPlayer.Owner.MovementGroundCursor = false
     eventPlayer.stopFacing() 
@@ -58,7 +86,7 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
                 eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.getEyePosition().y,eventPlayer.CPos.z)),Relativity.TO_WORLD)
             elif(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2]=TargetState.ENEMY)*/
-                if(floor(eventPlayer.Target.x/10)==HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target.y,0,eventPlayer.Target.z))<=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][0]):
+                if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][0]):
                     smallMessage(eventPlayer,"Targeted Ability{0} Activated".format(eventPlayer.AbilityUse[1]))
             if(eventPlayer.MoveAbilityCancel==false):
                 if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):/*ensures any onmove ui removal still takes place*/
@@ -86,6 +114,7 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
         eventPlayer.Hero_Ability[0]=AbilityStage.NONE
         eventPlayer.ClearAllUI=true
         clearEffectUI()
+        eventPlayer.AbilityVerify=[false,false]
 
 
 def AbilityProcess():
@@ -93,40 +122,74 @@ def AbilityProcess():
         eventPlayer.Mana[0]-=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][1][0]
     eventPlayer.startForcingButton(eventPlayer.AbilityUse[0])
 
+rule "Reset Actions":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition any(eventPlayer.Actions)
+    wait(0.2)
+    eventPlayer.Actions=[]
 ### 0 ###
 rule "MoveToCPos":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(0)
-    
     if(eventPlayer.Owner != "null" and eventPlayer.Owner != 0):
         async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     if(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos)>1):
         eventPlayer.startThrottleInDirection(vectorTowards(eventPlayer.getEyePosition(), eventPlayer.MovetoPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
-    eventPlayer.startFacing(vectorTowards(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y,eventPlayer.getEyePosition().z),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)),600,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
-    
+    eventPlayer.startFacing(vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)),450+200*(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos) < 3),Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
+
 ### 1 ###
 rule "Target":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(1)
-    #
-
-
-    #getClosestPlayer(eventPlayer.CPos, )
-
+    
+    #if()
+    #directionTowards(eventPlayer,
+    #if(eventPlayer.AbilityVerify[0] and not eventPlayer.AbilityVerify[1]):
+        #print(1)
+    #if(HeroSpecs[eventPlayer.CHero_Index][1][1][0])
+    #getClosestPlayer(eventPlayer.CPos, 
+    
 ### 2 ###
 rule "Use Basic Attack":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(2)
-    while(eventPlayer.Target):
-        if(eventPlayer.Target<1):
-            #if(distance(eventPlayer.getPosition(),CPlayers[]))
-  
+    print(distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z)))
+    while(eventPlayer.Target[0].x>0):
+        if(eventPlayer.Target[1]):
+            eventPlayer.CPos=vect(eventPlayer.Target[1].getPosition().x,eventPlayer.Target[1].getEyePosition().y,eventPlayer.Target[1].getPosition().z)
+            if(not eventPlayer.CPos):
+                println("Error with entity in Target ref")
+                return
+        elif(eventPlayer.Target[0].x>=10)::
+            eventPlayer.CPos=vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z) #turns id to coords
+        else:
+            println("Entity has broken ref or id. Id of >10 missing entity ref")
+            return #for some reason, the dummy bot was deleted and we have a broken ref
+        if(distance(eventPlayer.getPosition(),eventPlayer.CPos)>HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5):
+            eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5)/*starts at cpos and moves player to closest point within range*/
+            startAction(0,eventPlayer)
+        else:
+            eventPlayer.setFacing(directionTowards(eventPlayer.CPos,eventPlayer.getPosition()),Relativity.TO_WORLD)
+        waitUntil(not eventPlayer.Target[0].x>0 or distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))<=HeroSpecs[eventPlayer.CHero_Index][2][0]+0.6,9999)
+        if(not eventPlayer.Target[0].x>0):
+            eventPlayer.Target=null
+            return    
+        #if we have made it this far, we are in range or 170 minutes have passed
+        if(eventPlayer.CHero in [Hero.REAPER]):
+            eventPlayer.Hero_Ability[1]=0
+            eventPlayer.Hero_Ability[0]=AbilityStage.CAST
+        else:
+            eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
+        deal(HeroSpecs[eventPlayer.CHero_Index][2][1],eventPlayer.Target[1],eventPlayer,eventPlayer.Slot)
+        waitUntil(not eventPlayer.Target[0].x>0,HeroSpecs[eventPlayer.CHero_Index][2][2]/10)
+    
 
 ### 3 ###
 rule "Use Ability 1":
@@ -158,23 +221,44 @@ rule "Use Ult":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(6)
-    Ability_Used(Button.ULTIMATE,4)         
+    if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]):
+        Ability_Used(Button.ULTIMATE,4)         
 
-### 7 ###
+
+rule "dmg/heal OT":
+    @Event eachPlayer
+    @Condition Ready == true
+    @Condition eventPlayer.isDummy()
+    wait(0.2)
+    if(eventPlayer.Health[2][1]>0):
+        if(not eventPlayer.Health[2][2]):
+            eventPlayer.Health[2]=[eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][0]/eventPlayer.Health[2][1]]
+        eventPlayer.Health[2]=[eventPlayer.Health[2][2]*(eventPlayer.Health[2][1]-0.2),eventPlayer.Health[2][1]-0.2,eventPlayer.Health[2][2]]
+        if(eventPlayer.Health[0]+eventPlayer.Health[2][2]/5<eventPlayer.Health[1]):
+            eventPlayer.Health[0]+=(eventPlayer.Health[2][2]/5)
+
+    else:
+        eventPlayer.Health[2]=null
+    top
+    
+
 rule "(Re)spawn":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()
     @Condition eventPlayer.isAlive()
-    print("Spawned")
-
+    eventPlayer.Health[0]=eventPlayer.Health[1]
+    eventPlayer.Health[4]=[null,null]
+    
 ### Death ###
 rule "Is Dead":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Health[0]<=0
+    eventPlayer.stopThrottleInDirection()
+    eventPlayer.stopFacing()
     eventPlayer.setRespawnTime(eventPlayer.Level*2+4)
     eventPlayer.setDamageReceived(1)
     kill(eventPlayer,null)#fix this

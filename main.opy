@@ -62,20 +62,23 @@ rule "Set setting vars":
 rule "InitiateGame":
     @Condition len(CPlayers[0]) + len(CPlayers[1]) < len(getAllPlayers())
     if(getNumberOfSlots(Team.ALL)/2!=getNumberOfSlots(Team.1) or (not getAllPlayers()[0] == hostPlayer and not len(getAllPlayers()) == 1)):
-        wait(2)
+        print("{} {}".format(getAllPlayers()[0],len(getAllPlayers())))
+        wait(4)
         returnToLobby()
     hudHeader(getAllPlayers(),w"Loading...",HudPosition.TOP,1,Color.RED,HudReeval.NONE)
     Ready=getLastCreatedText()-3
     Minions=[[-1],[-1]] 
     Players=[-1]
-    /*
-    createDummy(Hero.ROADHOG,Team.2,-1,vect(2,0,2),vect(0,0,0))
+    
+    createDummy(Hero.ROADHOG,Team.2,4,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]
     getLastCreatedEntity().setDamageReceived(0)
-    createDummy(Hero.TORBJORN,Team.2,-1,vect(-2,0,2),vect(0,0,0))
+    createDummy(Hero.TORBJORN,Team.2,5,vect(-2,0,2),vect(0,0,0))
     getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],getLastCreatedEntity()]
-    print(CPlayers[1][0].getHealth())*/
+    createDummy(Hero.DVA,Team.2,6,vect(0,0,4),vect(0,0,0))
+    getLastCreatedEntity().setDamageReceived(0)
+    CPlayers[1]=[CPlayers[1][0],CPlayers[1][1],getLastCreatedEntity()]
     ScreenLimits = [1.3,1.40]
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
@@ -98,11 +101,16 @@ rule "InitiateGame":
         setMatchTime(2700)
     else:
         disableGamemodeCompletion()
-
-
+   
     
 def Ready():
     destroyHudText(Ready+3)
+    
+    for(i in range(0,TeamSize)):
+        hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),CPlayers[0][evalOnce(i)].Health[0],null,HudPosition.LEFT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+        hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+        hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),CPlayers[1][evalOnce(i)].Health[0],null,HudPosition.LEFT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+        hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
     Ready=true
 
 rule "Inspector":
@@ -113,11 +121,8 @@ rule "Inspector":
     top    
 
 rule "Display server performance characteristics":
-    /*
-    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load", l"{0}%".format(getServerLoad())), HudPosition.TOP, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load Average", l"{0}%".format(getAverageServerLoad())), HudPosition.TOP, 1, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(getAllPlayers(), l"{0}: {1}".format(l"Server Load Peak", l"{0}%".format(getPeakServerLoad())), HudPosition.TOP, 2, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    */ 
+    hudHeader(getAllPlayers(), "{}{} {}{} {}{}".format("Load:", "{0}%".format(getServerLoad()), "Load Average:", "{0}%".format(getAverageServerLoad()), "Load Peak:", "{0}%".format(getPeakServerLoad()) ), HudPosition.RIGHT, -10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+
 
 rule "Minions Tick":
     @Condition Ready == true

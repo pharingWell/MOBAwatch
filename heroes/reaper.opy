@@ -13,6 +13,7 @@ rule "Hero - UI Prep":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
+
         /*
         case 1:
             break
@@ -41,34 +42,6 @@ rule "Hero - UI MoveTo":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.MOVETO #show ui for
     clearEffectUI()
 
-rule "Hero - UI Prep":
-    @Event eachPlayer
-    @Hero reaper
-    @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
-    clearEffectUI()
-    switch eventPlayer.Hero_Ability[1]:
-        /*
-        case 1:
-            break
-        */
-        
-        case 2:
-            AreaHighlight(Effect.RING,1)
-            eventPlayer.Owner.cursorNew=eventPlayer.MovetoPos
-            defaultEffectUI()
-            break
-        /*
-        case 3:
-            break
-        */
-        /*
-        case 4:
-            break
-        */  
-        default:
-            defaultEffectUI()
-
 rule "Hero - Cast":
     @Event eachPlayer
     @Hero reaper
@@ -76,6 +49,9 @@ rule "Hero - Cast":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
+        case 0:
+            eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
+            break
         case 1: 
             Ability(Button.ABILITY_1,false)
             break
@@ -84,7 +60,7 @@ rule "Hero - Cast":
             wait()
             eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
             wait(1) #teleport camera to player after 1 sec
-            if(eventPlayer.Owner and eventPlayer.isUsingAbility2()):
+            if(eventPlayer.Owner and eventPlayer.isUsingAbility2() and eventPlayer.Owner.CamAttach):
                 eventPlayer.Owner.CamLoc=vect(eventPlayer.CPos.x,eventPlayer.Owner.CamLoc.y,eventPlayer.CPos.z)
             break
         case 4:

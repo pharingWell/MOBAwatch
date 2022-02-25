@@ -12,13 +12,7 @@ disableInspector()
 #!define M_id(i,k) 10+(i+1)+k/100
 #!define ft(a,i) (((a)+0.02)*(1-i)+(i)*(19.98-(a)))
 #!define MinionLimit(a) a*0+(1-a)*20
-#range(0,48) is min          k             2-type[1=min,2=struct]            team               structures
-#!define NonPLoc(id) (id % floor(id))*100   + (2-floor(id/10))     *  48*(floor(id-1) % 10) + (id-1)*(floor(id-1) % 10)*36
-#i*48+k
 
-#floor(id/10)
-#floor(id) % 10
-#id % floor(id)
 
 def Minions_Move():
     for LocTemp_i in range(len(LocationChange)):
@@ -166,7 +160,7 @@ def Minions_Init():
     MinionTypes = ["ι","Minion",2,10,80,"ί","Mage",6,16,60,"ϊ","Seige",12,40,150,"ΐ","Brute",3,80,400]
     MWeapons = [["ο","ơ","δ","σ"],["Y","ϒ","ϔ", "Ẏ"]]
     for i in range(0,2): 
-        for k in range(48):
+        for k in range(30):
             MR_Temp=[(Temp_ID),M_id(i,k),MinionTypes[Temp_ID*MinionTypesQualities+4],0,false,null]
             if(len(MR_Temp)!=MinionQualities):
                 println("Error: MinionCreate is wrong size")
@@ -175,7 +169,7 @@ def Minions_Init():
                 Minions[i]=[MR_Temp]
             else:
                 Minions[i].append([MR_Temp])
-            NonPlayer_Loc[i*48+k]=vect(M_id(i,k),ft(0,i),0)
+            NonPlayer_Loc[i*30+k]=vect(M_id(i,k),ft(0,i),0)
     Ready()  
 /*  
 (j==1 or j==3): M_DataTemp=MinionPositionLane1n3(M_tTemp,j)
