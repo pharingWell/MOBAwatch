@@ -43,10 +43,15 @@ This project accomplishes this by:
   - [ ] Lane collisions/bounds
   - [ ] Small jungle
     - [ ] Implement brutes/some jungle reward
-- [ ] Damage abstraction
-- [ ] Targeting system / basic attacks
-- [-] Translate Hero abilities
+- [-] Translate Heroes
+  - [x] Targeting system / basic attacks
   - [ ] Implement mana
+  - [x] Can take/deal damage
+    - [x] Damage abstraction
+  - [x] Damage over time/healing over time
+  - [x] Basic attacks
+     - [] Auto lock option 
+  - [ ] Visibility
 - [ ] UI
 
 ---
