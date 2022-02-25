@@ -49,9 +49,6 @@ rule "Hero - Cast":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
-        case 0:
-            eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
-            break
         case 1: 
             Ability(Button.ABILITY_1,false)
             break

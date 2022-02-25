@@ -2,6 +2,8 @@
 
 #stores variables, global macros and enums
 
+#!define ForcedHero Hero.TRACER
+
 #!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice((i)+1,len(array)-1))
 #!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice(i,len(array)-1))
 
@@ -15,29 +17,9 @@
     #disableInspector()
 #!define clamp(val,min_,max_) max((min_),min((val),(max_)))
 
-#!defineMember heal_p(healing,target,source) /*heal player*/\
-    if((target).HealingModifiers[0]<100):\
-            (target).Health[0]+=(healing)*(1-(target).HealingModifiers[0]/100)\
-            (target).Health[3] = [(target).Health[3][0],(source)]\
-
-#!defineMember deal(damage,target,sourceref,sourceid) /*negative damage is healing*/\
-if(entityExists((target))):/*target is a player*/\
-    deal_p((damage),(target),(sourceref))\
-elif((target)>=10):\
-    deal_np((damage),(target),(sourceid))\
-
-#!defineMember deal_np(damage,target,source) /*deal damage to a nonplayer, target is an id*/\
-if((damage)<0):\
-    HealthChange.append(vect((target),(damage * (1-PlayerFromID((source)).DamageModifiers[2])/100 * (1+PlayerFromID((source)).DamageModifiers[3]/100)),(source)))
-
-#!defineMember deal_p(damage,target,source) /*deal damage to a player, target is an entity ref*/\
-    if((damage)<0):/*if healing*/\
-        heal_p((0-damage),(target),(source))\
-    else:\
-        (target).Health[0]-=((1-(target).DamageModifiers[0]/100) * (target).DamageModifiers[1] * (1-(source).DamageModifiers[2]/100) * (1+(source).DamageModifiers[3]/100))\
-        (target).Health[3] = [(source),(target).Health[3][1]]\
-
-    #DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
+#!defineMember deal(target,rawdamage) eventPlayer.HealthQueue.append([[(target),(rawdamage)]]) /*input is target or id*/\
+    CalcDealt()
+#DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
 #range(0,30) is min          k             2-type[1=min,2=struct]            team               structures
 #!define NonPLoc(id) (id % floor(id))*100   + (2-floor(id/10))     *  30*(floor(id-1) % 10) + (id-1)*(floor(id-1) % 10)*8
 #!define PlayerFromID(id) CPlayers[floor(id)][(id)%1*100]
@@ -154,7 +136,8 @@ playervar UIIstanceHandler #P
 playervar UICursorStyles #P
 playervar CD_i
 playervar DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
-playervar HealingModifiers #[healing reduction]
+playervar HealingModifiers #[healing mult]
+playervar HealthQueue #list of health changes that are applied in chronological order, [health_change,source/id,is source?]
 playervar Actions
 playervar ControlledSlot
 playervar Level
@@ -206,3 +189,4 @@ subroutine clearEffectUI
 subroutine AbilityUsedFunc
 subroutine AbilityProcess
 subroutine Throttle
+subroutine CalcDealt

@@ -25,7 +25,7 @@ rule "On Player Join - Pre-spawn":
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()==false
     @Condition eventPlayer.isAlive()==true
-    eventPlayer.CHero=Hero.REAPER
+    eventPlayer.CHero=ForcedHero
     eventPlayer.stopForcingCurrentHero()
     wait()
     eventPlayer.startForcingHero(eventPlayer.CHero)
@@ -64,6 +64,29 @@ def Throttle():
     eventPlayer.stopFacing() 
     eventPlayer.stopThrottleInDirection()
     eventPlayer.ArrivedAtM2P=-1
+
+def CalcDealt():
+    #eventPlayer.HealthQueue[0][0] will always be 0
+    if(eventPlayer.HealthQueue[1][0].Health):#checks if target is a player
+        if(eventPlayer.HealthQueue[1][0].isAlive()):
+            if(eventPlayer.HealthQueue[1][1]>0): #damage
+                eventPlayer.HealthQueue[1][0].Health[0]-=(eventPlayer.HealthQueue[1][1])*(1-eventPlayer.DamageModifiers[0]/100) * (eventPlayer.DamageModifiers[1] if eventPlayer.DamageModifiers[1]>0 else 1)  * (1-eventPlayer.HealthQueue[1][0].DamageModifiers[2]/100) * (1+eventPlayer.HealthQueue[1][0].DamageModifiers[3]/100)
+                eventPlayer.HealthQueue[1][0].Health[3]=[eventPlayer,eventPlayer.HealthQueue[1][0].Health[3][1]]
+                if(eventPlayer.HealthQueue[1][0].Health[0]<1):
+                    goto freetarget
+            elif(eventPlayer.HealthQueue[1][1]<0): #healing
+                eventPlayer.HealthQueue[1][0].Health[0]+=(abs(eventPlayer.HealthQueue[1][1])*eventPlayer.HealingModifiers[0])
+                eventPlayer.HealthQueue[1][0].Health[3]=[eventPlayer.HealthQueue[1][0].Health[3][0],eventPlayer]
+            else:
+                println("{} tried to deal 0 damage to {}".format(eventPlayer,eventPlayer.HealthQueue[1][0]))
+        else:
+            freetarget:
+            eventPlayer.Target=null
+    else:
+        #thing to disconnect minions as targets goes here
+        if(eventPlayer.HealthQueue[1][1]>0): #minions cannot be healed
+            HealthChange.append(vect(eventPlayer.HealthQueue[1][0],(eventPlayer.HealthQueue[1][1] * (1-eventPlayer.DamageModifiers[2])/100 * (1+eventPlayer.DamageModifiers[3]/100)),eventPlayer.Slot))
+    del eventPlayer.HealthQueue[1]
 
 #!define Ability_Used(button,abilitynum) eventPlayer.AbilityUse=[(button),(abilitynum)]\
     AbilityUsedFunc()\
@@ -128,6 +151,14 @@ rule "Reset Actions":
     @Condition any(eventPlayer.Actions)
     wait(0.2)
     eventPlayer.Actions=[]
+
+rule "Stop Basic Attack":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.Target==null
+    eventPlayer.disallowButton(Button.PRIMARY_FIRE)
+    eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
+    eventPlayer.allowButton(Button.PRIMARY_FIRE)
 ### 0 ###
 rule "MoveToCPos":
     @Event eachPlayer
@@ -160,7 +191,9 @@ rule "Use Basic Attack":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(2)
+    eventPlayer.setAmmo(0,2000)
     while(eventPlayer.Target[0].x>0):
+        
         if(eventPlayer.Target[1]):
             eventPlayer.CPos=eventPlayer.Target[1].getPosition()
             if(not eventPlayer.CPos):
@@ -171,6 +204,7 @@ rule "Use Basic Attack":
         else:
             println("Entity has broken ref or id. Id of >10 missing entity ref")
             return #for some reason, the dummy bot was deleted and we have a broken ref
+        eventPlayer.stopFacing()
         if(distance(eventPlayer.getPosition(),eventPlayer.CPos)>HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5):
             eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5)/*starts at cpos and moves player to closest point within range*/
             startAction(0,eventPlayer)
@@ -181,21 +215,19 @@ rule "Use Basic Attack":
             eventPlayer.Target=null
             return    
         #if we have made it this far, we are in range or 170 minutes have passed
-        eventPlayer.stopFacing()
-        wait()
         if(eventPlayer.Target[1]):
             eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/2,eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
         else:
             eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
-        wait()
-        if(eventPlayer.CHero in [Hero.REAPER]):
+
+        if(eventPlayer.CHero in []):
             eventPlayer.Hero_Ability[1]=0
             eventPlayer.Hero_Ability[0]=AbilityStage.CAST
         else:
-            eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
-        deal(HeroSpecs[eventPlayer.CHero_Index][2][1],eventPlayer.Target[1],eventPlayer,eventPlayer.Slot)
-        waitUntil(not eventPlayer.Target[0].x>0,HeroSpecs[eventPlayer.CHero_Index][2][2]/10)
-    
+            if(not eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)):
+                eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
+        deal(eventPlayer.Target[1],HeroSpecs[eventPlayer.CHero_Index][2][1])
+        waitUntil(not eventPlayer.Target[0].x>0,1/HeroSpecs[eventPlayer.CHero_Index][2][2]*1)
 
 ### 3 ###
 rule "Use Ability 1":

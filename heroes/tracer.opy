@@ -47,7 +47,6 @@ rule "Hero - Cast":
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         case 1:
-            
             eventPlayer.startThrottleInDirection(eventPlayer.getFacingDirection(),1,Relativity.TO_WORLD,Throttle.REPLACE_EXISTING,ThrottleReeval.NONE)
             Ability(Button.ABILITY_1,false)
             wait(0.1)

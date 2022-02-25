@@ -154,7 +154,7 @@ def Minion_Wave():
             #createInWorldText(,MinionTypes[Minions[i][k][0]*MinionTypesQualities],vect(NonPlayer_Loc[evalOnce(k)][1],0,Minions[evalOnce(i)][evalOnce(k)][2]),3,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,M_tTemp,SpecVisibility.NEVER)
             MinionRenders[i] = [len(Minions[i])-1,getLastCreatedText,getLastCreatedEntity]
 def Minions_Init():
-                           # 0    , 1   ,  2   , 3  ,                 4                            5       6        7              8                  9    
+                           # 0    , 1   ,  2   , 3  ,                                   4        5       6        7              8                  9    
     MinionQualities = len(["Type","id","hp","ID of Minion being fought or Player name","isAlive","Visbility"]) #t is the time the minion has been moving (place on function lane(t))
     MinionTypesQualities=len(["icon", "name", "range", "damage","base_hp"])
     MinionTypes = ["ι","Minion",2,10,80,"ί","Mage",6,16,60,"ϊ","Seige",12,40,150,"ΐ","Brute",3,80,400]

@@ -38,11 +38,11 @@ rule "Heroes_Init":
         */
 
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-                        #[base hp,base mana,damage type, [base armor]],levelrate[[hp,mana],basic atk[range,damage,time between atks*10],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
+                        #[base hp,base mana,damage type, [base armor]],levelrate[[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                                1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,0,0]],[],[2,30,3],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
-    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[5,8,0.5],[[CastMode.QUICK,CastType.DIRECTION]],[[CastMode.QUICK,CastType.SELF]],null,[[CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL]]], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,0,0]],[10,12,1],[[]],[[]],[[]],[[]]],
+    /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,0,0]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
+    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[],[5,5,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,0,0]],[],[10,12,5],[[]],[[]],[[]],[[]]],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
     /*Reinhardt*/      [],
@@ -81,7 +81,7 @@ rule "Heroes_Init":
     eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
     eventPlayer.ControlledRef.Owner = eventPlayer\
     eventPlayer.ControlledRef.startForcingName("{}".format(eventPlayer))\
-    eventPlayer.CHero=Hero.REAPER\
+    eventPlayer.CHero=ForcedHero\
     eventPlayer.ControlledRef.CHero=eventPlayer.CHero\
     eventPlayer.startForcingHero(eventPlayer.CHero)\
     eventPlayer.ControlledRef.setDamageDealt(0)\
@@ -104,7 +104,7 @@ rule "Check Hero Change":
     eventPlayer.Slot=eventPlayer.getSlot()
     Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
     if(eventPlayer.ControlledRef.CHero==0):
-        eventPlayer.CHero=Hero.REAPER
+        eventPlayer.CHero=ForcedHero
         #eventPlayer.getCurrentHero()
     eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
     attachControlled
@@ -142,9 +142,6 @@ rule "Controlled Spawned":
     @Condition Ready==true
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.ControlledRef.isAlive()
-    print("{}: {}, {}".format(eventPlayer.ControlledRef.Target[1],floor(eventPlayer.ControlledRef.Target[0].x),eventPlayer.ControlledRef.Target[0].x%1*100))
-    createEffect(eventPlayer,Effect.SPHERE,Color.WHITE,eventPlayer.ControlledRef.MovetoPos,0.2,EffectReeval.POSITION_AND_RADIUS)
-    createBeam(eventPlayer,Beam.GRAPPLE,eventPlayer.ControlledRef.getEyePosition(),eventPlayer.ControlledRef.getEyePosition()+directionTowards(eventPlayer.ControlledRef.getEyePosition(),vect(eventPlayer.ControlledRef.Target[1].getEyePosition().x,eventPlayer.ControlledRef.Target[1].getEyePosition().y/2,eventPlayer.ControlledRef.Target[1].getEyePosition().z))*2,Color.AQUA,EffectReeval.POSITION_AND_RADIUS)
     if(eventPlayer.CamAttach):
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=1,ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.enableHeroHud()
@@ -159,7 +156,6 @@ rule "Reset Target":
     @Event eachPlayer
     @Condition Ready == true
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) #or eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
-    @Condition eventPlayer.ControlledRef.Target[0].x > 0
     eventPlayer.ControlledRef.Target = null
 
 rule "Target":
@@ -237,6 +233,8 @@ def CastConfirm():
     else:
         eventPlayer.AbilityVerify=[]
         return /*ability cast cancelled*/
+
+
 
 def defaultEffectUI():
     if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[1]+2] and eventPlayer.Hero_Ability[1]!=0): #does referenced ability number even exist
