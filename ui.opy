@@ -139,6 +139,12 @@ def CameraSetup():
     eventPlayer.setStatusEffect(null,Status.PHASED_OUT,9999)
     eventPlayer.setDamageReceived(0)
 
+rule "POV":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+    eventPlayer.stopCamera()
+    eventPlayer.startCamera(eventPlayer.ControlledRef.getEyePosition(),eventPlayer.ControlledRef.getEyePosition()+eventPlayer.ControlledRef.getFacingDirection()*300,100)
+
 rule "Camera Bounds":
     #!define Hori atan2(eventPlayer.getFacingDirection().x,eventPlayer.getFacingDirection().z)
     #!define Vert asin(eventPlayer.getFacingDirection().y)

@@ -160,10 +160,9 @@ rule "Use Basic Attack":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(2)
-    print(distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z)))
     while(eventPlayer.Target[0].x>0):
         if(eventPlayer.Target[1]):
-            eventPlayer.CPos=vect(eventPlayer.Target[1].getPosition().x,eventPlayer.Target[1].getEyePosition().y,eventPlayer.Target[1].getPosition().z)
+            eventPlayer.CPos=eventPlayer.Target[1].getPosition()
             if(not eventPlayer.CPos):
                 println("Error with entity in Target ref")
                 return
@@ -176,12 +175,19 @@ rule "Use Basic Attack":
             eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5)/*starts at cpos and moves player to closest point within range*/
             startAction(0,eventPlayer)
         else:
-            eventPlayer.setFacing(directionTowards(eventPlayer.CPos,eventPlayer.getPosition()),Relativity.TO_WORLD)
+            eventPlayer.setFacing(directionTowards(eventPlayer.CPos,eventPlayer.getEyePosition()),Relativity.TO_WORLD)
         waitUntil(not eventPlayer.Target[0].x>0 or distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))<=HeroSpecs[eventPlayer.CHero_Index][2][0]+0.6,9999)
         if(not eventPlayer.Target[0].x>0):
             eventPlayer.Target=null
             return    
         #if we have made it this far, we are in range or 170 minutes have passed
+        eventPlayer.stopFacing()
+        wait()
+        if(eventPlayer.Target[1]):
+            eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/2,eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
+        else:
+            eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
+        wait()
         if(eventPlayer.CHero in [Hero.REAPER]):
             eventPlayer.Hero_Ability[1]=0
             eventPlayer.Hero_Ability[0]=AbilityStage.CAST

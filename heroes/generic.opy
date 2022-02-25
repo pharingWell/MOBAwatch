@@ -144,6 +144,7 @@ rule "Controlled Spawned":
     @Condition eventPlayer.ControlledRef.isAlive()
     print("{}: {}, {}".format(eventPlayer.ControlledRef.Target[1],floor(eventPlayer.ControlledRef.Target[0].x),eventPlayer.ControlledRef.Target[0].x%1*100))
     createEffect(eventPlayer,Effect.SPHERE,Color.WHITE,eventPlayer.ControlledRef.MovetoPos,0.2,EffectReeval.POSITION_AND_RADIUS)
+    createBeam(eventPlayer,Beam.GRAPPLE,eventPlayer.ControlledRef.getEyePosition(),eventPlayer.ControlledRef.getEyePosition()+directionTowards(eventPlayer.ControlledRef.getEyePosition(),vect(eventPlayer.ControlledRef.Target[1].getEyePosition().x,eventPlayer.ControlledRef.Target[1].getEyePosition().y/2,eventPlayer.ControlledRef.Target[1].getEyePosition().z))*2,Color.AQUA,EffectReeval.POSITION_AND_RADIUS)
     if(eventPlayer.CamAttach):
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=1,ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.enableHeroHud()
