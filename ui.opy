@@ -36,6 +36,8 @@ def UI_Setup():
     eventPlayer.disallowButton(Button.RELOAD)
     eventPlayer.disallowButton(Button.MELEE)
     eventPlayer.disallowButton(Button.JUMP)
+
+        
 #!define updateCooldown(button) eventPlayer.setAbilityCooldown(button,eventPlayer.ControlledRef.getAbilityCooldown(button))\
     eventPlayer.setAbilityCharge(button,eventPlayer.ControlledRef.getAbilityCharge(button))\
     eventPlayer.setAbilityResource(button,eventPlayer.ControlledRef.getAbilityResource(button))
@@ -83,18 +85,15 @@ rule "CursorStyle":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z))>1
-    if(eventPlayer.ControlledRef.ArrivedAtM2P==1):
-        eventPlayer.ControlledRef.ArrivedAtM2P=0
-        eventPlayer.ControlledRef.MoveAbilityCancel=true
-        return
+    
     eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-    startAction(0,eventPlayer.ControlledRef)
+    startAction(1,eventPlayer.ControlledRef)
     eventPlayer.MovementGroundCursor = true
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
     while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
         eventPlayer.MovementGroundCursor = false
         eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-        startAction(0,eventPlayer.ControlledRef)
+        startAction(1,eventPlayer.ControlledRef)
         wait(0.1)
     eventPlayer.MovementGroundCursor = true
 

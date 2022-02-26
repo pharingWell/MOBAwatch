@@ -21,7 +21,7 @@
     CalcDealt()
 #DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
 #range(0,30) is min          k             2-type[1=min,2=struct]            team               structures
-#!define NonPLoc(id) (id % floor(id))*100   + (2-floor(id/10))     *  30*(floor(id-1) % 10) + (id-1)*(floor(id-1) % 10)*8
+#!define NonPLoc(id) ((id) % floor(id))*100   + (2-floor((id)/10))     *  30*(floor((id)-1) % 10) + ((id)-1)*(floor((id)-1) % 10)*8
 #!define PlayerFromID(id) CPlayers[floor(id)][(id)%1*100]
 
 #floor(id/10)

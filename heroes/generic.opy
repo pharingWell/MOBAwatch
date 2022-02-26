@@ -41,7 +41,7 @@ rule "Heroes_Init":
                         #[base hp,base mana,damage type, [base armor]],levelrate[[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                                1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
     /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,0,0]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
-    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[],[5,5,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.GROUND],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[],[4,5,10,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,0,0]],[],[10,12,5],[[]],[[]],[[]],[[]]],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
@@ -112,13 +112,14 @@ rule "Check Hero Change":
     OnHero()
     UI_Setup()
     waitUntil(eventPlayer.cursor!=vect(0,0.01,0),1000)
-    wait(0.5)
     eventPlayer.CamAttach=true
     moveCameraWithPlayer()
     wait()
     async(UI_Process,AsyncBehavior.NOOP)
     eventPlayer.enableScoreboard()
-
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]):
+        createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.BLUE,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    
 
 def OnHero():
     #Replace their UI with in-game progress bar
@@ -152,11 +153,6 @@ rule "Controlled Spawned":
     wait(0.5)
     moveCameraWithPlayer()
 
-rule "Reset Target":
-    @Event eachPlayer
-    @Condition Ready == true
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) #or eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
-    eventPlayer.ControlledRef.Target = null
 
 rule "Target":
     @Event eachPlayer
@@ -168,7 +164,6 @@ rule "Target":
         eventPlayer.AbilityVerify[0]=false
         eventPlayer.AbilityVerify[1]=false
     else:
-        eventPlayer.ControlledRef.Target=null
         wait()
         eventPlayer.Temp_DistanceSort=[]
         for i in range(0,len(CPlayers[1-eventPlayer.ControlledRef.Team])):
@@ -178,7 +173,6 @@ rule "Target":
             eventPlayer.ControlledRef.Target[0]=eventPlayer.Temp_DistanceSort[0]
             if(eventPlayer.Temp_DistanceSort[0].x<10):
                 eventPlayer.ControlledRef.Target[1] = CPlayers[floor(eventPlayer.Temp_DistanceSort[0].x)][eventPlayer.Temp_DistanceSort[0].x%1*100]
-
             else:
                 eventPlayer.ControlledRef.Target[1]=null
             startAction(2,eventPlayer.ControlledRef)
