@@ -23,7 +23,8 @@
 #range(0,30) is min          k             2-type[1=min,2=struct]            team               structures
 #!define NonPLoc(id) ((id) % floor(id))*100   + (2-floor((id)/10))     *  30*(floor((id)-1) % 10) + ((id)-1)*(floor((id)-1) % 10)*8
 #!define PlayerFromID(id) CPlayers[floor(id)][(id)%1*100]
-
+#!define MinionByID(id) Minions[floor((id))%10*30+((id))%1*100]
+# team = floor()%10, k = ()%1*100
 #floor(id/10)
 #floor(id) % 10
 #id % floor(id)
@@ -135,6 +136,7 @@ playervar UIContainer #P
 playervar UIIstanceHandler #P
 playervar UICursorStyles #P
 playervar CD_i
+playervar Target_i
 playervar DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
 playervar HealingModifiers #[healing mult]
 playervar HealthQueue #list of health changes that are applied in chronological order, [health_change,source/id,is source?]
@@ -153,7 +155,7 @@ playervar AbilityUse #passes vars to Ability_Used function
 playervar ArrivedAtM2P
 playervar Hidden
 playervar Team #1 or 2 
-playervar Target #[vect(id,posx,posz),ref]
+playervar Target #[vect(id,posx,posz),ref,[idle,idle targetref, idle targetid]]
 playervar AbilityVerify #[waiting for ability verify, cancelled, button, abilitynum]
 playervar Hero_Ability #casts ability from the perspective of the hero. e.g: ability1 is called with eventPlayer.ControlledRef as the event player with Ability Verify. It is then cast to the specific hero based on this variable
 playervar HA_temp
@@ -164,7 +166,7 @@ playervar Temp_DistanceSort
 playervar ClearAllUI
 playervar UltCD
 playervar DamageHandler
-playervar TimerHandler 
+playervar TimerHandler
 playervar Disabled #[m1,m2,abilities[0]]
 #Subroutine names
 

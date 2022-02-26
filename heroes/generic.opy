@@ -41,7 +41,7 @@ rule "Heroes_Init":
                         #[base hp,base mana,damage type, [base armor]],levelrate[[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                                1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
     /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,0,0]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
-    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[],[4,5,10,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[],[4,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,0,0]],[],[10,12,5],[[]],[[]],[[]],[[]]],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
@@ -166,8 +166,8 @@ rule "Target":
     else:
         wait()
         eventPlayer.Temp_DistanceSort=[]
-        for i in range(0,len(CPlayers[1-eventPlayer.ControlledRef.Team])):
-            eventPlayer.Temp_DistanceSort[i]=(vect(1-eventPlayer.ControlledRef.Team+i/100,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().x,CPlayers[1-eventPlayer.ControlledRef.Team][i].getPosition().z))
+        for eventPlayer.Target_i in range(0,len(CPlayers[1-eventPlayer.ControlledRef.Team])):
+            eventPlayer.Temp_DistanceSort[eventPlayer.Target_i]=(vect(1-eventPlayer.ControlledRef.Team+eventPlayer.Target_i/100,CPlayers[1-eventPlayer.ControlledRef.Team][eventPlayer.Target_i].getPosition().x,CPlayers[1-eventPlayer.ControlledRef.Team][eventPlayer.Target_i].getPosition().z))
         eventPlayer.Temp_DistanceSort=sorted(eventPlayer.Temp_DistanceSort.concat(random.shuffle(NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48))), lambda i: (abs(eventPlayer.cursor.x-i.y))**2 + (abs(eventPlayer.cursor.z-i.z))**2)
         if((abs(eventPlayer.cursor.x-eventPlayer.Temp_DistanceSort[0].y))**2 + (abs(eventPlayer.cursor.z-eventPlayer.Temp_DistanceSort[0].z))**2<0.866):
             eventPlayer.ControlledRef.Target[0]=eventPlayer.Temp_DistanceSort[0]

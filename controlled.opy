@@ -162,6 +162,7 @@ rule "Stop Basic Attack":
     eventPlayer.disallowButton(Button.PRIMARY_FIRE)
     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
     eventPlayer.allowButton(Button.PRIMARY_FIRE)
+
 ### 0 ###
 rule "MoveToCPos - Internal":
     @Event eachPlayer
@@ -172,7 +173,8 @@ rule "MoveToCPos - Internal":
         async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     if(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos)>1):
         eventPlayer.startThrottleInDirection(vectorTowards(eventPlayer.getEyePosition(), eventPlayer.MovetoPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
-    
+    if(not HeroSpecs[eventPlayer.CHero_Index][2][3]):
+        eventPlayer.startFacing(vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)),450+200*(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos) < 3),Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
 ### 1 ###
 rule "MoveToCPos - Normal Call":
     @Event eachPlayer
@@ -187,15 +189,16 @@ rule "MoveToCPos - Normal Call":
     startAction(0,eventPlayer)
     if(not HeroSpecs[eventPlayer.CHero_Index][2][3]):
         eventPlayer.Target=null
-        eventPlayer.startFacing(vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)),450+200*(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos) < 3),Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
-        
+        eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
     else:
         if(not eventPlayer.Target or distance(eventPlayer.CPos,eventPlayer.getPosition())>HeroSpecs[eventPlayer.CHero_Index][2][0]+0.5):
-            eventPlayer.startFacing(vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)),400,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE) 
+            eventPlayer.startFacing(vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)),450+200*(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos) < 3),Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE) 
             eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
         elif(distance(eventPlayer.Target[1].getPosition(),eventPlayer.getPosition())<=HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5):
             eventPlayer.startFacing(vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]) if eventPlayer.Target[1] else 0,eventPlayer.CPos.z)),450,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE) 
-            
+
+#!define BasicAttackExceptions []
+
 ### 2 ###
 rule "Use Basic Attack":
     @Event eachPlayer
@@ -211,19 +214,17 @@ rule "Use Basic Attack":
                 println("Error with entity in Target ref")
                 return
         elif(eventPlayer.Target[0].x>=10)::
-            eventPlayer.CPos=vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z) #turns id to coords
+            eventPlayer.CPos=vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0].x)].z) #turns id to coords
         else:
             println("Entity has broken ref or id. Id of >10 missing entity ref")
             return #for some reason, the dummy bot was deleted and we have a broken ref
+        eventPlayer.stopFacing()
         if(not HeroSpecs[eventPlayer.CHero_Index][2][3]):
-            eventPlayer.stopFacing()
             if(distance(eventPlayer.getPosition(),eventPlayer.CPos)>HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5):
                 eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][2][0]-0.5)/*starts at cpos and moves player to closest point within range*/
                 startAction(0,eventPlayer)
             else:
                 eventPlayer.setFacing(directionTowards(eventPlayer.CPos,eventPlayer.getEyePosition()),Relativity.TO_WORLD)
-        else:
-            eventPlayer.stopFacing()
             #eventPlayer.startFacing(directionTowards(eventPlayer.CPos,eventPlayer.getEyePosition()),600,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
         waitUntil(not eventPlayer.Target[0].x>0 or distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0.5,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))<=HeroSpecs[eventPlayer.CHero_Index][2][0]+0.6,9999)
         if(not eventPlayer.Target[0].x>0):
@@ -235,16 +236,17 @@ rule "Use Basic Attack":
         else:
             eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
         if(not eventPlayer.Target[1] or eventPlayer.isInViewAngle(eventPlayer.CPos,45)):
-            if(eventPlayer.CHero in []):
+            if(eventPlayer.CHero in BasicAttackExceptions):
                 eventPlayer.Hero_Ability[1]=0
                 eventPlayer.Hero_Ability[0]=AbilityStage.CAST
             else:
                 if(not eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)):
                     eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
-            deal(eventPlayer.Target[1],HeroSpecs[eventPlayer.CHero_Index][2][1])
+            deal(eventPlayer.Target[1] if eventPlayer.Target[1] else eventPlayer.Target[0].x,HeroSpecs[eventPlayer.CHero_Index][2][1])
             waitUntil(not eventPlayer.Target[0].x>0,1/HeroSpecs[eventPlayer.CHero_Index][2][2]*1)
         else:
             wait(0.01)
+        
 
 ### 3 ###
 rule "Use Ability 1":
