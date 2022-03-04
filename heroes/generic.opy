@@ -38,11 +38,11 @@ rule "Heroes_Init":
         */
 
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-                        #[base hp,base mana,damage type, [base armor]],levelrate[[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
+                        #[base hp,base mana,damage type, [base armor,dmgtakenmult,damagedealtmult]],levelrate[[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                                1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,0,0]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
-    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,0,0]],[],[4,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,0,0]],[],[10,12,5],[[]],[[]],[[]],[[]]],
+    /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
+    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[[]]],
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
     /*Reinhardt*/      [],
@@ -87,16 +87,20 @@ rule "Heroes_Init":
     eventPlayer.ControlledRef.setDamageDealt(0)\
     eventPlayer.ControlledRef.setDamageReceived(0)\
     eventPlayer.setDamageReceived(0)\
-    eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+1+eventPlayer.Slot/100\
+    eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+eventPlayer.Slot/100\
     
 
 rule "Check Hero Change":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()
+    OnSpawn()
+
+def OnSpawn():
     eventPlayer.disableScoreboard()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
-    ###INIT BOT###
+    if(eventPlayer.Team!=0): #catches team switch
+        startAction(8,eventPlayer.ControlledRef)
     if(eventPlayer.getTeam()==Team.1):
         eventPlayer.Team=1
     else:
@@ -108,10 +112,13 @@ rule "Check Hero Change":
         #eventPlayer.getCurrentHero()
     eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
     attachControlled
+    wait()
     CameraSetup()
     OnHero()
+    wait()
     UI_Setup()
-    waitUntil(eventPlayer.cursor!=vect(0,0.01,0),1000)
+    waitUntil(eventPlayer.ControlledRef.hasSpawned()==true,1000)
+    wait()
     eventPlayer.CamAttach=true
     moveCameraWithPlayer()
     wait()
@@ -143,6 +150,7 @@ rule "Controlled Spawned":
     @Condition Ready==true
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.ControlledRef.isAlive()
+    #print("{}: {}".format(eventPlayer.ControlledRef.Target[0],eventPlayer.ControlledRef.Target[1]))
     if(eventPlayer.CamAttach):
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=1,ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.enableHeroHud()
@@ -152,9 +160,26 @@ rule "Controlled Spawned":
         eventPlayer().UIContainer=[Color.TEAM_2,Color.TEAM_2]
     wait(0.5)
     moveCameraWithPlayer()
+    
+rule "CursorStyle":
+    @Event eachPlayer
+    @Condition Ready == true
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+    @Condition not eventPlayer.isDummy()
+    @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z))>1
+    
+    eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
+    startAction(0,eventPlayer.ControlledRef)
+    eventPlayer.MovementGroundCursor = true
+    waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
+    while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
+        eventPlayer.MovementGroundCursor = false
+        eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
+        startAction(0,eventPlayer.ControlledRef)
+        wait(0.1)
+    eventPlayer.MovementGroundCursor = true
 
-
-rule "Target":
+rule "Set Target to Cursor":
     @Event eachPlayer
     @Condition Ready==true
     @Condition not eventPlayer.isDummy()
@@ -164,22 +189,18 @@ rule "Target":
         eventPlayer.AbilityVerify[0]=false
         eventPlayer.AbilityVerify[1]=false
     else:
+        eventPlayer.Target=null
         wait()
-        eventPlayer.Temp_DistanceSort=[]
-        for eventPlayer.Target_i in range(0,len(CPlayers[1-eventPlayer.ControlledRef.Team])):
-            eventPlayer.Temp_DistanceSort[eventPlayer.Target_i]=(vect(1-eventPlayer.ControlledRef.Team+eventPlayer.Target_i/100,CPlayers[1-eventPlayer.ControlledRef.Team][eventPlayer.Target_i].getPosition().x,CPlayers[1-eventPlayer.ControlledRef.Team][eventPlayer.Target_i].getPosition().z))
-        eventPlayer.Temp_DistanceSort=sorted(eventPlayer.Temp_DistanceSort.concat(random.shuffle(NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48))), lambda i: (abs(eventPlayer.cursor.x-i.y))**2 + (abs(eventPlayer.cursor.z-i.z))**2)
-        if((abs(eventPlayer.cursor.x-eventPlayer.Temp_DistanceSort[0].y))**2 + (abs(eventPlayer.cursor.z-eventPlayer.Temp_DistanceSort[0].z))**2<0.866):
-            eventPlayer.ControlledRef.Target[0]=eventPlayer.Temp_DistanceSort[0]
-            if(eventPlayer.Temp_DistanceSort[0].x<10):
-                eventPlayer.ControlledRef.Target[1] = CPlayers[floor(eventPlayer.Temp_DistanceSort[0].x)][eventPlayer.Temp_DistanceSort[0].x%1*100]
-            else:
-                eventPlayer.ControlledRef.Target[1]=null
-            startAction(2,eventPlayer.ControlledRef)
-            println("{0}, {1}".format(eventPlayer.Temp_DistanceSort[0],eventPlayer.cursor))
+        eventPlayer.TargetHandling=[eventPlayer.cursor,0.75]
+        Target()
+        if(eventPlayer.Target[0]):
+            eventPlayer.ControlledRef.Target=eventPlayer.Target
+            println(eventPlayer.ControlledRef.Target[1])
             eventPlayer.UICursorStyles[0]=Color.RED
             wait(0.1)
             eventPlayer.UICursorStyles[0]=Color.WHITE
+            eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]]
+            startAction(2,eventPlayer.ControlledRef)
 
 #!define cast(abilityplus2,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2]):/*if exists*/\

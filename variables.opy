@@ -4,8 +4,8 @@
 
 #!define ForcedHero Hero.TRACER
 
-#!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice((i)+1,len(array)-1))
-#!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat(value).concat((array).slice(i,len(array)-1))
+#!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice((i)+1,len((array))-1))
+#!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice(i,len((array))-1))
 
 #!define loopt if(RULE_CONDITION):\
     goto RULE_START
@@ -14,7 +14,7 @@
 #!define top goto RULE_START
 #!define println(a) enableInspector()\
     printLog(a)\
-    #disableInspector()
+    disableInspector()
 #!define clamp(val,min_,max_) max((min_),min((val),(max_)))
 
 #!defineMember deal(target,rawdamage) eventPlayer.HealthQueue.append([[(target),(rawdamage)]]) /*input is target or id*/\
@@ -22,8 +22,9 @@
 #DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
 #range(0,30) is min          k             2-type[1=min,2=struct]            team               structures
 #!define NonPLoc(id) ((id) % floor(id))*100   + (2-floor((id)/10))     *  30*(floor((id)-1) % 10) + ((id)-1)*(floor((id)-1) % 10)*8
-#!define PlayerFromID(id) CPlayers[floor(id)][(id)%1*100]
-#!define MinionByID(id) Minions[floor((id))%10*30+((id))%1*100]
+#!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
+#!define MinionFromID(id) Minions[floor((id))%10*30+((id))%1*100]
+#!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else MinionFromID((id))[2]
 # team = floor()%10, k = ()%1*100
 #floor(id/10)
 #floor(id) % 10
@@ -155,7 +156,7 @@ playervar AbilityUse #passes vars to Ability_Used function
 playervar ArrivedAtM2P
 playervar Hidden
 playervar Team #1 or 2 
-playervar Target #[vect(id,posx,posz),ref,[idle,idle targetref, idle targetid]]
+playervar Target #[vect(id,posx,posz),ref,[engage,pursue]]
 playervar AbilityVerify #[waiting for ability verify, cancelled, button, abilitynum]
 playervar Hero_Ability #casts ability from the perspective of the hero. e.g: ability1 is called with eventPlayer.ControlledRef as the event player with Ability Verify. It is then cast to the specific hero based on this variable
 playervar HA_temp
@@ -177,6 +178,7 @@ subroutine moveCameraWithPlayer
 subroutine teleportCamera
 subroutine chaseCursorValues
 subroutine CastConfirm 
+subroutine OnSpawn
 subroutine OnHero 
 subroutine Minions_Main
 subroutine Minions_Init
@@ -190,5 +192,5 @@ subroutine defaultEffectUI
 subroutine clearEffectUI
 subroutine AbilityUsedFunc
 subroutine AbilityProcess
-subroutine Throttle
+subroutine StopThrottle
 subroutine CalcDealt

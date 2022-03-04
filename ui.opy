@@ -79,23 +79,7 @@ rule "Cursor":
     #raycast(eventPlayer.CamLoc,vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),getAllPlayers(),null,true).getHitPosition().y
     #createEffect(eventPlayer,Effect.SPHERE,eventPlayer.UICursorStyles[2],vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z),eventPlayer.UICursorStyles[3],EffectReeval.POSITION_AND_RADIUS)
 
-rule "CursorStyle":
-    @Event eachPlayer
-    @Condition Ready == true
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
-    @Condition not eventPlayer.isDummy()
-    @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z))>1
-    
-    eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-    startAction(1,eventPlayer.ControlledRef)
-    eventPlayer.MovementGroundCursor = true
-    waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
-    while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
-        eventPlayer.MovementGroundCursor = false
-        eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-        startAction(1,eventPlayer.ControlledRef)
-        wait(0.1)
-    eventPlayer.MovementGroundCursor = true
+
 
 
 rule "Print":
@@ -141,13 +125,14 @@ def CameraSetup():
 rule "POV":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-    eventPlayer.stopCamera()
-    eventPlayer.startCamera(eventPlayer.ControlledRef.getEyePosition(),eventPlayer.ControlledRef.getEyePosition()+eventPlayer.ControlledRef.getFacingDirection()*300,100)
+
+    #eventPlayer.stopCamera()
+    #eventPlayer.startCamera(eventPlayer.ControlledRef.getEyePosition(),eventPlayer.ControlledRef.getEyePosition()+eventPlayer.ControlledRef.getFacingDirection()*300,100)
 
 rule "Camera Bounds":
     #!define Hori atan2(eventPlayer.getFacingDirection().x,eventPlayer.getFacingDirection().z)
     #!define Vert asin(eventPlayer.getFacingDirection().y)
-    #!define HoriLimit ((ScreenLimits[0])+eventPlayer.eyeAxis[1]*0.1*eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))
+    #!define HoriLimit (ScreenLimits[0])
     #!define VertLimit ScreenLimits[1]
     #!define HoriBounds (abs(eventPlayer.eyeAxis[0])<HoriLimit)
     #!define VertBounds (abs(eventPlayer.eyeAxis[1]<VertLimit))
@@ -156,13 +141,12 @@ rule "Camera Bounds":
     @Condition not eventPlayer.isDummy()
     eventPlayer.eyeAxis[0]=Hori
     eventPlayer.eyeAxis[1]=Vert
-    
+    if(eventPlayer.cursor==0):
+        eventPlayer.cursor=vect(0,0.01,0)
+        #starts chaseCursor subroutine once per player
+        async(chaseCursorValues, AsyncBehavior.NOOP)
     #if the mouse is out of bounds horizontally, bring it back in bounds (take current Horizontal angle and convert it back into facing direction to put a hard limit on look angle (hopefully))
-    if(not HoriBounds):
-        eventPlayer.setFacing(angleToDirection((180/Math.PI)*0.97*(HoriLimit)*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])),eventPlayer.eyeAxis[1]*-1*(180/Math.PI)),Relativity.TO_WORLD)
-        
-    elif(not VertBounds):
-        eventPlayer.setFacing(angleToDirection((180/Math.PI)*eventPlayer.eyeAxis[0],(180/Math.PI)*-0.97*(VertLimit)*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))),Relativity.TO_WORLD)
+
         #Don't move the screen if your camera is locked
     if(not eventPlayer.CamAttach):
         #If mouse outside normal range(and camera unlocked), move screen that direction a given rate
@@ -173,10 +157,7 @@ rule "Camera Bounds":
             eventPlayer.CamLoc=(vect(eventPlayer.CamLoc.x,eventPlayer.CamLoc.y,eventPlayer.CamLoc.z+Setting_CamSpeed*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))))
     ##
     eventPlayer.cursorNew=vect((eventPlayer.CamLoc.y*2.750)*(eventPlayer.eyeAxis[0]/Math.PI)+eventPlayer.CamLoc.x,0,((eventPlayer.eyeAxis[1])/(Math.PI/2))*(eventPlayer.CamLoc.y*0.775)+eventPlayer.CamLoc.z)
-    if(eventPlayer.cursor==0):
-        eventPlayer.cursor=vect(0,0.01,0)
-        #starts chaseCursor subroutine once per player
-        async(chaseCursorValues, AsyncBehavior.NOOP)
+    
     wait(0.03)
     #if(distance(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z))>1 and eventPlayer.CamAttach):
     #    eventPlayer.CamLoc+=0.1*directionTowards(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z))
@@ -186,5 +167,10 @@ rule "Camera Bounds":
 def chaseCursorValues():    
     if(HoriBounds and VertBounds):
         eventPlayer.cursor=eventPlayer.cursorNew
-    wait()
+    elif(not HoriBounds):
+        eventPlayer.setFacing(angleToDirection((180/Math.PI)*0.97*(HoriLimit)*(eventPlayer.eyeAxis[0]/abs(eventPlayer.eyeAxis[0])),eventPlayer.eyeAxis[1]*-1*(180/Math.PI)),Relativity.TO_WORLD)
+    elif(not VertBounds):
+        eventPlayer.setFacing(angleToDirection((180/Math.PI)*eventPlayer.eyeAxis[0],(180/Math.PI)*-0.97*(VertLimit)*(eventPlayer.eyeAxis[1]/abs(eventPlayer.eyeAxis[1]))),Relativity.TO_WORLD)
+        
+    wait(0.03)
     top

@@ -51,11 +51,12 @@ rule "Hero - Cast":
             Ability(Button.ABILITY_1,false)
             wait(0.1)
             if(eventPlayer.Owner):
-                if(not eventPlayer.Owner.isHoldingButton(Button.SECONDARY_FIRE)):
-                    eventPlayer.stopThrottleInDirection()
+                eventPlayer.stopThrottleInDirection()
                 eventPlayer.Owner.MovementGroundCursor=false
                 if(eventPlayer.Owner.CamAttach):
                     eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
+            else:
+                eventPlayer.stopThrottleInDirection()
             break
         case 2:
             Ability(Button.ABILITY_2,false)

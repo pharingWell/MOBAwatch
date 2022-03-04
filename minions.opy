@@ -151,7 +151,7 @@ def Minion_Wave():
                 M_tTemp=Color.TEAM_1
             elif(i==1):
                 M_tTemp=Color.TEAM_2
-            #createInWorldText(,MinionTypes[Minions[i][k][0]*MinionTypesQualities],vect(NonPlayer_Loc[evalOnce(k)][1],0,Minions[evalOnce(i)][evalOnce(k)][2]),3,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,M_tTemp,SpecVisibility.NEVER)
+            createInWorldText(getAllPlayers(),MinionTypes[Minions[i][k][0]*MinionTypesQualities],vect(NonPlayer_Loc[evalOnce(k)][1],0,Minions[evalOnce(i)][evalOnce(k)][2]),3,Clip.SURFACES,WorldTextReeval.VISIBILITY_AND_POSITION,M_tTemp,SpecVisibility.NEVER)
             MinionRenders[i] = [len(Minions[i])-1,getLastCreatedText,getLastCreatedEntity]
 def Minions_Init():
                            # 0    , 1   ,  2   , 3  ,                                   4        5       6        7              8                  9    

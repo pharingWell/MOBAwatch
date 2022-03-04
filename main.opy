@@ -70,15 +70,18 @@ rule "InitiateGame":
     Minions=[[-1],[-1]] 
     Players=[-1]
     
-    createDummy(Hero.ROADHOG,Team.2,4,vect(2,0,2),vect(0,0,0))
+    createDummy(Hero.ROADHOG,Team.2,6,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]
     getLastCreatedEntity().setDamageReceived(0)
-    createDummy(Hero.TORBJORN,Team.2,5,vect(-2,0,2),vect(0,0,0))
+    wait()
+    createDummy(Hero.TORBJORN,Team.2,7,vect(-2,0,2),vect(0,0,0))
     getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],getLastCreatedEntity()]
-    createDummy(Hero.DVA,Team.2,6,vect(0,0,4),vect(0,0,0))
+    wait()
+    createDummy(Hero.DVA,Team.2,8,vect(0,0,4),vect(0,0,0))
     getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],CPlayers[1][1],getLastCreatedEntity()]
+    wait()
     ScreenLimits = [1.3,1.40]
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
@@ -115,10 +118,11 @@ def Ready():
 
 rule "Inspector":
     @Condition Ready == true
-    disableInspector()
     wait(1)
-    enableInspector()
-    top    
+    disableInspector()
+    
+    #enableInspector()
+    #top    
 
 rule "Display server performance characteristics":
     hudHeader(getAllPlayers(), "{}{} {}{} {}{}".format("Load:", "{0}%".format(getServerLoad()), "Load Average:", "{0}%".format(getAverageServerLoad()), "Load Peak:", "{0}%".format(getPeakServerLoad()) ), HudPosition.RIGHT, -10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
@@ -126,9 +130,10 @@ rule "Display server performance characteristics":
 
 rule "Minions Tick":
     @Condition Ready == true
-    #Minions_Main()
     wait(15)
-    Minion_Wave()
+    #Minions_Main()
+    
+    #Minion_Wave()
     top
 
 rule "start dot":
@@ -156,7 +161,7 @@ rule "On Player Left":
     @Condition not eventPlayer.isDummy()
     Left()
 
-def Left():
+/*def Left():
     for PlayerLeft_i in range(len(CPlayers[0])):
         if(CPlayers[0][PlayerLeft_i].Owner not in Players[0]):
             CPlayers[0][PlayerLeft_i].Owner=null
@@ -168,5 +173,5 @@ def Left():
             #destroyDummy(Team.2,TeamSize+PlayerLeft_i)
             #CPlayers[1]=CPlayers[0].exclude(CPlayers[1][PlayerLeft_i])
     disableInspector()
-
+*/
 
