@@ -17,6 +17,8 @@
     disableInspector()
 #!define clamp(val,min_,max_) max((min_),min((val),(max_)))
 
+#!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0.5,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))
+
 #!defineMember deal(target,rawdamage) eventPlayer.HealthQueue.append([[(target),(rawdamage)]]) /*input is target or id*/\
     CalcDealt()
 #DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
@@ -114,7 +116,7 @@ globalvar Ready
 globalvar CD_Buttons
 globalvar PlayerLeft_i
 globalvar HeroSpecs
-
+globalvar FunctionToggle #used for debugging for optimization
 
 #settings
 
@@ -148,6 +150,7 @@ playervar Health #current,max,[regen/dots,duration,rate], [damager,healer]
 playervar Mana #current,max
 playervar CPos
 playervar MovetoPos
+playervar LookAtPos
 playervar Alive
 playervar CHero
 playervar CHero_Index

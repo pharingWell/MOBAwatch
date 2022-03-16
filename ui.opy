@@ -89,7 +89,8 @@ rule "Print":
 
 rule "Toggle CamAttach":
     @Event eachPlayer
-    @Condition not eventPlayer.isDummy() and eventPlayer.isHoldingButton(Button.JUMP)
+    @Condition not eventPlayer.isDummy()
+    @Condition eventPlayer.isHoldingButton(Button.JUMP)
     wait(0.05)
     if(eventPlayer.isHoldingButton(Button.JUMP)):
         wait(0.3)
@@ -121,14 +122,7 @@ def CameraSetup():
     eventPlayer.setInvisibility(Invis.ALL)
     eventPlayer.setStatusEffect(null,Status.PHASED_OUT,9999)
     eventPlayer.setDamageReceived(0)
-
-rule "POV":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-
-    #eventPlayer.stopCamera()
-    #eventPlayer.startCamera(eventPlayer.ControlledRef.getEyePosition(),eventPlayer.ControlledRef.getEyePosition()+eventPlayer.ControlledRef.getFacingDirection()*300,100)
-
+    
 rule "Camera Bounds":
     #!define Hori atan2(eventPlayer.getFacingDirection().x,eventPlayer.getFacingDirection().z)
     #!define Vert asin(eventPlayer.getFacingDirection().y)
@@ -139,6 +133,7 @@ rule "Camera Bounds":
     @Event eachPlayer
     @Condition Ready == true
     @Condition not eventPlayer.isDummy()
+    @Condition FunctionToggle
     eventPlayer.eyeAxis[0]=Hori
     eventPlayer.eyeAxis[1]=Vert
     if(eventPlayer.cursor==0):
@@ -158,13 +153,15 @@ rule "Camera Bounds":
     ##
     eventPlayer.cursorNew=vect((eventPlayer.CamLoc.y*2.750)*(eventPlayer.eyeAxis[0]/Math.PI)+eventPlayer.CamLoc.x,0,((eventPlayer.eyeAxis[1])/(Math.PI/2))*(eventPlayer.CamLoc.y*0.775)+eventPlayer.CamLoc.z)
     
-    wait(0.03)
+    #wait(0.03)
     #if(distance(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z))>1 and eventPlayer.CamAttach):
     #    eventPlayer.CamLoc+=0.1*directionTowards(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z))
-    top
+    #top
 
 
-def chaseCursorValues():    
+def chaseCursorValues():
+    if(not FunctionToggle):
+        return
     if(HoriBounds and VertBounds):
         eventPlayer.cursor=eventPlayer.cursorNew
     elif(not HoriBounds):

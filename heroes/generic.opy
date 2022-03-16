@@ -81,6 +81,7 @@ rule "Heroes_Init":
     eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
     eventPlayer.ControlledRef.Owner = eventPlayer\
     eventPlayer.ControlledRef.startForcingName("{}".format(eventPlayer))\
+    eventPlayer.startForcingName("{}".format("_/?"))\
     eventPlayer.CHero=ForcedHero\
     eventPlayer.ControlledRef.CHero=eventPlayer.CHero\
     eventPlayer.startForcingHero(eventPlayer.CHero)\
@@ -150,7 +151,7 @@ rule "Controlled Spawned":
     @Condition Ready==true
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.ControlledRef.isAlive()
-    #print("{}: {}".format(eventPlayer.ControlledRef.Target[0],eventPlayer.ControlledRef.Target[1]))
+    createEffect(eventPlayer if eventPlayer.ControlledRef.isInViewAngle(eventPlayer.ControlledRef.CPos,90) else null,Effect.SPHERE,Color.WHITE,eventPlayer.ControlledRef,0.25,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     if(eventPlayer.CamAttach):
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=1,ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.enableHeroHud()
@@ -161,7 +162,7 @@ rule "Controlled Spawned":
     wait(0.5)
     moveCameraWithPlayer()
     
-rule "CursorStyle":
+rule "Move To":
     @Event eachPlayer
     @Condition Ready == true
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
@@ -176,7 +177,7 @@ rule "CursorStyle":
         eventPlayer.MovementGroundCursor = false
         eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
         startAction(0,eventPlayer.ControlledRef)
-        wait(0.1)
+        wait(0.5)
     eventPlayer.MovementGroundCursor = true
 
 rule "Set Target to Cursor":
@@ -195,7 +196,6 @@ rule "Set Target to Cursor":
         Target()
         if(eventPlayer.Target[0]):
             eventPlayer.ControlledRef.Target=eventPlayer.Target
-            println(eventPlayer.ControlledRef.Target[1])
             eventPlayer.UICursorStyles[0]=Color.RED
             wait(0.1)
             eventPlayer.UICursorStyles[0]=Color.WHITE

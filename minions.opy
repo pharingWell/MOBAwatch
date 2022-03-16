@@ -169,7 +169,7 @@ def Minions_Init():
                 Minions[i]=[MR_Temp]
             else:
                 Minions[i].append([MR_Temp])
-            NonPlayer_Loc[i*30+k]=vect(M_id(i,k),ft(0,i),0)
+            #NonPlayer_Loc[i*30+k]=vect(M_id(i,k),ft(0,i),0)
     Ready()  
 /*  
 (j==1 or j==3): M_DataTemp=MinionPositionLane1n3(M_tTemp,j)
