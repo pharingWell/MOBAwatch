@@ -78,7 +78,6 @@ rule "Heroes_Init":
     eventPlayer.ControlledRef=CPlayers[eventPlayer.Team-1][eventPlayer.Slot]\
     eventPlayer.ControlledRef.startForcingPosition(vect(0,100,0),true)\
     eventPlayer.ControlledRef.stopForcingPosition()\
-    eventPlayer.startForcingPosition(vect(eventPlayer.ControlledRef.getPosition().x,-10,eventPlayer.ControlledRef.getPosition().z),true)\
     eventPlayer.ControlledRef.Owner = eventPlayer\
     eventPlayer.ControlledRef.startForcingName("{}".format(eventPlayer))\
     eventPlayer.startForcingName("{}".format("_/?"))\
@@ -170,17 +169,20 @@ rule "Move To":
     @Condition Ready == true
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isDummy()
-    @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z))>1
+    @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
     
-    eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
+    eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
     startAction(0,eventPlayer.ControlledRef)
     eventPlayer.MovementGroundCursor = true
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
     while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
         eventPlayer.MovementGroundCursor = false
-        eventPlayer.ControlledRef.MovetoPos = vect(eventPlayer.cursor.x,0,eventPlayer.cursor.z)
-        startAction(0,eventPlayer.ControlledRef)
-        wait(0.5)
+        eventPlayer.ControlledRef.MovetoPos = eventPlayer.cursor
+        startAction(1,eventPlayer.ControlledRef)
+        if(getTotalTimeElapsed()%2<0.5):
+            startAction(0,eventPlayer.ControlledRef)
+        waitUntil(not(eventPlayer.isUsingAbility1() or eventPlayer.isUsingAbility2() or eventPlayer.isUsingUltimate())==true,1)
+        wait(0.128)
     eventPlayer.MovementGroundCursor = true
 
 rule "Set Target to Cursor":

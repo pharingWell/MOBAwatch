@@ -60,30 +60,31 @@ def UI_Process():
     top
 
 rule "UI Definitions - Global Cursor":
-    #!define EYE localPlayer.getPosition()+vect(-7.5,10+localPlayer.CamLoc.y,0)
+    #!define CamPos vect(-5,10,0)
+    #!define EYE localPlayer.getPosition()+vect(0,10,0)+CamPos
     #!define LOOK localPlayer.getPosition()+vect(0,10,0)
     #!define CURSORX (localPlayer.cursorAngles[0].x)
     #!define CURSORZ (localPlayer.cursorAngles[0].z+3)
     #!define SCALE 50
-    #!define DIR vect(0.68,-0.74,0)
-    #directionTowards(eventPlayer.getPosition()+vect(-11,10+eventPlayer.CamLoc.y,0), eventPlayer.getPosition()+vect(0,10,0))
+    #!define DAMPER 80
+    #!define DIR vect(0.45,-0.89,0)
+    #directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))
     #!define XSCALE vect(0,0,-1)
-    #-crossProduct(DIR, angleToDirection(horizontalAngleOfDirection(DIR), verticalAngleOfDirection(DIR) - 90))
-    #!define ZSCALE (vect(-0.88,-0.48,0))
-    #-angleToDirection(horizontalAngleOfDirection(DIR), verticalAngleOfDirection(DIR) - 90)
-    
-    #!define uiPos(xpos,ypos) updateEveryTick(EYE+(xpos)/SCALE*XSCALE+DIR + (ypos)/SCALE*ZSCALE)
-    createInWorldText(getAllPlayers(), "•", uiPos(CURSORX,CURSORZ), 2.5, Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, localPlayer.UICursorStyles[0], SpecVisibility.NEVER)
-    createInWorldText(localPlayer if localPlayer.MovementGroundCursor else null,"¤",vect(localPlayer.ControlledRef.MovetoPos.x,0,localPlayer.ControlledRef.MovetoPos.z-localPlayer.CamLoc.y/12.5),2.0,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,Color.SKY_BLUE,SpecVisibility.NEVER)
-    createEffect(localPlayer,Effect.SPHERE,Color.WHITE,localPlayer.cursor,0.8,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(localPlayer,Beam.BRIGITTE_FLAIL_CHAIN,uiPos(ScreenLimits[0],ScreenLimits[1]),uiPos(ScreenLimits[0],-ScreenLimits[1]),Color.WHITE,EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+    #-crossProduct(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0)), angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90))
+    #!define ZSCALE vect(-0.89,-0.45,0)
+    #-angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90)
+    ScreenLimits = [1.25,0.68]
+    #!define uiPos(xpos,ypos) updateEveryTick(EYE+DAMPER*((xpos)/SCALE*XSCALE+DIR + (ypos)/SCALE*ZSCALE))
+    createInWorldText(getAllPlayers(), "•", uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, localPlayer.UICursorStyles[0], SpecVisibility.NEVER)
+    createInWorldText(localPlayer if localPlayer.MovementGroundCursor else null,"¤",localPlayer.ControlledRef.MovetoPos-vect(1.25,0,0),2.0,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,Color.SKY_BLUE,SpecVisibility.NEVER)
+    createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.cursor,0.1,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 rule "Start Camera": 
     @Event eachPlayer
     @Condition Ready == true
     @Condition not eventPlayer.isDummy()
     eventPlayer.UICursorStyles = [Color.WHITE,true,Color.RED,0.10]
-    eventPlayer.CamLoc = vect(0,12,0)
-    eventPlayer.startCamera(EYE, LOOK, 35)
+    eventPlayer.CamLoc = vect(0,0,0)
+    eventPlayer.startCamera(EYE, LOOK, 65)
     eventPlayer.setInvisibility(Invis.ALL)
     eventPlayer.setStatusEffect(null,Status.PHASED_OUT,9999)
     eventPlayer.setDamageReceived(0)
@@ -94,9 +95,13 @@ rule "Start Camera":
 rule "Print":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy() and eventPlayer.isHoldingButton(Button.INTERACT)
+    print(eventPlayer.CamLoc)
     #PrintMinions()
-    print("1{}2{}3{}".format(directionTowards(eventPlayer.getPosition()+vect(-11,10+eventPlayer.CamLoc.y,0), eventPlayer.getPosition()+vect(0,10,0)),-crossProduct(DIR, angleToDirection(horizontalAngleOfDirection(DIR), verticalAngleOfDirection(DIR) - 90)),-angleToDirection(horizontalAngleOfDirection(DIR), verticalAngleOfDirection(DIR) - 90)))
-
+    /*print("1{}2{}3{}".format( 
+        directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))
+        ,-crossProduct(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0)), angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90))
+        ,-angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90)
+        ))#prints DIR,XSCALE and ZSCALE for reevalulation*/
 rule "Toggle CamAttach":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
@@ -122,7 +127,8 @@ rule "Toggle CamAttach":
     
 def moveCameraWithPlayer():
     if(eventPlayer.CamAttach):
-        #chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),rate=eventPlayer.ControlledRef.getSpeed(),ChaseReeval.DESTINATION_AND_RATE)
+        #eventPlayer.CamLoc=eventPlayer.ControlledRef.MovetoPos
+        chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),rate=eventPlayer.ControlledRef.getSpeed(),ChaseReeval.DESTINATION_AND_RATE)
 
     
 rule "Camera Bounds":
@@ -130,8 +136,11 @@ rule "Camera Bounds":
     #!define Vert eventPlayer.getVerticalFacingAngle()
     #!define InHoriBounds abs(Hori)<ScreenLimits[0]*SCALE
     #!define InVertBounds abs(Vert)<ScreenLimits[1]*SCALE
+    #!define BounceMargin 0.5
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
+    eventPlayer.CamLoc+=Setting_CamSpeed*vect(-(abs(Vert)>(SCALE-1.5*BounceMargin)*ScreenLimits[1] and abs(Vert)<(SCALE+0.3*BounceMargin)*ScreenLimits[1])*eventPlayer.cursorAngles[0].z/abs(eventPlayer.cursorAngles[0].z)
+    ,0,-(abs(Hori)>(SCALE-1.5*BounceMargin)*ScreenLimits[0] and abs(Hori)<(SCALE+1.2*BounceMargin)*ScreenLimits[0])*eventPlayer.cursorAngles[0].x/abs(eventPlayer.cursorAngles[0].x))
     if(InHoriBounds and InVertBounds):
         eventPlayer.cursorAngles[0]=vect(Hori,0,Vert) #Updates cursor
         if(Hori!=eventPlayer.cursorAngles[1].x): #Only updates In-screen position if one is valid
@@ -139,23 +148,23 @@ rule "Camera Bounds":
             eventPlayer.cursorAngles[1]=eventPlayer.cursorAngles[0]
             #set last angle based on temp holding
         #negative height of EYE over y component of cursor component times the cursor plus EYE position
-        eventPlayer.cursor=(0-eventPlayer.CamLoc.y)/(DIR.y+eventPlayer.cursorAngles[0].z/SCALE*ZSCALE.y)*(DIR+eventPlayer.cursorAngles[0].x/SCALE*XSCALE+eventPlayer.cursorAngles[0].z/SCALE*ZSCALE)+eventPlayer.getPosition()+vect(-11,10+eventPlayer.CamLoc.y,0)
+        eventPlayer.cursor=(0-CamPos.y)/(DIR.y+eventPlayer.cursorAngles[0].z/SCALE*ZSCALE.y)*(DIR+eventPlayer.cursorAngles[0].x/SCALE*XSCALE+eventPlayer.cursorAngles[0].z/SCALE*ZSCALE)+eventPlayer.getPosition()+vect(0,10,0)+CamPos
     wait(0.032)
     top
 rule "Prevent Cursor Wrapping":
     @Event eachPlayer
+    @Condition not eventPlayer.isDummy()
     @Condition not InHoriBounds or not InVertBounds
-    #!define BounceMargin 0.35
-    if(not InHoriBounds*1.1): #StartFacing is better handling larger movements, this if statement detects which one occured
+    /*if(not InHoriBounds*1.35): #StartFacing is better handling larger movements, this if statement detects which one occured
         eventPlayer.startFacing(angleToDirection(
             Hori if InHoriBounds
             else angleDifference(eventPlayer.cursorAngles[2].x,eventPlayer.cursorAngles[1].x)/abs(angleDifference(eventPlayer.cursorAngles[2].x,eventPlayer.cursorAngles[1].x))
             *(SCALE-BounceMargin)*ScreenLimits[0]
-            , clamp(Vert,0-(SCALE-BounceMargin)*ScreenLimits[1],(SCALE-BounceMargin)*ScreenLimits[1])
+            ,Vert
             ),1000000,Relativity.TO_WORLD,FacingReeval.NONE)
         wait(0.080)
         waitUntil(InHoriBounds and InVertBounds,1000)
         eventPlayer.stopFacing()
-    else:
+    else:*/
         eventPlayer.setFacing(angleToDirection(clamp(Hori,0-(SCALE-BounceMargin)*ScreenLimits[0],(SCALE-BounceMargin)*ScreenLimits[0]),clamp(Vert,0-(SCALE-BounceMargin)*ScreenLimits[1],(SCALE-BounceMargin)*ScreenLimits[1])),Relativity.TO_WORLD)
     eventPlayer.cursorAngles[0]=vect(Hori,0,Vert)

@@ -49,7 +49,7 @@ rule "Hero - Cast":
         case 1:
             eventPlayer.startThrottleInDirection(eventPlayer.getFacingDirection(),1,Relativity.TO_WORLD,Throttle.REPLACE_EXISTING,ThrottleReeval.NONE)
             Ability(Button.ABILITY_1,false)
-            wait(0.1)
+            wait()
             if(eventPlayer.Owner):
                 eventPlayer.stopThrottleInDirection()
                 eventPlayer.Owner.MovementGroundCursor=false

@@ -81,11 +81,10 @@ rule "InitiateGame":
     getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],getLastCreatedEntity()]
     wait()
-    createDummy(Hero.DVA,Team.2,8,vect(0,0,4),vect(0,0,0))
+    /*createDummy(Hero.DVA,Team.2,8,vect(0,0,4),vect(0,0,0))
     getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],CPlayers[1][1],getLastCreatedEntity()]
-    wait()
-    ScreenLimits = [1.2,0.6]
+    wait()*/
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
     for i in range(TeamSize):

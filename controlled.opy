@@ -102,6 +102,7 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
                 if(eventPlayer.Owner):
                     eventPlayer.CPos=eventPlayer.Owner.cursor
                 eventPlayer.LookAtPos = (directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.getEyePosition().y,eventPlayer.CPos.z)))
+                wait(0.226)
             elif(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2]=TargetState.ENEMY)*/
                 if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][0]):
@@ -202,16 +203,24 @@ rule "MoveToCPos":
         async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     if(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos)>1):
         eventPlayer.startThrottleInDirection(vectorTowards(eventPlayer.getPosition(), eventPlayer.MovetoPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
+   
+rule "Look While Moving":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.getSpeed()>0.3
+    @Condition getTotalTimeElapsed()%0.225<0.017
     if(not (HeroSpecs[eventPlayer.CHero_Index][2][3] and (distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target))):
         eventPlayer.LookAtPos = (vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)))
-        
+      
+
 ### 1 ###
 rule "tbd":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(1)
-    
+ 
         
 
 
