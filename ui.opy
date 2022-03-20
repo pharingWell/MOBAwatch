@@ -139,8 +139,8 @@ rule "Camera Bounds":
     #!define BounceMargin 0.5
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    eventPlayer.CamLoc+=Setting_CamSpeed*vect(-(abs(Vert)>(SCALE-1.5*BounceMargin)*ScreenLimits[1] and abs(Vert)<(SCALE+0.3*BounceMargin)*ScreenLimits[1])*eventPlayer.cursorAngles[0].z/abs(eventPlayer.cursorAngles[0].z)
-    ,0,-(abs(Hori)>(SCALE-1.5*BounceMargin)*ScreenLimits[0] and abs(Hori)<(SCALE+1.2*BounceMargin)*ScreenLimits[0])*eventPlayer.cursorAngles[0].x/abs(eventPlayer.cursorAngles[0].x))
+    eventPlayer.CamLoc+=Setting_CamSpeed*vect(-(abs(Vert)>(SCALE-1.5*BounceMargin)*ScreenLimits[1] and abs(Vert)<(SCALE+0.8*BounceMargin)*ScreenLimits[1])*eventPlayer.cursorAngles[0].z/abs(eventPlayer.cursorAngles[0].z)
+    ,0,-(abs(Hori)>(SCALE-1.5*BounceMargin)*ScreenLimits[0] and abs(Hori)<(SCALE+0.5*BounceMargin)*ScreenLimits[0])*eventPlayer.cursorAngles[0].x/abs(eventPlayer.cursorAngles[0].x))
     if(InHoriBounds and InVertBounds):
         eventPlayer.cursorAngles[0]=vect(Hori,0,Vert) #Updates cursor
         if(Hori!=eventPlayer.cursorAngles[1].x): #Only updates In-screen position if one is valid
@@ -153,9 +153,10 @@ rule "Camera Bounds":
     top
 rule "Prevent Cursor Wrapping":
     @Event eachPlayer
+    @Condition eventPlayer.Ready
     @Condition not eventPlayer.isDummy()
     @Condition not InHoriBounds or not InVertBounds
-    /*if(not InHoriBounds*1.35): #StartFacing is better handling larger movements, this if statement detects which one occured
+    if(not InHoriBounds*1.25): #StartFacing is better handling larger movements, this if statement detects which one occured
         eventPlayer.startFacing(angleToDirection(
             Hori if InHoriBounds
             else angleDifference(eventPlayer.cursorAngles[2].x,eventPlayer.cursorAngles[1].x)/abs(angleDifference(eventPlayer.cursorAngles[2].x,eventPlayer.cursorAngles[1].x))
@@ -165,6 +166,6 @@ rule "Prevent Cursor Wrapping":
         wait(0.080)
         waitUntil(InHoriBounds and InVertBounds,1000)
         eventPlayer.stopFacing()
-    else:*/
+    else:
         eventPlayer.setFacing(angleToDirection(clamp(Hori,0-(SCALE-BounceMargin)*ScreenLimits[0],(SCALE-BounceMargin)*ScreenLimits[0]),clamp(Vert,0-(SCALE-BounceMargin)*ScreenLimits[1],(SCALE-BounceMargin)*ScreenLimits[1])),Relativity.TO_WORLD)
     eventPlayer.cursorAngles[0]=vect(Hori,0,Vert)

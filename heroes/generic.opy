@@ -71,7 +71,7 @@ rule "Heroes_Init":
     /*Ashe*/           [],
     /*Echo*/           [],
     /*Baptiste*/       [],
-    /*Sigma*/          [],
+    /*Sigma*/          ["By PharingWell"],
     ]
 #!define attachControlled createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
     CPlayers[eventPlayer.Team-1]=insert(getLastCreatedEntity(),eventPlayer.Slot,CPlayers[eventPlayer.Team-1])\
@@ -94,6 +94,7 @@ rule "Check Hero Change":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()
+    eventPlayer.startFacing(vect(0,0,1),100000,Relativity.TO_WORLD,FacingReeval.NONE)
     OnSpawn()
 
 def OnSpawn():
@@ -126,8 +127,6 @@ def OnSpawn():
     eventPlayer.enableScoreboard()
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]):
         createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.BLUE,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    eventPlayer.startFacing(vect(0,0,1),100000,Relativity.TO_WORLD,FacingReeval.NONE)
-    wait(1)
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
 

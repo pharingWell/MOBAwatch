@@ -125,7 +125,7 @@ rule "Inspector":
     #top    
 
 rule "Display server performance characteristics":
-    hudHeader(getAllPlayers(), "{}{} {}{} {}{}".format("Load:", "{0}%".format(getServerLoad()), "Load Average:", "{0}%".format(getAverageServerLoad()), "Load Peak:", "{0}%".format(getPeakServerLoad())), HudPosition.RIGHT, -10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    #hudHeader(getAllPlayers(), "{}{} {}{} {}{}".format("Load:", "{0}%".format(getServerLoad()), "Load Average:", "{0}%".format(getAverageServerLoad()), "Load Peak:", "{0}%".format(getPeakServerLoad())), HudPosition.RIGHT, -10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 
 rule "Minions Tick":

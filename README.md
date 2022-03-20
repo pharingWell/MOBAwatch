@@ -58,7 +58,7 @@ This project accomplishes this by:
 
 ### How can I get in touch with you?
 
-Either join the [discord server](https://discord.gg/R4fMq6YjSY) or add me on discord: PharingWell#7340
+Either join the [discord server](https://discord.gg/7EmrUhx6gC) or add me on discord: PharingWell#7340
 
 ---
 

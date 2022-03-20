@@ -1,0 +1,2467 @@
+settings
+{
+	main
+	{
+		Description: "For source code, see https://github.com/PharingWell/MOBAwatch. Join the discord at https://discord.gg/7EmrUhx6gC"
+		Mode Name: "MOBAwatch (WIP) - Build 0.1"
+	}
+
+	lobby
+	{
+		Map Rotation: Paused
+		Max Spectators: 0
+		Max Team 1 Players: 5
+		Max Team 2 Players: 5
+		Return To Lobby: After A Game
+	}
+
+	modes
+	{
+		Hybrid
+		{
+			Payload Speed Modifier: 10%
+
+			enabled maps
+			{
+			}
+		}
+
+		Team Deathmatch
+		{
+			Game Length In Minutes: 15
+			Mercy Resurrect Counteracts Kills: Off
+			Score To Win: 100
+			Self Initiated Respawn: Off
+
+			enabled maps
+			{
+				Workshop Expanse Night
+			}
+		}
+
+		General
+		{
+			Game Mode Start: Immediately
+			Skins: Off
+		}
+	}
+
+	heroes
+	{
+		General
+		{
+			No Ammunition Requirement: Off
+			Spawn With Ultimate Ready: On
+
+			Tracer
+			{
+				Ultimate Ability Pulse Bomb: Off
+			}
+		}
+	}
+
+	extensions
+	{
+		Beam Sounds
+		Play More Effects
+		Spawn More Dummy Bots
+		Beam Effects
+	}
+}
+
+variables
+{
+	global:
+		0: CPlayers
+		1: Players
+		2: TeamSize
+		3: ScreenLimits
+		5: Minions
+		6: LocationChange
+		7: HealthChange
+		8: NonPlayer_Loc
+		12: M_tTemp
+		16: MR_Temp
+		17: Temp_ID
+		18: MinionQualities
+		19: MinionTypes
+		20: MWeapons
+		21: MinionTypesQualities
+		22: MinionWaves
+		23: MinionRenders
+		24: ThreadClear
+		25: i
+		26: j
+		27: k
+		28: l
+		29: PrintText_Temp
+		30: PrintData_Temp
+		33: LocTemp_var
+		34: LocTemp_i
+		35: Ready
+		36: CD_Buttons
+		38: HeroSpecs
+		39: FunctionToggle
+		40: Setting_CamSpeed
+		41: Setting_Mode
+
+	player:
+		0: Slot
+		1: CamLoc
+		2: CamAttach
+		3: ControlledRef
+		4: MovementGroundCursor
+		5: Ready
+		6: cursorAngles
+		7: cursor
+		8: UIContainer
+		10: UICursorStyles
+		11: CD_i
+		12: Target_i
+		13: DamageModifiers
+		14: HealingModifiers
+		15: HealthQueue
+		16: Actions
+		18: Level
+		19: Health
+		20: Mana
+		21: CPos
+		22: MovetoPos
+		23: LookAtPos
+		25: CHero
+		26: CHero_Index
+		27: Owner
+		28: AbilityUse
+		29: ArrivedAtM2P
+		30: Hidden
+		31: Team
+		32: Target
+		33: AbilityVerify
+		34: Hero_Ability
+		35: HA_temp
+		36: MoveAbilityCancel
+		37: Ability_UI
+		38: TargetHandling
+		39: Temp_DistanceSort
+		40: ClearAllUI
+		42: DamageHandler
+		43: TimerHandler
+}
+
+subroutines
+{
+	0: CameraSetup
+	1: UI_Process
+	2: UI_Setup
+	3: moveCameraWithPlayer
+	6: CastConfirm
+	7: OnSpawn
+	8: OnHero
+	9: Minions_Main
+	10: Minions_Init
+	11: HealthHandle
+	12: Minion_Wave
+	13: Minions_Move
+	14: Ready
+	15: PrintMinions
+	16: Left
+	17: defaultEffectUI
+	18: clearEffectUI
+	19: AbilityUsedFunc
+	20: AbilityProcess
+	21: StopThrottle
+	22: CalcDealt
+	23: Target
+}
+
+rule("Subroutine Minions_Move")
+{
+	event
+	{
+		Subroutine;
+		Minions_Move;
+	}
+
+	actions
+	{
+		For Global Variable(LocTemp_i, 0, Count Of(Global.LocationChange), 1);
+			Global.LocTemp_var = Round To Integer(X Component Of(Global.LocationChange[Global.LocTemp_i]) * 1000, Down) % 100;
+			If(X Component Of(Global.NonPlayer_Loc[Global.LocTemp_var]) != X Component Of(Global.LocationChange[Global.LocTemp_i]));
+				Global.LocTemp_var = Index Of Array Value(Global.NonPlayer_Loc, First Of(Filtered Array(Global.NonPlayer_Loc, X Component Of(
+					Current Array Element) == X Component Of(Global.LocationChange[Global.LocTemp_i]))));
+			End;
+			Global.NonPlayer_Loc[Global.LocTemp_var] += Vector(0, Y Component Of(Global.LocationChange[Global.LocTemp_i]), Z Component Of(
+				Global.LocationChange[Global.LocTemp_i]));
+		End;
+		Wait(0.100, Ignore Condition);
+	}
+}
+
+rule("Subroutine Minions_Main")
+{
+	event
+	{
+		Subroutine;
+		Minions_Main;
+	}
+
+	actions
+	{
+		Wait(1, Ignore Condition);
+	}
+}
+
+rule("Subroutine PrintMinions")
+{
+	event
+	{
+		Subroutine;
+		PrintMinions;
+	}
+
+	actions
+	{
+		Wait Until(Global.ThreadClear == True, 100);
+		Global.ThreadClear = False;
+		For Global Variable(i, 0, Count Of(Global.Minions), 1);
+			Global.PrintText_Temp = Custom String("Team {0}:\n[", Global.i + 1);
+			For Global Variable(j, 0, Count Of(Global.Minions[Global.i]), 1);
+				If(String Length(Global.PrintText_Temp) + 30 > 511);
+					Enable Inspector Recording;
+					Log To Inspector(Global.PrintText_Temp);
+					Disable Inspector Recording;
+					Global.PrintText_Temp = Custom String("Team {0}, Index {1}:\n", Global.i + 1, Global.j);
+				End;
+				Global.PrintText_Temp = Custom String("{0}[", Global.PrintText_Temp);
+				For Global Variable(k, 0, Count Of(Global.Minions[Global.i][Global.j]), 1);
+					Global.PrintData_Temp = Custom String(",");
+					If(Global.k >= Count Of(Global.Minions[Global.i][Global.j]) - 1);
+						Global.PrintData_Temp = Custom String("");
+					End;
+					Global.PrintText_Temp = Custom String("{0}{1}{2}", Global.PrintText_Temp, Global.Minions[Global.i][Global.j][Global.k],
+						Global.PrintData_Temp);
+				End;
+				Global.PrintData_Temp = Custom String("],\n");
+				If(Global.j >= Count Of(Global.Minions[Global.i]) - 1);
+					Global.PrintData_Temp = Custom String("]");
+				End;
+				Global.PrintText_Temp = Custom String("{0}{1}", Global.PrintText_Temp, Global.PrintData_Temp);
+			End;
+			Global.PrintData_Temp = Custom String(",");
+			If(Global.i >= Count Of(Global.Minions) - 1);
+				Global.PrintData_Temp = Custom String("");
+			End;
+			Global.PrintText_Temp = Custom String("{0}]{1}", Global.PrintText_Temp, Global.PrintData_Temp);
+			Enable Inspector Recording;
+			Log To Inspector(Custom String("{0} Team {1}, Length {2}", Global.PrintText_Temp, Global.i + 1, Global.j));
+			Disable Inspector Recording;
+		End;
+		Enable Inspector Recording;
+		Log To Inspector(Custom String("\n\n\n\n\n\n\n\n\n\n"));
+		Disable Inspector Recording;
+		Global.ThreadClear = True;
+	}
+}
+
+rule("Subroutine Minion_Wave")
+{
+	event
+	{
+		Subroutine;
+		Minion_Wave;
+	}
+
+	actions
+	{
+		Wait Until(Global.ThreadClear == True, 100);
+		Global.ThreadClear = False;
+		For Global Variable(i, 0, 2, 1);
+			For Global Variable(l, Global.MinionWaves[Global.i] * 6, (Global.MinionWaves[Global.i] + 1) * 6, 1);
+				If(Global.i == 0);
+					Global.M_tTemp = Color(Team 1);
+				Else If(Global.i == 1);
+					Global.M_tTemp = Color(Team 2);
+				End;
+				Create In-World Text(All Players(All Teams), Global.MinionTypes[First Of(Global.Minions[Global.i][Global.k])
+					* Global.MinionTypesQualities], Vector(Global.NonPlayer_Loc[Evaluate Once(Global.k)][1], 0, Global.Minions[Evaluate Once(
+					Global.i)][Evaluate Once(Global.k)][2]), 3, Clip Against Surfaces, Visible To and Position, Global.M_tTemp, Visible Never);
+				Global.MinionRenders[Global.i] = Array(Count Of(Global.Minions[Global.i]) - 1, Last Text ID, Last Created Entity);
+			End;
+		End;
+	}
+}
+
+rule("Subroutine Minions_Init")
+{
+	event
+	{
+		Subroutine;
+		Minions_Init;
+	}
+
+	actions
+	{
+		"0    , 1   ,  2   , 3  ,                                   4        5       6        7              8                  9    \r\nt is the time the minion has been moving (place on function lane(t))"
+		Global.MinionQualities = 6;
+		Global.MinionTypesQualities = 5;
+		Global.MinionTypes = Array(Custom String("ι"), Custom String("Minion"), 2, 10, 80, Custom String("ί"), Custom String("Mage"), 6,
+			16, 60, Custom String("ϊ"), Custom String("Seige"), 12, 40, 150, Custom String("ΐ"), Custom String("Brute"), 3, 80, 400);
+		Global.MWeapons = Array(Array(Custom String("ο"), Custom String("ơ"), Custom String("δ"), Custom String("σ")), Array(Custom String(
+			"Y"), Custom String("ϒ"), Custom String("ϔ"), Custom String("Ẏ")));
+		For Global Variable(i, 0, 2, 1);
+			For Global Variable(k, 0, 30, 1);
+				Global.MR_Temp = Array(Global.Temp_ID, 10 + Global.i + 1 + Global.k / 100,
+					Global.MinionTypes[Global.Temp_ID * Global.MinionTypesQualities + 4], 0, False, Null);
+				If(Count Of(Global.MR_Temp) != Global.MinionQualities);
+					Enable Inspector Recording;
+					Log To Inspector(Custom String("Error: MinionCreate is wrong size"));
+					Disable Inspector Recording;
+				End;
+				If(Global.Minions[Global.i] == -1);
+					Global.Minions[Global.i] = Array(Global.MR_Temp);
+				Else;
+					Modify Global Variable At Index(Minions, Global.i, Append To Array, Array(Global.MR_Temp));
+				End;
+			End;
+		End;
+		Call Subroutine(Ready);
+	}
+}
+
+rule("On Player Join - Ignores respawn")
+{
+	event
+	{
+		Player Joined Match;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+	}
+
+	actions
+	{
+		"moveToCPos, setTarget, use ability 1, use ability 2,use ultimate, ___ , Attach , Free"
+		Event Player.Actions = Array(False, False, False, False, False, False, False, False);
+		Create In-World Text(Is Dead(Event Player) ? Null : (Event Player.Hidden ? All Players(Team Of(Event Player)) : All Players(
+			All Teams)), Custom String("{0}\n|{1}|{2}", Event Player.Hidden ? Custom String(" ") : Custom String("            <•>"),
+			Custom String("{0}{1}{2}", String Slice(Custom String("IIIII"), 0, -0.500 + Min(5, 20 * Max(0, First Of(Event Player.Health)
+			/ Event Player.Health[1]))), String Slice(Custom String("-..::I"), Round To Integer(First Of(Event Player.Health)
+			/ Event Player.Health[1] * 100 % 5, Up), First Of(Event Player.Health) / Event Player.Health[1] < 0.250), String Slice(
+			Custom String("-----"), (First Of(Event Player.Health) / Event Player.Health[1] > 0) * 0.500 + Min(5, 20 * Max(0, First Of(
+			Event Player.Health) / Event Player.Health[1])), 5)), Custom String("{0}|{1}|{2}", Custom String("{0}{1}{2}", String Slice(
+			Custom String("IIIII"), 0, -0.500 + Min(5, 20 * Max(0, First Of(Event Player.Health) / Event Player.Health[1] - 0.250))),
+			String Slice(Custom String("-..::I"), Round To Integer(First Of(Event Player.Health) / Event Player.Health[1] * 100 % 5, Up),
+			First Of(Event Player.Health) / Event Player.Health[1] < 0.500 && First Of(Event Player.Health)
+			/ Event Player.Health[1] >= 0.250), String Slice(Custom String("-----"), (First Of(Event Player.Health)
+			/ Event Player.Health[1] >= 0.250) * 0.500 + Min(5, 20 * Max(0, First Of(Event Player.Health)
+			/ Event Player.Health[1] - 0.250)), 5)), Custom String("{0}{1}{2}", String Slice(Custom String("IIIII"), 0, -0.500 + Min(5,
+			20 * Max(0, First Of(Event Player.Health) / Event Player.Health[1] - 0.500))), String Slice(Custom String("-..::I"),
+			Round To Integer(First Of(Event Player.Health) / Event Player.Health[1] * 100 % 5, Up), First Of(Event Player.Health)
+			/ Event Player.Health[1] < 0.750 && First Of(Event Player.Health) / Event Player.Health[1] >= 0.500), String Slice(
+			Custom String("-----"), (First Of(Event Player.Health) / Event Player.Health[1] >= 0.500) * 0.500 + Min(5, 20 * Max(0,
+			First Of(Event Player.Health) / Event Player.Health[1] - 0.500)), 5)), Custom String("{0}|\n{1}", Custom String("{0}{1}{2}",
+			String Slice(Custom String("IIIII"), 0, -0.500 + Min(5, 20 * Max(0, First Of(Event Player.Health)
+			/ Event Player.Health[1] - 0.750))), String Slice(Custom String("-..::I"), Round To Integer(First Of(Event Player.Health)
+			/ Event Player.Health[1] * 100 % 5, Up), First Of(Event Player.Health) / Event Player.Health[1] < 1 && First Of(
+			Event Player.Health) / Event Player.Health[1] >= 0.750), String Slice(Custom String("-----"), (First Of(Event Player.Health)
+			/ Event Player.Health[1] >= 0.750) * 0.500 + Min(5, 20 * Max(0, First Of(Event Player.Health)
+			/ Event Player.Health[1] - 0.750)), 5)), Custom String("{0}{1}", String Slice(Custom String("                 .|"), 0,
+			3 * Max(0, 6.250 - String Length(Custom String("{0}", Event Player)) / 2)), Custom String("{0}", Event Player))))),
+			Update Every Frame(Vector(X Component Of(Eye Position(Event Player)), Y Component Of(Eye Position(Event Player)),
+			Z Component Of(Eye Position(Event Player)) + 0.100)), 1, Do Not Clip, Visible To Position String and Color,
+			Local Player == Event Player.Owner ? Color(Green) : (Event Player.Team == 1 ? Color(Team 1) : Color(Team 2)), Visible Never);
+		Event Player.Level = 1;
+	}
+}
+
+rule("On Player Join - Pre-spawn")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Has Spawned(Event Player) == False;
+		Is Alive(Event Player) == True;
+	}
+
+	actions
+	{
+		If(Team Of(Event Player) == Team 1);
+			Event Player.Team = 1;
+		Else;
+			Event Player.Team = 2;
+		End;
+		Event Player.CHero = Hero(Tracer);
+		Stop Forcing Player To Be Hero(Event Player);
+		Wait(0.016, Ignore Condition);
+		Start Forcing Player To Be Hero(Event Player, Event Player.CHero);
+		Event Player.CHero_Index = Index Of Array Value(All Heroes, Event Player.CHero);
+		Event Player.Mana = Array(First Of(Global.HeroSpecs[Event Player.CHero_Index])[1], First Of(
+			Global.HeroSpecs[Event Player.CHero_Index])[1], 1);
+		Event Player.Health = Array(First Of(First Of(Global.HeroSpecs[Event Player.CHero_Index])), First Of(First Of(
+			Global.HeroSpecs[Event Player.CHero_Index])), 1);
+		Event Player.DamageModifiers = First Of(Global.HeroSpecs[Event Player.CHero_Index])[3];
+		"print(\"{},{},[{},{},{}]\".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))"
+		If(Event Player.Owner);
+	}
+}
+
+rule("Bot - Hero Connection")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+	}
+
+	actions
+	{
+		If(Event Player.Owner);
+			Start Forcing Player To Be Hero(Event Player, Event Player.Owner.CHero);
+			If(Event Player.Hidden);
+				Set Invisible(Event Player, Enemies);
+			Else;
+				Set Invisible(Event Player, None);
+			End;
+		End;
+		Wait(1, Ignore Condition);
+		Disable Nameplates(Event Player, All Players(All Teams));
+		"eventPlayer.startForcingOutlineFor()"
+		Loop;
+	}
+}
+
+rule("Subroutine CalcDealt")
+{
+	event
+	{
+		Subroutine;
+		CalcDealt;
+	}
+
+	actions
+	{
+		"eventPlayer.HealthQueue[0][0] will always be 0\r\nchecks if target is a player"
+		If(First Of(Event Player.HealthQueue[1]).Health);
+			If(Is Alive(First Of(Event Player.HealthQueue[1])));
+				"damage"
+				If(Event Player.HealthQueue[1][1] > 0);
+					First Of(Event Player.HealthQueue[1]).Health[0] -= Event Player.HealthQueue[1][1] * (1 - First Of(Event Player.DamageModifiers)
+						/ 100) * (Event Player.DamageModifiers[1] > 0 ? Event Player.DamageModifiers[1] : 1) * First Of(Event Player.HealthQueue[1])
+						.DamageModifiers[2];
+					First Of(Event Player.HealthQueue[1]).Health[3] = Array(Event Player, First Of(Event Player.HealthQueue[1]).Health[3][1]);
+					Skip If(First Of(First Of(Event Player.HealthQueue[1]).Health) <= 0, 9);
+				"healing"
+				Else If(Event Player.HealthQueue[1][1] < 0);
+					First Of(Event Player.HealthQueue[1]).Health[0] += Absolute Value(Event Player.HealthQueue[1][1]) * First Of(
+						Event Player.HealingModifiers);
+					First Of(Event Player.HealthQueue[1]).Health[3] = Array(First Of(First Of(Event Player.HealthQueue[1]).Health[3]), Event Player);
+				Else;
+					Enable Inspector Recording;
+					Log To Inspector(Custom String("{0} tried to deal 0 damage to {1}", Event Player, First Of(Event Player.HealthQueue[1])));
+					Disable Inspector Recording;
+				End;
+			Else;
+				Enable Inspector Recording;
+				Log To Inspector(Custom String("{0} has died", Event Player.Target[1]));
+				Disable Inspector Recording;
+				Event Player.Target = Null;
+			End;
+		Else;
+			"thing to disconnect minions as targets goes here\r\nminions cannot be healed"
+			If(Event Player.HealthQueue[1][1] > 0);
+				Modify Global Variable(HealthChange, Append To Array, Vector(First Of(Event Player.HealthQueue[1]),
+					Event Player.HealthQueue[1][1] * (1 - Event Player.DamageModifiers[2]) / 100 * (1 + Event Player.DamageModifiers[3] / 100),
+					Event Player.Slot));
+			End;
+		End;
+		Modify Player Variable(Event Player, HealthQueue, Remove From Array By Index, 1);
+	}
+}
+
+rule("Subroutine AbilityUsedFunc")
+{
+	event
+	{
+		Subroutine;
+		AbilityUsedFunc;
+	}
+
+	actions
+	{
+		If(Ability Cooldown(Event Player, First Of(Event Player.AbilityUse)) <= 0.100 || Ability Charge(Event Player, First Of(
+			Event Player.AbilityUse)) > 0 || !(First Of(Event Player.AbilityUse) == Button(Ultimate)) || (Ultimate Charge Percent(
+			Event Player) > 99.500 && First Of(Event Player.AbilityUse) == Button(Ultimate)));
+			"mana"
+			If(First Of(Event Player.Mana) >= First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2][1])
+				|| !First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2][1]));
+				If(First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])[3] > 0 && Distance Between(
+					Event Player.CPos, Event Player) > First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])[3]);
+					Event Player.ArrivedAtM2P = 1;
+					Event Player.MovetoPos = Event Player.CPos + Direction Towards(Event Player.CPos, Event Player) * First Of(
+						Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])[3];
+					Event Player.Hero_Ability[0] = 2;
+					Event Player.Actions[0] = True;
+					Wait Until(Event Player.ArrivedAtM2P == -1 || Event Player.MoveAbilityCancel, 99);
+				End;
+				If(First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])[1] == 2);
+					Event Player.LookAtPos = Direction Towards(Eye Position(Event Player), Vector(X Component Of(Event Player.CPos), 0, Z Component Of(
+						Event Player.CPos)));
+				Else If(First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])[1] == 1);
+					If(Event Player.Owner);
+						Event Player.CPos = Event Player.Owner.cursor;
+					End;
+					Event Player.LookAtPos = Direction Towards(Eye Position(Event Player), Vector(X Component Of(Event Player.CPos), Y Component Of(
+						Eye Position(Event Player)), Z Component Of(Event Player.CPos)));
+					Wait(0.226, Ignore Condition);
+				Else If(First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])[2] != 0);
+					If(Round To Integer(X Component Of(First Of(Event Player.Target)) / 10, Down) == First Of(
+						Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])[2] && Distance Between(Vector(X Component Of(
+						Event Player), 0, Z Component Of(Event Player)), Vector(Y Component Of(First Of(Event Player.Target)), 0, Z Component Of(
+						First Of(Event Player.Target)))) <= First Of(First Of(
+						Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2])));
+						Small Message(Event Player, Custom String("Targeted Ability{0} Activated", Event Player.AbilityUse[1]));
+					End;
+				End;
+				If(Event Player.MoveAbilityCancel == False);
+					If(First Of(Event Player.Hero_Ability) != 2);
+						Event Player.Hero_Ability[0] = 2;
+						Wait(0.016, Ignore Condition);
+					End;
+					If(!First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2][1]) || First Of(Event Player.Mana)
+						- First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2][1]) > 0);
+						Event Player.Mana[0] -= First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2][1]);
+					Else;
+						Skip(15);
+					End;
+					Event Player.Hero_Ability[1] = Event Player.AbilityUse[1];
+					Event Player.Hero_Ability[0] = 3;
+				Else;
+					Skip(10);
+				End;
+				Wait(0.100, Ignore Condition);
+			Else;
+				If(Event Player.Owner);
+					Small Message(Event Player.Owner, Custom String("Out of mana"));
+				End;
+				Skip(3);
+			End;
+		End;
+		Abort;
+		Event Player.MoveAbilityCancel = False;
+		Event Player.AbilityVerify = Array(True, True);
+		Event Player.Hero_Ability[0] = 0;
+		Event Player.ClearAllUI = True;
+		Call Subroutine(clearEffectUI);
+		Event Player.AbilityVerify = Array(False, False);
+	}
+}
+
+rule("Subroutine Target")
+{
+	event
+	{
+		Subroutine;
+		Target;
+	}
+
+	actions
+	{
+		Event Player.Temp_DistanceSort = Empty Array;
+		For Player Variable(Event Player, Target_i, 0, Count Of(Global.CPlayers[2 - Event Player.Team]), 1);
+			Event Player.Temp_DistanceSort[Event Player.Target_i] = Vector(3 - Event Player.Team + Event Player.Target_i / 100, X Component Of(
+				Position Of(Global.CPlayers[2 - Event Player.Team][Event Player.Target_i])), Z Component Of(Position Of(
+				Global.CPlayers[2 - Event Player.Team][Event Player.Target_i])));
+		End;
+		Event Player.Temp_DistanceSort = Sorted Array(Append To Array(Event Player.Temp_DistanceSort, Randomized Array(Array Slice(
+			Global.NonPlayer_Loc, (2 - Event Player.Team) * 30, 30))), Absolute Value(X Component Of(First Of(Event Player.TargetHandling))
+			- Y Component Of(Current Array Element)) ^ 2 + Absolute Value(Z Component Of(First Of(Event Player.TargetHandling))
+			- Z Component Of(Current Array Element)) ^ 2);
+		For Player Variable(Event Player, Target_i, 0, 3, 1);
+			Skip If((X Component Of(Event Player.Temp_DistanceSort[Event Player.Target_i]) < 10 ? First Of(Global.CPlayers[Round To Integer(
+				X Component Of(Event Player.Temp_DistanceSort[Event Player.Target_i]), Down) - 1][X Component Of(
+				Event Player.Temp_DistanceSort[Event Player.Target_i]) % 1 * 100].Health) : Global.Minions[Round To Integer(X Component Of(
+				Event Player.Temp_DistanceSort[Event Player.Target_i]), Down) % 10 * 30 + X Component Of(
+				Event Player.Temp_DistanceSort[Event Player.Target_i]) % 1 * 100][2]) <= 0, 14);
+			If(Absolute Value(X Component Of(First Of(Event Player.TargetHandling)) - Y Component Of(
+				Event Player.Temp_DistanceSort[Event Player.Target_i])) ^ 2 + Absolute Value(Z Component Of(First Of(
+				Event Player.TargetHandling)) - Z Component Of(Event Player.Temp_DistanceSort[Event Player.Target_i]))
+				^ 2 < Event Player.TargetHandling[1] ^ 2);
+				Event Player.Target[0] = Event Player.Temp_DistanceSort[Event Player.Target_i];
+				If(X Component Of(Event Player.Temp_DistanceSort[Event Player.Target_i]) < 10);
+					Event Player.Target[1] = Global.CPlayers[Round To Integer(X Component Of(Event Player.Temp_DistanceSort[Event Player.Target_i]),
+						Down) - 1][X Component Of(Event Player.Temp_DistanceSort[Event Player.Target_i]) % 1 * 100];
+				Else;
+					Event Player.Target[1] = Null;
+				End;
+				Abort;
+			Else;
+				Enable Inspector Recording;
+				Log To Inspector(Custom String("{0} returned", Event Player));
+				Disable Inspector Recording;
+				Abort;
+			End;
+		End;
+	}
+}
+
+rule("Subroutine AbilityProcess")
+{
+	event
+	{
+		Subroutine;
+		AbilityProcess;
+	}
+
+	actions
+	{
+		If(First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2][1]));
+			Event Player.Mana[0] -= First Of(Global.HeroSpecs[Event Player.CHero_Index][Event Player.AbilityUse[1] + 2][1]);
+		End;
+		Start Holding Button(Event Player, First Of(Event Player.AbilityUse));
+	}
+}
+
+rule("Reset Actions")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is True For Any(Event Player.Actions, Current Array Element) == True;
+	}
+
+	actions
+	{
+		"stop basic attack"
+		If(!First Of(Event Player.Actions));
+			Stop Holding Button(Event Player, Button(Primary Fire));
+		End;
+		Wait(0.200, Ignore Condition);
+		Event Player.Actions = Empty Array;
+	}
+}
+
+rule("Stop Basic Attack")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Event Player.Target == Null;
+	}
+
+	actions
+	{
+		Disallow Button(Event Player, Button(Primary Fire));
+		Stop Holding Button(Event Player, Button(Primary Fire));
+		Allow Button(Event Player, Button(Primary Fire));
+	}
+}
+
+rule("Arrived")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		First Of(Players Within Radius(Event Player.MovetoPos, 0.500, Team Of(Event Player), Off)) != False;
+	}
+
+	actions
+	{
+		Call Subroutine(StopThrottle);
+	}
+}
+
+rule("Subroutine StopThrottle")
+{
+	event
+	{
+		Subroutine;
+		StopThrottle;
+	}
+
+	actions
+	{
+		If(Event Player.Owner);
+			Event Player.Owner.MovementGroundCursor = False;
+		End;
+		Stop Throttle In Direction(Event Player);
+		Event Player.ArrivedAtM2P = -1;
+	}
+}
+
+rule("MoveToCPos")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		First Of(Event Player.Actions) == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[0] = False;
+		If(Event Player.ArrivedAtM2P == 1);
+			Event Player.ArrivedAtM2P = 0;
+			Event Player.MoveAbilityCancel = True;
+			Abort;
+		End;
+		If(Event Player.Owner != Custom String("null") && Event Player.Owner != 0);
+			Start Rule(moveCameraWithPlayer, Restart Rule);
+		End;
+		If(Distance Between(Position Of(Event Player), Event Player.MovetoPos) > 1);
+			Start Throttle In Direction(Event Player, Vector Towards(Position Of(Event Player), Event Player.MovetoPos), 1, To World,
+				Replace existing throttle, Direction and Magnitude);
+	}
+}
+
+rule("Look While Moving")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Speed Of(Event Player) > 0.300;
+		Total Time Elapsed % 0.225 < 0.017;
+	}
+
+	actions
+	{
+		If(!(Global.HeroSpecs[Event Player.CHero_Index][2][3] && Distance Between(Position Of(Event Player),
+			Event Player.Target[1] ? Position Of(Event Player.Target[1]) : Vector(Y Component Of(Global.NonPlayer_Loc[First Of(
+			Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down) * 100 + (2 - Round To Integer(First Of(
+			Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) + (First Of(
+			Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) * 8]), 0.500, Z Component Of(
+			Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down) * 100 + (
+			2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target) - 1,
+			Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) * 8])))
+			<= First Of(Global.HeroSpecs[Event Player.CHero_Index][2]) && Event Player.Target));
+			Event Player.LookAtPos = Vector Towards(Eye Position(Event Player), Vector(X Component Of(Event Player.MovetoPos), Y Component Of(
+				Eye Position(Event Player)), Z Component Of(Event Player.MovetoPos)));
+	}
+}
+
+rule("tbd")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Actions[1] == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[1] = False;
+	}
+}
+
+rule("Use Basic Attack")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Actions[2] == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[2] = False;
+		Set Ammo(Event Player, 0, 2000);
+		While(X Component Of(First Of(Event Player.Target)) > 0);
+			If(First Of(Event Player.Target[2]) || Event Player.Target[2][1]);
+				While(!(X Component Of(First Of(Event Player.Target)) > 0) || Distance Between(Position Of(Event Player),
+					Event Player.Target[1] ? Position Of(Event Player.Target[1]) : Vector(Y Component Of(Global.NonPlayer_Loc[First Of(
+					Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down) * 100 + (2 - Round To Integer(First Of(
+					Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) + (First Of(
+					Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) * 8]), 0.500, Z Component Of(
+					Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down) * 100 + (
+					2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target) - 1,
+					Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) * 8])))
+					> First Of(Global.HeroSpecs[Event Player.CHero_Index][2]));
+					If(Event Player.Target[1]);
+						Event Player.CPos = Vector(X Component Of(Eye Position(Event Player.Target[1])), Y Component Of(Eye Position(
+							Event Player.Target[1])) / First Of(Null), Z Component Of(Eye Position(Event Player.Target[1])));
+						If(!Event Player.CPos);
+							Enable Inspector Recording;
+							Log To Inspector(Custom String("Error with entity in Target ref"));
+							Disable Inspector Recording;
+							Abort;
+						End;
+					Else If(X Component Of(First Of(Event Player.Target)) >= 10);
+						"turns id to coords"
+						Event Player.CPos = Vector(Y Component Of(Global.NonPlayer_Loc[X Component Of(First Of(Event Player.Target)) % Round To Integer(
+							X Component Of(First Of(Event Player.Target)), Down) * 100 + (2 - Round To Integer(X Component Of(First Of(
+							Event Player.Target)) / 10, Down)) * 30 * (Round To Integer(X Component Of(First Of(Event Player.Target)) - 1, Down) % 10) + (
+							X Component Of(First Of(Event Player.Target)) - 1) * (Round To Integer(X Component Of(First Of(Event Player.Target)) - 1, Down)
+							% 10) * 8]), 0, Z Component Of(Global.NonPlayer_Loc[X Component Of(First Of(Event Player.Target)) % Round To Integer(
+							X Component Of(First Of(Event Player.Target)), Down) * 100 + (2 - Round To Integer(X Component Of(First Of(
+							Event Player.Target)) / 10, Down)) * 30 * (Round To Integer(X Component Of(First Of(Event Player.Target)) - 1, Down) % 10) + (
+							X Component Of(First Of(Event Player.Target)) - 1) * (Round To Integer(X Component Of(First Of(Event Player.Target)) - 1, Down)
+							% 10) * 8]));
+					Else;
+						Enable Inspector Recording;
+						Log To Inspector(Custom String("Entity has broken ref or id. Id of >10 missing entity ref"));
+						Disable Inspector Recording;
+						"for some reason, the dummy bot was deleted and we have a broken ref"
+						Abort;
+					End;
+					Event Player.MovetoPos = Event Player.CPos + Direction Towards(Event Player.CPos, Position Of(Event Player)) * (First Of(
+						Global.HeroSpecs[Event Player.CHero_Index][2]) - 1);
+					Event Player.Actions[0] = True;
+					Wait(0.030, Ignore Condition);
+				End;
+				If(!(X Component Of(First Of(Event Player.Target)) > 0));
+					Event Player.Target = Null;
+					Abort;
+				End;
+				If(Distance Between(Position Of(Event Player), Event Player.Target[1] ? Position Of(Event Player.Target[1]) : Vector(
+					Y Component Of(Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down)
+					* 100 + (2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target)
+					- 1, Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10)
+					* 8]), 0.500, Z Component Of(Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(
+					Event Player.Target), Down) * 100 + (2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(
+					First Of(Event Player.Target) - 1, Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(
+					Event Player.Target) - 1, Down) % 10) * 8]))) > First Of(Global.HeroSpecs[Event Player.CHero_Index][2]));
+					Wait(0.200, Ignore Condition);
+				End;
+			End;
+			If(!(Global.HeroSpecs[Event Player.CHero_Index][2][3] && Distance Between(Position Of(Event Player),
+				Event Player.Target[1] ? Position Of(Event Player.Target[1]) : Vector(Y Component Of(Global.NonPlayer_Loc[First Of(
+				Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down) * 100 + (2 - Round To Integer(First Of(
+				Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) + (First Of(
+				Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) * 8]), 0.500, Z Component Of(
+				Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down) * 100 + (
+				2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target) - 1,
+				Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10) * 8])))
+				> First Of(Global.HeroSpecs[Event Player.CHero_Index][2]) && Event Player.Target));
+				If(Event Player.Target[1]);
+					Event Player.LookAtPos = Direction Towards(Eye Position(Event Player), Vector(X Component Of(Eye Position(Event Player.Target[1])),
+						Y Component Of(Eye Position(Event Player.Target[1])) / First Of(Null), Z Component Of(Eye Position(Event Player.Target[1]))));
+				Else;
+					Event Player.LookAtPos = Direction Towards(Eye Position(Event Player), Event Player.CPos);
+				End;
+			End;
+			If(Distance Between(Position Of(Event Player), Event Player.Target[1] ? Position Of(Event Player.Target[1]) : Vector(
+				Y Component Of(Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(Event Player.Target), Down)
+				* 100 + (2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(Event Player.Target)
+				- 1, Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target) - 1, Down) % 10)
+				* 8]), 0.500, Z Component Of(Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(
+				Event Player.Target), Down) * 100 + (2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(
+				First Of(Event Player.Target) - 1, Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(
+				Event Player.Target) - 1, Down) % 10) * 8]))) <= First Of(Global.HeroSpecs[Event Player.CHero_Index][2]));
+				If(First Of(Event Player.Target[2]));
+					Event Player.Target[2] = Array(False, Event Player.Target[2][1]);
+				End;
+				If(Array Contains(Empty Array, Event Player.CHero));
+					Event Player.Hero_Ability[1] = 0;
+					Event Player.Hero_Ability[0] = 3;
+				Else;
+					Press Button(Event Player, Button(Primary Fire));
+				End;
+				Modify Player Variable(Event Player, HealthQueue, Append To Array, Array(Array(
+					Event Player.Target[1] ? Event Player.Target[1] : X Component Of(First Of(Event Player.Target)),
+					Global.HeroSpecs[Event Player.CHero_Index][2][1])));
+				Call Subroutine(CalcDealt);
+				Wait Until(!(X Component Of(First Of(Event Player.Target)) > 0), 1 / Global.HeroSpecs[Event Player.CHero_Index][2][2]);
+			Else;
+				Wait(0.030, Ignore Condition);
+				Skip(1);
+			End;
+		End;
+	}
+}
+
+rule("Use Ability 1")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Actions[3] == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[3] = False;
+		Event Player.AbilityUse = Array(Button(Ability 1), 1);
+		Call Subroutine(AbilityUsedFunc);
+		Event Player.AbilityUse = Empty Array;
+	}
+}
+
+rule("Use Ability 2")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Actions[4] == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[4] = False;
+		Event Player.AbilityUse = Array(Button(Ability 2), 2);
+		Call Subroutine(AbilityUsedFunc);
+		Event Player.AbilityUse = Empty Array;
+	}
+}
+
+rule("Use Secondary (e)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Actions[5] == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[5] = False;
+		Event Player.AbilityUse = Array(Button(Secondary Fire), 3);
+		Call Subroutine(AbilityUsedFunc);
+		Event Player.AbilityUse = Empty Array;
+	}
+}
+
+rule("Use Ult")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Actions[6] == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[6] = False;
+		If(!Array Contains(Array(Hero(Moira), Hero(Brigitte), Hero(Widowmaker), Hero(Torbjörn)), Event Player.CHero));
+			Event Player.AbilityUse = Array(Button(Ultimate), 4);
+			Call Subroutine(AbilityUsedFunc);
+			Event Player.AbilityUse = Empty Array;
+	}
+}
+
+rule("Controller Left")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Actions[8] == True;
+	}
+
+	actions
+	{
+		Event Player.Actions[8] = False;
+		Stop Forcing Dummy Bot Name(Event Player);
+		Wait(0.016, Ignore Condition);
+		Start Forcing Dummy Bot Name(Event Player, Custom String("«{0}»", Hero Of(Event Player)));
+		Wait(0.016, Ignore Condition);
+		If(Event Player.Owner);
+			Stop Forcing Player Outlines(Event Player, Event Player.Owner);
+			Event Player.Owner.ControlledRef = Null;
+			If(Global.Players[Round To Integer(Event Player.Slot, Down) - 1][Event Player.Slot % 1 * 100] == Event Player.Owner);
+				Global.Players[Round To Integer(Event Player.Slot, Down) - 1] = Append To Array(Append To Array(Array Slice(
+					Global.Players[Round To Integer(Event Player.Slot, Down) - 1], 0, Event Player.Slot % 1 * 100 - 1), Null), Array Slice(
+					Global.Players[Round To Integer(Event Player.Slot, Down) - 1], Event Player.Slot % 1 * 100 + 1, Count Of(
+					Global.Players[Round To Integer(Event Player.Slot, Down) - 1]) - 1));
+			End;
+		End;
+		Event Player.Owner = Null;
+	}
+}
+
+rule("dmg/heal OT on")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Health[2][1] > 0;
+	}
+
+	actions
+	{
+		Wait(0.200, Ignore Condition);
+		If(!Event Player.Health[2][2]);
+			Event Player.Health[2] = Array(First Of(Event Player.Health[2]), Event Player.Health[2][1], First Of(Event Player.Health[2])
+				/ Event Player.Health[2][1]);
+		End;
+		Event Player.Health[2] = Array(Event Player.Health[2][2] * (Event Player.Health[2][1] - 0.200), Event Player.Health[2][1] - 0.200,
+			Event Player.Health[2][2]);
+		If(First Of(Event Player.Health) + Event Player.Health[2][2] / 5 < Event Player.Health[1]);
+			Event Player.Health[0] += Event Player.Health[2][2] / 5;
+		End;
+		Loop If Condition Is True;
+	}
+}
+
+rule("dmg/heal OT off")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Health[2][1] <= 0;
+	}
+
+	actions
+	{
+		Event Player.Health[2] = Null;
+	}
+}
+
+rule("(Re)spawn")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Is Alive(Event Player) == True;
+	}
+
+	actions
+	{
+		Event Player.Health[0] = Event Player.Health[1];
+		Event Player.Health[4] = Array(Null, Null);
+		Start Facing(Event Player, Event Player.LookAtPos, 800, To World, Direction and Turn Rate);
+	}
+}
+
+rule("Is Dead")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		First Of(Event Player.Health) <= 0;
+	}
+
+	actions
+	{
+		"eventPlayer.Hidden=true"
+		Event Player.Target = Null;
+		Stop Throttle In Direction(Event Player);
+		Stop Facing(Event Player);
+		Set Respawn Max Time(Event Player, Event Player.Level * 2 + 4);
+		Set Damage Received(Event Player, 1);
+		Kill(Event Player, First Of(Event Player.Health[3]).Owner);
+		Set Damage Received(Event Player, 0);
+	}
+}
+
+rule("Movement Automation")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Event Player.Owner == False;
+	}
+
+	actions
+	{
+		Event Player.ArrivedAtM2P = 0;
+		Event Player.MovetoPos = Vector(Random Integer(10, -10), 0, Random Integer(10, -10));
+		Event Player.Actions[0] = True;
+		Wait(Random Integer(1, 10) / 100, Ignore Condition);
+		"eventPlayer.startThrottleInDirection(vectorTowards(eventPlayer.getEyePosition(), eventPlayer.MovetoPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)"
+		Wait Until(Event Player.ArrivedAtM2P == -1, 99);
+		Loop;
+	}
+}
+
+rule("Idle Basic Attack")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Is Alive(Event Player) == True;
+		(!Event Player.Target || Distance Between(Position Of(Event Player), Event Player.Target[1] ? Position Of(Event Player.Target[1])
+			: Vector(Y Component Of(Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(Event Player.Target),
+			Down) * 100 + (2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(First Of(
+			Event Player.Target) - 1, Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(Event Player.Target)
+			- 1, Down) % 10) * 8]), 0.500, Z Component Of(Global.NonPlayer_Loc[First Of(Event Player.Target) % Round To Integer(First Of(
+			Event Player.Target), Down) * 100 + (2 - Round To Integer(First Of(Event Player.Target) / 10, Down)) * 30 * (Round To Integer(
+			First Of(Event Player.Target) - 1, Down) % 10) + (First Of(Event Player.Target) - 1) * (Round To Integer(First Of(
+			Event Player.Target) - 1, Down) % 10) * 8]))) > First Of(Global.HeroSpecs[Event Player.CHero_Index][2])) == True;
+		Speed Of(Event Player) == 0;
+	}
+
+	actions
+	{
+		Event Player.TargetHandling = Array(Position Of(Event Player), First Of(Global.HeroSpecs[Event Player.CHero_Index][2]));
+		Call Subroutine(Target);
+		If(First Of(Event Player.Target));
+			Event Player.Target[2] = Array(False, False);
+			Wait(0.300, Ignore Condition);
+			Event Player.Actions[2] = True;
+			Wait Until(!Event Player.Target, 99);
+	}
+}
+
+rule("Mode")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		"Standalone"
+		If(Global.Setting_Mode == 1);
+			Create HUD Text(Local Player.Ready ? Null : Local Player, Null, Null, Custom String("MOBAwatch: Standalone"), Top, 0, Null, Null,
+				Color(Orange), Visible To, Default Visibility);
+		Else;
+			Create HUD Text(Local Player.Ready ? Null : Local Player, Null, Null, Custom String("MOBAwatch: Open"), Top, 0, Null, Null, Color(
+				Violet), Visible To, Default Visibility);
+	}
+}
+
+rule("Subroutine UI_Setup")
+{
+	event
+	{
+		Subroutine;
+		UI_Setup;
+	}
+
+	actions
+	{
+		Set Max Ammo(Event Player, 0, 0);
+		Set Max Ammo(Event Player, 1, 0);
+		Set Ammo(Event Player, 0, 0);
+		Set Ammo(Event Player, 1, 0);
+		Set Player Health(Event Player, 3);
+		Set Max Health(Event Player, 3 * (100 / First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index]))));
+		"eventPlayer.ControlledRef.Hidden=true"
+		Add Health Pool To Player(Event Player, Armor, Max(0, Min(Event Player.ControlledRef.Health[1] - 4, (First Of(
+			Event Player.ControlledRef.Health[2]) < 0 ? Absolute Value(First Of(Event Player.ControlledRef.Health[2])) : 1) + (
+			Event Player.ControlledRef.Health[1] - First Of(Event Player.ControlledRef.Health)))), True, True);
+		Add Health Pool To Player(Event Player, Health, Max(0, -3 + First Of(Event Player.ControlledRef.Health) - (First Of(
+			Event Player.ControlledRef.Health[2]) < 0 ? Absolute Value(First Of(Event Player.ControlledRef.Health[2])) : 1)), True, True);
+		Global.CD_Buttons = Array(Button(Ability 1), Button(Ability 2), Button(Jump), Button(Crouch), Button(Secondary Fire));
+		Disable Game Mode In-World UI(Event Player);
+		Disable Game Mode HUD(Event Player);
+		Disallow Button(Event Player, Button(Primary Fire));
+		Disallow Button(Event Player, Button(Secondary Fire));
+		Disallow Button(Event Player, Button(Ability 1));
+		Disallow Button(Event Player, Button(Ability 2));
+		Disallow Button(Event Player, Button(Reload));
+		Disallow Button(Event Player, Button(Melee));
+		Disallow Button(Event Player, Button(Jump));
+	}
+}
+
+rule("S_UI_Process")
+{
+	event
+	{
+		Subroutine;
+		UI_Process;
+	}
+
+	actions
+	{
+		If(Is Alive(Event Player.ControlledRef));
+			Set Player Health(Event Player, First Of(Event Player.ControlledRef.Health));
+		Else If(Event Player.ControlledRef);
+			Wait(1, Ignore Condition);
+			Set Player Health(Event Player, 999);
+		End;
+		For Player Variable(Event Player, CD_i, 0, Count Of(Global.CD_Buttons), 1);
+			If(!(Event Player.AbilityVerify[2] == Global.CD_Buttons[Event Player.CD_i]));
+				Set Ability Cooldown(Event Player, Global.CD_Buttons[Event Player.CD_i], Ability Cooldown(Event Player.ControlledRef,
+					Global.CD_Buttons[Event Player.CD_i]));
+				Set Ability Charge(Event Player, Global.CD_Buttons[Event Player.CD_i], Ability Charge(Event Player.ControlledRef,
+					Global.CD_Buttons[Event Player.CD_i]));
+				Set Ability Resource(Event Player, Global.CD_Buttons[Event Player.CD_i], Ability Resource(Event Player.ControlledRef,
+					Global.CD_Buttons[Event Player.CD_i]));
+				Set Ultimate Charge(Event Player, Ultimate Charge Percent(Event Player.ControlledRef));
+			Else;
+				If(Ability Cooldown(Event Player, Event Player.AbilityVerify[2]) <= 1.100 && !(Event Player.AbilityVerify[2] == Button(Ultimate)));
+					Set Ability Cooldown(Event Player, Global.CD_Buttons[Event Player.CD_i], 1);
+				Else If(Ultimate Charge Percent(Event Player) > 98.500 && Event Player.AbilityVerify[2] == Button(Ultimate));
+					Set Ultimate Charge(Event Player, Absolute Value(99.900));
+				End;
+			End;
+		End;
+		If(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index])[1] > 1);
+			Set Max Ammo(Event Player, 0, Event Player.ControlledRef.Mana[1]);
+			Set Ammo(Event Player, 0, Event Player.ControlledRef.Mana[1]);
+		End;
+		Wait(0.100, Ignore Condition);
+		Loop;
+	}
+}
+
+rule("UI Definitions - Global Cursor")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		"-angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getP"
+		Global.ScreenLimits = Array(1.250, 0.680);
+		Create In-World Text(All Players(All Teams), Custom String("•"), Update Every Frame(Position Of(Local Player) + Vector(0, 10, 0)
+			+ Vector(-5, 10, 0) + 80 * (X Component Of(First Of(Local Player.cursorAngles)) / 50 * Vector(0, 0, -1) + Vector(0.450, -0.890,
+			0) + (Z Component Of(First Of(Local Player.cursorAngles)) + 3) / 50 * Vector(-0.890, -0.450, 0))), 2.500, Do Not Clip,
+			Visible To Position String and Color, First Of(Local Player.UICursorStyles), Visible Never);
+		Create In-World Text(Local Player.MovementGroundCursor ? Local Player : Null, Custom String("¤"),
+			Local Player.ControlledRef.MovetoPos - Vector(1.250, 0, 0), 2, Do Not Clip, Visible To Position and Color, Color(Sky Blue),
+			Visible Never);
+		Create Effect(Local Player, Sphere, Color(Aqua), Local Player.cursor, 0.100, Visible To Position and Radius);
+	}
+}
+
+rule("Start Camera")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == False;
+	}
+
+	actions
+	{
+		Event Player.UICursorStyles = Array(Color(White), True, Color(Red), 0.100);
+		Event Player.CamLoc = Vector(0, 0, 0);
+		Start Camera(Event Player, Position Of(Local Player) + Vector(0, 10, 0) + Vector(-5, 10, 0), Position Of(Local Player) + Vector(0,
+			10, 0), 65);
+		Set Invisible(Event Player, All);
+		Set Status(Event Player, Null, Phased Out, 9999);
+		Set Damage Received(Event Player, 0);
+		Start Forcing Player Position(Event Player, Vector(X Component Of(Event Player.CamLoc), -10, Z Component Of(Event Player.CamLoc)),
+			True);
+		Event Player.ControlledRef.MovetoPos = Vector(0, 0, 0);
+	}
+}
+
+rule("Print")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == False;
+		Is Button Held(Event Player, Button(Interact)) == True;
+	}
+
+	actions
+	{
+		Create HUD Text(All Players(All Teams), Event Player.CamLoc, Null, Null, Left, 0, Color(White), Null, Null, Visible To and String,
+			Default Visibility);
+	}
+}
+
+rule("Toggle CamAttach")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == False;
+		Is Button Held(Event Player, Button(Jump)) == True;
+	}
+
+	actions
+	{
+		Wait(0.050, Ignore Condition);
+		If(Is Button Held(Event Player, Button(Jump)));
+			Wait(0.300, Ignore Condition);
+			If(Is Button Held(Event Player, Button(Jump)));
+				"hold down space to unlock camera"
+				If(Event Player.CamAttach);
+					Small Message(Event Player, Custom String("Camera unlocked"));
+					Event Player.CamAttach = False;
+					Stop Chasing Player Variable(Event Player, CamLoc);
+				End;
+			"jump to character"
+			Else;
+				Skip(5);
+			End;
+		Else;
+			Skip(2);
+		End;
+		Abort;
+		Event Player.CamAttach = True;
+		Chase Player Variable Over Time(Event Player, CamLoc, Vector(X Component Of(Eye Position(Event Player.ControlledRef)),
+			Y Component Of(Event Player.CamLoc), Z Component Of(Eye Position(Event Player.ControlledRef))), 0.200,
+			Destination and Duration);
+		Wait(0.300, Ignore Condition);
+		Chase Player Variable At Rate(Event Player, CamLoc, Vector(X Component Of(Event Player.ControlledRef.MovetoPos), Y Component Of(
+			Event Player.CamLoc), Z Component Of(Event Player.ControlledRef.MovetoPos)), Speed Of(Event Player.ControlledRef),
+			Destination and Rate);
+	}
+}
+
+rule("Subroutine moveCameraWithPlayer")
+{
+	event
+	{
+		Subroutine;
+		moveCameraWithPlayer;
+	}
+
+	actions
+	{
+		If(Event Player.CamAttach);
+			"eventPlayer.CamLoc=eventPlayer.ControlledRef.MovetoPos"
+			Chase Player Variable At Rate(Event Player, CamLoc, Vector(X Component Of(Eye Position(Event Player.ControlledRef)),
+				Y Component Of(Event Player.CamLoc), Z Component Of(Eye Position(Event Player.ControlledRef))), Speed Of(
+				Event Player.ControlledRef), Destination and Rate);
+		End;
+	}
+}
+
+rule("Camera Bounds")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == False;
+	}
+
+	actions
+	{
+		Event Player.CamLoc += Global.Setting_CamSpeed * Vector(-1 * (Absolute Value(Vertical Facing Angle Of(Event Player))
+			> 49.250 * Global.ScreenLimits[1] && Absolute Value(Vertical Facing Angle Of(Event Player)) < 50.400 * Global.ScreenLimits[1])
+			* Z Component Of(First Of(Event Player.cursorAngles)) / Absolute Value(Z Component Of(First Of(Event Player.cursorAngles))), 0,
+			-1 * (Absolute Value(Horizontal Facing Angle Of(Event Player)) > 49.250 * First Of(Global.ScreenLimits) && Absolute Value(
+			Horizontal Facing Angle Of(Event Player)) < 50.250 * First Of(Global.ScreenLimits)) * X Component Of(First Of(
+			Event Player.cursorAngles)) / Absolute Value(X Component Of(First Of(Event Player.cursorAngles))));
+		If(Absolute Value(Horizontal Facing Angle Of(Event Player)) < First Of(Global.ScreenLimits) * 50 && Absolute Value(
+			Vertical Facing Angle Of(Event Player)) < Global.ScreenLimits[1] * 50);
+			"Updates cursor"
+			Event Player.cursorAngles[0] = Vector(Horizontal Facing Angle Of(Event Player), 0, Vertical Facing Angle Of(Event Player));
+			"Only updates In-screen position if one is valid"
+			If(Horizontal Facing Angle Of(Event Player) != X Component Of(Event Player.cursorAngles[1]));
+				Event Player.cursorAngles[2] = Event Player.cursorAngles[1];
+				Event Player.cursorAngles[1] = First Of(Event Player.cursorAngles);
+			End;
+			"negative height of EYE over y component of cursor component times the cursor plus EYE position"
+			Event Player.cursor = -10 / (-0.890 + Z Component Of(First Of(Event Player.cursorAngles)) / 50 * -0.450) * (Vector(0.450, -0.890,
+				0) + X Component Of(First Of(Event Player.cursorAngles)) / 50 * Vector(0, 0, -1) + Z Component Of(First Of(
+				Event Player.cursorAngles)) / 50 * Vector(-0.890, -0.450, 0)) + Position Of(Event Player) + Vector(0, 10, 0) + Vector(-5, 10,
+				0);
+		End;
+		Wait(0.032, Ignore Condition);
+		Loop;
+	}
+}
+
+rule("Prevent Cursor Wrapping")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.Ready != False;
+		Is Dummy Bot(Event Player) == False;
+		(!(Absolute Value(Horizontal Facing Angle Of(Event Player)) < First Of(Global.ScreenLimits) * 50) || !(Absolute Value(
+			Vertical Facing Angle Of(Event Player)) < Global.ScreenLimits[1] * 50)) == True;
+	}
+
+	actions
+	{
+		"StartFacing is better handling larger movements, this if statement detects which one occured"
+		If(!(Absolute Value(Horizontal Facing Angle Of(Event Player)) < First Of(Global.ScreenLimits) * 50 * 1.250));
+			Start Facing(Event Player, Direction From Angles(Absolute Value(Horizontal Facing Angle Of(Event Player)) < First Of(
+				Global.ScreenLimits) * 50 ? Horizontal Facing Angle Of(Event Player) : Angle Difference(X Component Of(
+				Event Player.cursorAngles[2]), X Component Of(Event Player.cursorAngles[1])) / Absolute Value(Angle Difference(X Component Of(
+				Event Player.cursorAngles[2]), X Component Of(Event Player.cursorAngles[1]))) * 49.500 * First Of(Global.ScreenLimits),
+				Vertical Facing Angle Of(Event Player)), 1000000, To World, None);
+			Wait(0.080, Ignore Condition);
+			Wait Until(Absolute Value(Horizontal Facing Angle Of(Event Player)) < First Of(Global.ScreenLimits) * 50 && Absolute Value(
+				Vertical Facing Angle Of(Event Player)) < Global.ScreenLimits[1] * 50, 1000);
+			Stop Facing(Event Player);
+		Else;
+			Set Facing(Event Player, Direction From Angles(Max(0 - 49.500 * First Of(Global.ScreenLimits), Min(Horizontal Facing Angle Of(
+				Event Player), 49.500 * First Of(Global.ScreenLimits))), Max(0 - 49.500 * Global.ScreenLimits[1], Min(Vertical Facing Angle Of(
+				Event Player), 49.500 * Global.ScreenLimits[1]))), To World);
+		End;
+		Event Player.cursorAngles[0] = Vector(Horizontal Facing Angle Of(Event Player), 0, Vertical Facing Angle Of(Event Player));
+	}
+}
+
+rule("Hero - UI Prep")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Reaper;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		"show ui for"
+		First Of(Event Player.Hero_Ability) == 1;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+		If(True);
+			Skip(Array(4, 0)[1 + Index Of Array Value(Array(2), Event Player.Hero_Ability[1])]);
+			Create Effect(Event Player.Owner, Ring, Color(Green), Update Every Frame(Event Player.Owner.cursor), 1,
+				Visible To Position and Radius);
+			Event Player.Ability_UI[2] = Append To Array(Event Player.Ability_UI[2], Last Created Entity);
+			"eventPlayer.Owner.cursorNew=eventPlayer.MovetoPos"
+			Call Subroutine(defaultEffectUI);
+		Else;
+			Call Subroutine(defaultEffectUI);
+		End;
+	}
+}
+
+rule("Hero - UI MoveTo")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Reaper;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		"show ui for"
+		First Of(Event Player.Hero_Ability) == 2;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+	}
+}
+
+rule("Hero - Cast")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Reaper;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		"otherwise show ui"
+		First Of(Event Player.Hero_Ability) == 3;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+		If(True);
+			Skip(Array(32, 0, 3, 12)[1 + Index Of Array Value(Array(1, 2, 4), Event Player.Hero_Ability[1])]);
+			Event Player.AbilityUse[0] = Button(Ability 1);
+			Call Subroutine(AbilityProcess);
+		Else;
+			Event Player.AbilityUse[0] = Button(Ability 2);
+			Call Subroutine(AbilityProcess);
+			Wait(0.016, Ignore Condition);
+			Press Button(Event Player, Button(Primary Fire));
+			"teleport camera to player after 1 sec"
+			Wait(1, Ignore Condition);
+			If(Event Player.Owner && Is Using Ability 2(Event Player) && Event Player.Owner.CamAttach);
+				Event Player.Owner.CamLoc = Vector(X Component Of(Event Player.CPos), Y Component Of(Event Player.Owner.CamLoc), Z Component Of(
+					Event Player.CPos));
+			End;
+		Else;
+			Event Player.AbilityUse[0] = Button(Ultimate);
+			Call Subroutine(AbilityProcess);
+			Wait(0.016, Ignore Condition);
+			If(Is Using Ultimate(Event Player));
+				Create Effect(All Players(All Teams), Ring, Team Of(Event Player) == Team 1 ? Color(Team 1) : Color(Team 2), Update Every Frame(
+					Vector(X Component Of(Eye Position(Event Player)), 0, Z Component Of(Eye Position(Event Player)))), 8,
+					Visible To Position and Radius);
+				Event Player.Ability_UI[4] = Append To Array(Event Player.Ability_UI[4], Last Created Entity);
+				Event Player.TimerHandler = Evaluate Once(Total Time Elapsed) + First Of(Global.HeroSpecs)[6][2][1];
+				While(Event Player.TimerHandler > Total Time Elapsed);
+					Wait(First Of(Global.HeroSpecs)[6][3][1], Ignore Condition);
+					Event Player.Temp_DistanceSort = Players Within Radius(Position Of(Event Player), 8, Opposite Team Of(Team Of(Event Player)), Off);
+					For Player Variable(Event Player, DamageHandler, 0, Count Of(Event Player.Temp_DistanceSort), 1);
+						Damage(Event Player.Temp_DistanceSort[Event Player.DamageHandler], Event Player.Owner, First Of(First Of(Global.HeroSpecs)[6][3]));
+					End;
+					Event Player.Temp_DistanceSort = Filtered Array(Array Slice(Global.NonPlayer_Loc, (Event Player.ControlledRef.Team - 1) * 48,
+						Event Player.ControlledRef.Team * 48), Absolute Value(X Component Of(Position Of(Event Player)) - Y Component Of(
+						Current Array Element)) ^ 2 + Absolute Value(Z Component Of(Position Of(Event Player)) - Z Component Of(Current Array Element))
+						^ 2 <= 8);
+					For Player Variable(Event Player, DamageHandler, 0, Count Of(Event Player.Temp_DistanceSort), 1);
+						Modify Global Variable(HealthChange, Append To Array, Array(X Component Of(
+							Event Player.Temp_DistanceSort[Event Player.DamageHandler]), First Of(First Of(Global.HeroSpecs)[6][3]), Event Player));
+					End;
+				End;
+			End;
+		Else;
+		End;
+		Event Player.Hero_Ability[0] = 4;
+	}
+}
+
+rule("Hero - Complete")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Reaper;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		First Of(Event Player.Hero_Ability) == 4;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+		Event Player.Hero_Ability[0] = 0;
+	}
+}
+
+rule("Hero - UI Prep")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Tracer;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		"show ui for"
+		First Of(Event Player.Hero_Ability) == 1;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+		If(True);
+			Skip(Array(0)[1 + Index Of Array Value(Empty Array, Event Player.Hero_Ability[1])]);
+			Call Subroutine(defaultEffectUI);
+		End;
+	}
+}
+
+rule("Hero - UI MoveTo")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Tracer;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		"show ui for"
+		First Of(Event Player.Hero_Ability) == 2;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+	}
+}
+
+rule("Hero - Cast")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Tracer;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		"otherwise show ui"
+		First Of(Event Player.Hero_Ability) == 3;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+		If(True);
+			Skip(Array(30, 0, 16, 24, 27)[1 + Index Of Array Value(Array(1, 2, 3, 4), Event Player.Hero_Ability[1])]);
+			Start Throttle In Direction(Event Player, Facing Direction Of(Event Player), 1, To World, Replace existing throttle, None);
+			Event Player.AbilityUse[0] = Button(Ability 1);
+			Call Subroutine(AbilityProcess);
+			Wait(0.016, Ignore Condition);
+			If(Event Player.Owner);
+				If(!Is Button Held(Event Player.Owner, Button(Secondary Fire)));
+					Stop Throttle In Direction(Event Player);
+				End;
+				Event Player.Owner.MovementGroundCursor = False;
+				If(Event Player.Owner.CamAttach);
+					Event Player.Owner.CamLoc = Vector(X Component Of(Position Of(Event Player)), Y Component Of(Event Player.Owner.CamLoc),
+						Z Component Of(Position Of(Event Player)));
+				End;
+			Else;
+				Stop Throttle In Direction(Event Player);
+			End;
+		Else;
+			Event Player.AbilityUse[0] = Button(Ability 2);
+			Call Subroutine(AbilityProcess);
+			Wait(0.600, Ignore Condition);
+			Event Player.MovetoPos = Position Of(Event Player);
+			If(Event Player.Owner);
+				Event Player.Owner.CamLoc = Vector(X Component Of(Position Of(Event Player)), Y Component Of(Event Player.Owner.CamLoc),
+					Z Component Of(Position Of(Event Player)));
+			End;
+		Else;
+			Event Player.AbilityUse[0] = Button(Reload);
+			Call Subroutine(AbilityProcess);
+		Else;
+			Event Player.AbilityUse[0] = Button(Ultimate);
+			Call Subroutine(AbilityProcess);
+		Else;
+		End;
+	}
+}
+
+rule("Hero - Complete")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		Tracer;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		First Of(Event Player.Hero_Ability) == 4;
+	}
+
+	actions
+	{
+		Call Subroutine(clearEffectUI);
+		Event Player.Hero_Ability[0] = 0;
+	}
+}
+
+rule("Heroes_Init")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		"[base hp,base mana,damage type, [base armor,dmgtakenmult,damagedealtmult]],levelrate[[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, r"
+		Global.HeroSpecs = Array(Array(Array(250, 0, 1, Array(0, 1, 1)), Empty Array, Array(2, 30, 2), Array(Array(2, 0)), Array(Array(1,
+			2, 0, 10)), Null, Array(Array(3, 0), Null, Array(1, 3), Array(2.400, 0.016))), Array(Array(150, 0, 1, Array(0, 1, 1)),
+			Empty Array, Array(5, 3, 20, True), Array(Array(2, 1)), Array(Array(2, 0)), Null, Array(Array(3, 1), Null, Array(0))), Array(
+			Array(200, 100, 2, Array(0, 1, 1)), Empty Array, Array(10, 12, 5), Array(Empty Array), Array(Empty Array), Array(Empty Array),
+			Array(Empty Array)), Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array,
+			Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array,
+			Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array, Empty Array,
+			Empty Array, Empty Array, Empty Array);
+	}
+}
+
+rule("Check Hero Change")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == False;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Start Facing(Event Player, Vector(0, 0, 1), 100000, To World, None);
+		Call Subroutine(OnSpawn);
+	}
+}
+
+rule("Subroutine OnSpawn")
+{
+	event
+	{
+		Subroutine;
+		OnSpawn;
+	}
+
+	actions
+	{
+		Disable Scoreboard(Event Player);
+		Event Player.CHero = Hero Of(Event Player);
+		"catches team switch"
+		If(Event Player.Team != 0);
+			Event Player.ControlledRef.Actions[8] = True;
+		End;
+		If(Team Of(Event Player) == Team 1);
+			Event Player.Team = 1;
+		Else;
+			Event Player.Team = 2;
+		End;
+		Event Player.Slot = Slot Of(Event Player);
+		Global.Players[Event Player.Team - 1] = Append To Array(Append To Array(Array Slice(Global.Players[Event Player.Team - 1], 0,
+			Event Player.Slot - 1), Event Player), Array Slice(Global.Players[Event Player.Team - 1], Event Player.Slot + 1, Count Of(
+			Global.Players[Event Player.Team - 1]) - 1));
+		If(Event Player.ControlledRef.CHero == 0);
+			Event Player.CHero = Hero(Tracer);
+		End;
+		Start Forcing Player To Be Hero(Event Player, Event Player.ControlledRef.CHero);
+		Create Dummy Bot(Event Player.CHero, Team Of(Event Player), Global.TeamSize + Event Player.Slot, Vector(0, 0, 0), Vector(0, 0, 0));
+		Global.CPlayers[Event Player.Team - 1] = Append To Array(Append To Array(Array Slice(Global.CPlayers[Event Player.Team - 1], 0,
+			Event Player.Slot - 1), Last Created Entity), Array Slice(Global.CPlayers[Event Player.Team - 1], Event Player.Slot, Count Of(
+			Global.CPlayers[Event Player.Team - 1]) - 1));
+		Event Player.ControlledRef = Global.CPlayers[Event Player.Team - 1][Event Player.Slot];
+		Start Forcing Player Position(Event Player.ControlledRef, Vector(0, 100, 0), True);
+		Stop Forcing Player Position(Event Player.ControlledRef);
+		Event Player.ControlledRef.Owner = Event Player;
+		Start Forcing Dummy Bot Name(Event Player.ControlledRef, Custom String("{0}", Event Player));
+		Start Forcing Dummy Bot Name(Event Player, Custom String("{0}", Custom String("_/?")));
+		Event Player.CHero = Hero(Tracer);
+		Event Player.ControlledRef.CHero = Event Player.CHero;
+		Start Forcing Player To Be Hero(Event Player, Event Player.CHero);
+		Set Damage Dealt(Event Player.ControlledRef, 0);
+		Set Damage Received(Event Player.ControlledRef, 0);
+		Set Damage Received(Event Player, 0);
+		Event Player.ControlledRef.Slot = Event Player.Team + Event Player.Slot / 100;
+		Wait(0.016, Ignore Condition);
+		Call Subroutine(CameraSetup);
+		Call Subroutine(OnHero);
+		Wait(0.016, Ignore Condition);
+		Call Subroutine(UI_Setup);
+		Wait Until(Has Spawned(Event Player.ControlledRef), 1000);
+		Wait(0.016, Ignore Condition);
+		Event Player.CamAttach = True;
+		Call Subroutine(moveCameraWithPlayer);
+		Wait(0.016, Ignore Condition);
+		Start Rule(UI_Process, Do Nothing);
+		Enable Scoreboard(Event Player);
+		If(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][2][3]);
+			Create Effect(Event Player.ControlledRef.Target ? Event Player : Null, Ring, Color(Blue), X Component Of(First Of(
+				Event Player.ControlledRef.Target)) && !Event Player.ControlledRef.Target[1] ? Vector(Y Component Of(
+				Global.NonPlayer_Loc[X Component Of(First Of(Event Player.ControlledRef.Target)) % Round To Integer(X Component Of(First Of(
+				Event Player.ControlledRef.Target)), Down) * 100 + (2 - Round To Integer(X Component Of(First Of(
+				Event Player.ControlledRef.Target)) / 10, Down)) * 30 * (Round To Integer(X Component Of(First Of(
+				Event Player.ControlledRef.Target)) - 1, Down) % 10) + (X Component Of(First Of(Event Player.ControlledRef.Target)) - 1) * (
+				Round To Integer(X Component Of(First Of(Event Player.ControlledRef.Target)) - 1, Down) % 10) * 8]), 0, Z Component Of(
+				Global.NonPlayer_Loc[X Component Of(First Of(Event Player.ControlledRef.Target)) % Round To Integer(X Component Of(First Of(
+				Event Player.ControlledRef.Target)), Down) * 100 + (2 - Round To Integer(X Component Of(First Of(
+				Event Player.ControlledRef.Target)) / 10, Down)) * 30 * (Round To Integer(X Component Of(First Of(
+				Event Player.ControlledRef.Target)) - 1, Down) % 10) + (X Component Of(First Of(Event Player.ControlledRef.Target)) - 1) * (
+				Round To Integer(X Component Of(First Of(Event Player.ControlledRef.Target)) - 1, Down) % 10) * 8])) : Position Of(
+				Event Player.ControlledRef.Target[1]), Event Player.ControlledRef.Target[1] * 0.500 + 1.200, Visible To Position and Radius);
+		End;
+		Stop Facing(Event Player);
+		Event Player.Ready = True;
+	}
+}
+
+rule("Subroutine OnHero")
+{
+	event
+	{
+		Subroutine;
+		OnHero;
+	}
+
+	actions
+	{
+		"Replace their UI with in-game progress bar"
+		Disallow Button(Event Player, Button(Ultimate));
+	}
+}
+
+rule("Controlled Died")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == False;
+		Is Dead(Event Player.ControlledRef) == True;
+	}
+
+	actions
+	{
+		Event Player.ClearAllUI = True;
+		Call Subroutine(clearEffectUI);
+		Disable Hero HUD(Event Player);
+		Event Player.UIContainer = Array(Color(Gray), Null);
+		Event Player.MovementGroundCursor = False;
+		Wait(1, Ignore Condition);
+		Event Player.MovementGroundCursor = False;
+	}
+}
+
+rule("Controlled Spawned")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == False;
+		Is Alive(Event Player.ControlledRef) == True;
+	}
+
+	actions
+	{
+		Create Effect(Is In View Angle(Event Player.ControlledRef, Event Player.ControlledRef.CPos, 90) ? Event Player : Null, Sphere,
+			Color(White), Event Player.ControlledRef, 0.250, Visible To Position and Radius);
+		If(Event Player.CamAttach);
+			Chase Player Variable Over Time(Event Player, CamLoc, Vector(X Component Of(Eye Position(Event Player.ControlledRef)),
+				Y Component Of(Event Player.CamLoc), Z Component Of(Eye Position(Event Player.ControlledRef))), 1, Destination and Duration);
+		End;
+		Enable Hero HUD(Event Player);
+		If(Team Of(Event Player) == Team 1);
+			Event Player.UIContainer = Array(Color(Team 1), Color(Team 1));
+		Else;
+			Event Player.UIContainer = Array(Color(Team 2), Color(Team 2));
+		End;
+		Wait(0.500, Ignore Condition);
+		Call Subroutine(moveCameraWithPlayer);
+	}
+}
+
+rule("Move To")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Button Held(Event Player, Button(Secondary Fire)) == True;
+		Is Dummy Bot(Event Player) == False;
+		Distance Between(Vector(X Component Of(Position Of(Event Player.ControlledRef)), 0, Z Component Of(Position Of(
+			Event Player.ControlledRef))), Event Player.cursor) > 1;
+	}
+
+	actions
+	{
+		Event Player.ControlledRef.MovetoPos = Event Player.cursor;
+		Event Player.ControlledRef.Actions[0] = True;
+		Event Player.MovementGroundCursor = True;
+		Wait Until(!Is Button Held(Event Player, Button(Secondary Fire)), 0.500);
+		While(Is Button Held(Event Player, Button(Secondary Fire)));
+			Event Player.MovementGroundCursor = False;
+			Event Player.ControlledRef.MovetoPos = Event Player.cursor;
+			Event Player.ControlledRef.Actions[1] = True;
+			If(Total Time Elapsed % 2 < 0.500);
+				Event Player.ControlledRef.Actions[0] = True;
+			End;
+			Wait Until(!(Is Using Ability 1(Event Player) || Is Using Ability 2(Event Player) || Is Using Ultimate(Event Player)), 1);
+			Wait(0.128, Ignore Condition);
+		End;
+		Event Player.MovementGroundCursor = True;
+	}
+}
+
+rule("Set Target to Cursor")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+		Is Dummy Bot(Event Player) == False;
+		"**2 **2"
+		Is Button Held(Event Player, Button(Primary Fire)) == True;
+	}
+
+	actions
+	{
+		Event Player.CPos = Event Player.cursor;
+		If(First Of(Event Player.AbilityVerify));
+			Event Player.AbilityVerify[0] = False;
+			Event Player.AbilityVerify[1] = False;
+		Else;
+			Event Player.Target = Null;
+			Wait(0.016, Ignore Condition);
+			Event Player.TargetHandling = Array(Event Player.cursor, 0.750);
+			Call Subroutine(Target);
+			If(First Of(Event Player.Target));
+				Event Player.ControlledRef.Target = Event Player.Target;
+				Event Player.UICursorStyles[0] = Color(Red);
+				Wait(0.100, Ignore Condition);
+				Event Player.UICursorStyles[0] = Color(White);
+				Event Player.ControlledRef.Target[2] = Array(True, !Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][2][3]);
+				Event Player.ControlledRef.Actions[2] = True;
+	}
+}
+
+rule("Use Ability")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == False;
+		(Is Button Held(Event Player, Button(Ability 1)) || Is Button Held(Event Player, Button(Ability 2)) || Is Button Held(Event Player,
+			Button(Reload)) || Is Button Held(Event Player, Button(Ultimate))) == True;
+	}
+
+	actions
+	{
+		If(First Of(Event Player.AbilityVerify));
+			Event Player.AbilityVerify = Array(False, True, Null);
+		End;
+		If(Is Button Held(Event Player, Button(Ability 1)));
+			If(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][3]);
+				If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][3])) == 2);
+					Event Player.ControlledRef.Actions[3] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][3])) == 3);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 1, 0);
+					Wait Until(!Is Button Held(Event Player, Button(Ability 1)), 99);
+					Event Player.ControlledRef.Actions[3] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][3])) == 1);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 1, 0);
+					Event Player.AbilityVerify[2] = Button(Ability 1);
+					Event Player.AbilityVerify[3] = 3;
+					Start Rule(CastConfirm, Restart Rule);
+				Else;
+					Event Player.CPos = Event Player.cursor;
+					Event Player.ControlledRef.Actions[3] = True;
+				End;
+			End;
+		Else If(Is Button Held(Event Player, Button(Ability 2)));
+			If(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][4]);
+				If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][4])) == 2);
+					Event Player.ControlledRef.Actions[4] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][4])) == 3);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 2, 0);
+					Wait Until(!Is Button Held(Event Player, Button(Ability 2)), 99);
+					Event Player.ControlledRef.Actions[4] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][4])) == 1);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 2, 0);
+					Event Player.AbilityVerify[2] = Button(Ability 2);
+					Event Player.AbilityVerify[3] = 4;
+					Start Rule(CastConfirm, Restart Rule);
+				Else;
+					Event Player.CPos = Event Player.cursor;
+					Event Player.ControlledRef.Actions[4] = True;
+				End;
+			End;
+		Else If(Is Button Held(Event Player, Button(Reload)));
+			If(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][5]);
+				If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][5])) == 2);
+					Event Player.ControlledRef.Actions[5] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][5])) == 3);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 3, 0);
+					Wait Until(!Is Button Held(Event Player, Button(Reload)), 99);
+					Event Player.ControlledRef.Actions[5] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][5])) == 1);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 3, 0);
+					Event Player.AbilityVerify[2] = Button(Reload);
+					Event Player.AbilityVerify[3] = 5;
+					Start Rule(CastConfirm, Restart Rule);
+				Else;
+					Event Player.CPos = Event Player.cursor;
+					Event Player.ControlledRef.Actions[5] = True;
+				End;
+			End;
+		Else If(Is Button Held(Event Player, Button(Ultimate)));
+			If(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][6]);
+				If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][6])) == 2);
+					Event Player.ControlledRef.Actions[6] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][6])) == 3);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 4, 0);
+					Wait Until(!Is Button Held(Event Player, Button(Ultimate)), 99);
+					Event Player.ControlledRef.Actions[6] = True;
+				Else If(First Of(First Of(Global.HeroSpecs[Event Player.ControlledRef.CHero_Index][6])) == 1);
+					Event Player.ControlledRef.Hero_Ability = Array(1, 4, 0);
+					Event Player.AbilityVerify[2] = Button(Ultimate);
+					Event Player.AbilityVerify[3] = 6;
+					Start Rule(CastConfirm, Restart Rule);
+				Else;
+					Event Player.CPos = Event Player.cursor;
+					Event Player.ControlledRef.Actions[6] = True;
+	}
+}
+
+rule("Subroutine CastConfirm")
+{
+	event
+	{
+		Subroutine;
+		CastConfirm;
+	}
+
+	actions
+	{
+		"this has to be async because of the waitUntil"
+		Event Player.AbilityVerify[0] = True;
+		Event Player.AbilityVerify[1] = True;
+		Wait Until(First Of(Event Player.AbilityVerify) == False, 15);
+		Destroy Effect(First Of(Event Player.ControlledRef.Hero_Ability)[1]);
+		If(!Event Player.AbilityVerify[1]);
+			Event Player.ControlledRef.CPos = Event Player.cursor;
+			Event Player.ControlledRef.Actions[Event Player.AbilityVerify[3]] = True;
+			Event Player.AbilityVerify = Empty Array;
+		Else;
+			Event Player.AbilityVerify = Empty Array;
+			Abort;
+		End;
+	}
+}
+
+rule("Subroutine defaultEffectUI")
+{
+	event
+	{
+		Subroutine;
+		defaultEffectUI;
+	}
+
+	actions
+	{
+		"does referenced ability number even exist"
+		If(Global.HeroSpecs[Event Player.CHero_Index][Event Player.Hero_Ability[1] + 2] && Event Player.Hero_Ability[1] != 0);
+			If(First Of(Global.HeroSpecs[Event Player.CHero_Index][Evaluate Once(Event Player.Hero_Ability[1]) + 2])[3] > 0);
+				Create Effect(Event Player.Owner, Ring, Color(Yellow), Update Every Frame(Vector(X Component Of(Eye Position(Event Player)), 0,
+					Z Component Of(Eye Position(Event Player)))), First Of(Global.HeroSpecs[Event Player.CHero_Index][Evaluate Once(
+					Event Player.Hero_Ability[1]) + 2])[3], Visible To Position and Radius);
+				Event Player.Ability_UI[2] = Append To Array(Event Player.Ability_UI[2], Last Created Entity);
+			End;
+		End;
+	}
+}
+
+rule("Subroutine clearEffectUI")
+{
+	event
+	{
+		Subroutine;
+		clearEffectUI;
+	}
+
+	actions
+	{
+		If(Event Player.ClearAllUI);
+			Event Player.ClearAllUI = False;
+			For Player Variable(Event Player, ArrivedAtM2P, 0, Count Of(Event Player.Ability_UI), 1);
+				For Player Variable(Event Player, HA_temp, 0, Count Of(Event Player.Ability_UI[Event Player.ArrivedAtM2P]), 1);
+					Destroy Effect(Event Player.Ability_UI[Event Player.ArrivedAtM2P][Event Player.HA_temp]);
+				End;
+			End;
+			Event Player.Ability_UI[Evaluate Once(First Of(Event Player.Hero_Ability))] = Empty Array;
+		Else;
+			For Player Variable(Event Player, HA_temp, 0, Count Of(Event Player.Ability_UI[Evaluate Once(First Of(Event Player.Hero_Ability))
+				]), 1);
+				Destroy Effect(Event Player.Ability_UI[Evaluate Once(First Of(Event Player.Hero_Ability))][Event Player.HA_temp]);
+			End;
+			Event Player.Ability_UI[Evaluate Once(First Of(Event Player.Hero_Ability))] = Empty Array;
+		End;
+	}
+}
+
+rule("Set setting vars")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Global.Setting_CamSpeed = Workshop Setting Real(Custom String("Cosmetic"), Custom String("Unbound Camera Speed"), 0.500, 0, 1, 23);
+		Global.Setting_Mode = Workshop Setting Combo(Custom String("Significant"), Custom String(
+			"Open󠀺 Allow players to join mid-game, Standalone󠀺 Full match"), 1, Array(Custom String("Open"), Custom String("Standalone")),
+			63);
+	}
+}
+
+rule("InitiateGame")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Count Of(First Of(Global.CPlayers)) + Count Of(Global.CPlayers[1]) < Number Of Players(All Teams);
+	}
+
+	actions
+	{
+		If(Number Of Slots(All Teams) / 2 != Number Of Slots(Team 1) || (!(First Of(All Players(All Teams)) == Host Player) && !(
+			Number Of Players(All Teams) == 1)));
+			"print(\"{} {}\".format(getAllPlayers()[0],len(getAllPlayers())))"
+			Wait(4, Ignore Condition);
+			Return to Lobby;
+		End;
+		Global.Minions = Array(Array(-1), Array(-1));
+		Global.Players = Array(-1);
+		Create Dummy Bot(Hero(Roadhog), Team 2, 6, Vector(2, 0, 2), Vector(0, 0, 0));
+		Global.CPlayers[1] = Array(Last Created Entity);
+		Set Damage Received(Last Created Entity, 0);
+		Wait(0.016, Ignore Condition);
+		Create Dummy Bot(Hero(Torbjörn), Team 2, 7, Vector(-2, 0, 2), Vector(0, 0, 0));
+		Set Damage Received(Last Created Entity, 0);
+		Global.CPlayers[1] = Array(First Of(Global.CPlayers[1]), Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Global.ThreadClear = True;
+		Global.TeamSize = Number Of Slots(Team 1);
+		For Global Variable(i, 0, Global.TeamSize, 1);
+			If(Global.i == 0);
+				Global.Players[0] = Array(Custom String("null"));
+				Global.Players[1] = Array(Custom String("null"));
+			Else;
+				Modify Global Variable At Index(Players, 0, Append To Array, Array(Custom String("null")));
+				Modify Global Variable At Index(Players, 1, Append To Array, Array(Custom String("null")));
+			End;
+		End;
+		Call Subroutine(Minions_Init);
+		Start Rule(HealthHandle, Do Nothing);
+		"change to 15 later"
+		Set Match Time(0);
+		"wait(15)"
+		Pause Match Time;
+		Wait(1, Ignore Condition);
+		Disable Built-In Game Mode Announcer;
+		"Standalone"
+		If(Global.Setting_Mode == 1);
+			Unpause Match Time;
+			Set Match Time(2700);
+		Else;
+			Disable Built-In Game Mode Completion;
+	}
+}
+
+rule("Subroutine Ready")
+{
+	event
+	{
+		Subroutine;
+		Ready;
+	}
+
+	actions
+	{
+		For Global Variable(i, 0, Global.TeamSize, 1);
+			Create HUD Text(All Players(Team 1), Custom String("{0}{1}", Hero Icon String(Hero Of(First Of(Global.Players)[Evaluate Once(
+				Global.i)])), First Of(Global.Players)[Evaluate Once(Global.i)]), First Of(First Of(Global.CPlayers)[Evaluate Once(Global.i)
+				].Health), Null, Left, Global.i - Global.TeamSize, First Of(First Of(Global.Players)[Evaluate Once(Global.i)].UIContainer),
+				First Of(Global.Players)[Evaluate Once(Global.i)].UIContainer[1], Null, Visible To String and Color, Default Visibility);
+			Create HUD Text(All Players(Team 1), Custom String("{0}{1}", Hero Icon String(Hero Of(Global.Players[1][Evaluate Once(Global.i)])),
+				Global.Players[1][Evaluate Once(Global.i)]), Null, Null, Right, Global.i - Global.TeamSize, First Of(
+				Global.Players[1][Evaluate Once(Global.i)].UIContainer), First Of(Global.Players[1][Evaluate Once(Global.i)].UIContainer),
+				Null, Visible To String and Color, Default Visibility);
+			Create HUD Text(All Players(Team 2), Custom String("{0}{1}", Hero Icon String(Hero Of(Global.Players[1][Evaluate Once(Global.i)])),
+				Global.Players[1][Evaluate Once(Global.i)]), First Of(Global.CPlayers[1][Evaluate Once(Global.i)].Health), Null, Left,
+				Global.i - Global.TeamSize, First Of(Global.Players[1][Evaluate Once(Global.i)].UIContainer), Global.Players[1][Evaluate Once(
+				Global.i)].UIContainer[1], Null, Visible To String and Color, Default Visibility);
+			Create HUD Text(All Players(Team 2), Custom String("{0}{1}", Hero Icon String(Hero Of(First Of(Global.Players)[Evaluate Once(
+				Global.i)])), First Of(Global.Players)[Evaluate Once(Global.i)]), Null, Null, Right, Global.i - Global.TeamSize, First Of(
+				First Of(Global.Players)[Evaluate Once(Global.i)].UIContainer), First Of(First Of(Global.Players)[Evaluate Once(Global.i)
+				].UIContainer), Null, Visible To String and Color, Default Visibility);
+		End;
+		Global.Ready = True;
+	}
+}
+
+rule("Inspector")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.Ready == True;
+	}
+
+	actions
+	{
+		Wait(1, Ignore Condition);
+		Disable Inspector Recording;
+	}
+}
+
+rule("start dot")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Reload)) == True;
+	}
+
+	actions
+	{
+		Event Player.ControlledRef.Health[2] = Array(-250, 5);
+	}
+}
+
+rule("On Player Left")
+{
+	event
+	{
+		Player Left Match;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == False;
+	}
+
+	actions
+	{
+		Call Subroutine(Left);
+	}
+}
+
+rule("POV")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Crouch)) == True;
+	}
+
+	actions
+	{
+		Global.FunctionToggle = !Global.FunctionToggle;
+	}
+}
