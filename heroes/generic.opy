@@ -127,7 +127,10 @@ def OnSpawn():
     eventPlayer.enableScoreboard()
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]):
         createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.BLUE,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    
+    eventPlayer.startFacing(vect(0,0,1),100000,Relativity.TO_WORLD,FacingReeval.NONE)
+    wait(1)
+    eventPlayer.stopFacing()
+    eventPlayer.Ready=true
 
 def OnHero():
     #Replace their UI with in-game progress bar

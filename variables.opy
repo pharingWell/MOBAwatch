@@ -132,9 +132,9 @@ playervar CamLoc #P
 playervar CamAttach #P
 playervar ControlledRef #P
 playervar MovementGroundCursor #P
-playervar cursorNew #P
-playervar cursor #P
-playervar eyeAxis #P
+playervar Ready
+playervar cursorAngles
+playervar cursor
 playervar UIContainer #P
 playervar UIIstanceHandler #P
 playervar UICursorStyles #P

@@ -8,24 +8,29 @@ settings {
     "lobby": {
         "mapRotation": "paused",
         "spectatorSlots": 0,
-        "returnToLobby": "afterGame",
-        "team1Slots": 4,
-        "team2Slots": 4
+        "team1Slots": 5,
+        "team2Slots": 5,
+        "returnToLobby": "afterGame"
     },
     "gamemodes": {
+        "hybrid": {
+            "enabledMaps": [
+                
+            ],
+            "payloadSpeed%": 10
+        },
         "tdm": {
             "enabledMaps": [
                 "workshopExpanseNight"
-
             ],
             "gameLengthInMn": 15,
             "enableMercyRezKillCancel": false,
-            "scoreToWin": 100
+            "scoreToWin": 100,
+            "enableSelfInitiatedRespawn": false
         },
         "general": {
-            "enableSkins": false,
             "gamemodeStartTrigger": "immediately",
-            "enableSelfInitiatedRespawn": false
+            "enableSkins": false
         }
     },
     "heroes": {
@@ -38,7 +43,7 @@ settings {
     }
 }
 
-#Activated extensions
+#Activated extensions "numbani"
 
 #!extension beamSounds
 #!extension playMoreEffects
@@ -55,7 +60,6 @@ settings {
 
 
 rule "Set setting vars":
-    FunctionToggle=true
     Setting_CamSpeed=createWorkshopSetting(float[0.0:1.0],"Cosmetic","Unbound Camera Speed",0.5,23)
     Setting_Mode=createWorkshopSetting(enum["Open","Standalone"],"Significant","Open: Allow players to join mid-game, Standalone: Full match",1,63)
     
@@ -63,11 +67,9 @@ rule "Set setting vars":
 rule "InitiateGame":
     @Condition len(CPlayers[0]) + len(CPlayers[1]) < len(getAllPlayers())
     if(getNumberOfSlots(Team.ALL)/2!=getNumberOfSlots(Team.1) or (not getAllPlayers()[0] == hostPlayer and not len(getAllPlayers()) == 1)):
-        print("{} {}".format(getAllPlayers()[0],len(getAllPlayers())))
+        #print("{} {}".format(getAllPlayers()[0],len(getAllPlayers())))
         wait(4)
         returnToLobby()
-    hudHeader(getAllPlayers(),w"Loading...",HudPosition.TOP,1,Color.RED,HudReeval.NONE)
-    Ready=getLastCreatedText()-3
     Minions=[[-1],[-1]] 
     Players=[-1]
     
@@ -83,7 +85,7 @@ rule "InitiateGame":
     getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],CPlayers[1][1],getLastCreatedEntity()]
     wait()
-    ScreenLimits = [1.3,1.40]
+    ScreenLimits = [1.2,0.6]
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
     for i in range(TeamSize):
@@ -108,8 +110,6 @@ rule "InitiateGame":
    
     
 def Ready():
-    destroyHudText(Ready+3)
-    
     for(i in range(0,TeamSize)):
         hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),CPlayers[0][evalOnce(i)].Health[0],null,HudPosition.LEFT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
         hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
@@ -126,7 +126,7 @@ rule "Inspector":
     #top    
 
 rule "Display server performance characteristics":
-    hudHeader(getAllPlayers(), "{}{} {}{} {}{} {}".format("Load:", "{0}%".format(getServerLoad()), "Load Average:", "{0}%".format(getAverageServerLoad()), "Load Peak:", "{0}%".format(getPeakServerLoad()), FunctionToggle), HudPosition.RIGHT, -10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(getAllPlayers(), "{}{} {}{} {}{}".format("Load:", "{0}%".format(getServerLoad()), "Load Average:", "{0}%".format(getAverageServerLoad()), "Load Peak:", "{0}%".format(getPeakServerLoad())), HudPosition.RIGHT, -10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 
 rule "Minions Tick":

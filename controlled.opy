@@ -43,7 +43,7 @@ rule "On Player Join - Pre-spawn":
     eventPlayer.Mana=[HeroSpecs[eventPlayer.CHero_Index][0][1],HeroSpecs[eventPlayer.CHero_Index][0][1],1]
     eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][0][0],HeroSpecs[eventPlayer.CHero_Index][0][0],1]
     eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][0][3]
-    print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
+    #print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
     if(eventPlayer.Owner):
 
 rule "Bot - Hero Connection":
@@ -224,7 +224,7 @@ rule "Use Basic Attack":
     @Condition eventPlayer.isDummy()
     ifAction(2)
     eventPlayer.setAmmo(0,2000)
-    while(eventPlayer.Target[0].x>0 and FunctionToggle):
+    while(eventPlayer.Target[0].x>0):
         if(eventPlayer.Target[2][0] or eventPlayer.Target[2][1]):
             while(not eventPlayer.Target[0].x>0 or distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0]):
                 if(eventPlayer.Target[1]):

@@ -17,7 +17,6 @@ rule "Idle Basic Attack":
     @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
     @Condition (not eventPlayer.Target) or (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0])
     @Condition eventPlayer.getSpeed()==0
-    @Condition FunctionToggle
     eventPlayer.TargetHandling=[eventPlayer.getPosition(),(HeroSpecs[eventPlayer.CHero_Index][2][0])]
     Target()
     if(eventPlayer.Target[0]):

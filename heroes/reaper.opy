@@ -21,7 +21,7 @@ rule "Hero - UI Prep":
         
         case 2:
             AreaHighlight(Effect.RING,1)
-            eventPlayer.Owner.cursorNew=eventPlayer.MovetoPos
+            #eventPlayer.Owner.cursorNew=eventPlayer.MovetoPos
             defaultEffectUI()
             break
         /*
