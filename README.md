@@ -65,7 +65,7 @@ Either join the [discord server](https://discord.gg/7EmrUhx6gC) or add me on dis
 ### How do I run it?
 
 
-Use the code `_____` (Code to be added)
+Use the code `B71ZP` for version 0.1
 
 ---
 

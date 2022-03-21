@@ -101,8 +101,8 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
             elif(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][1]==CastType.DIRECTION): /*is ability looking at ground*/
                 if(eventPlayer.Owner):
                     eventPlayer.CPos=eventPlayer.Owner.cursor
-                eventPlayer.LookAtPos = (directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.getEyePosition().y,eventPlayer.CPos.z)))
-                wait(0.226)
+                eventPlayer.LookAtPos=(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.getEyePosition().y,eventPlayer.CPos.z))) #,Relativity.TO_WORLD)
+                
             elif(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2]=TargetState.ENEMY)*/
                 if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][2] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][0]):
@@ -120,7 +120,7 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
                 
             else:
                 goto cancelled
-            wait(0.1)
+            wait()
         else:
             if(eventPlayer.Owner):
                 smallMessage(eventPlayer.Owner,"Out of mana")
@@ -142,7 +142,7 @@ def Target():
     for eventPlayer.Target_i in range(0,3):
         if((getHealthByID(eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].x))<=0):
             continue
-        if((abs(eventPlayer.TargetHandling[0].x-eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].y))**2 + (abs(eventPlayer.TargetHandling[0].z-eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].z))**2<eventPlayer.TargetHandling[1]**2):
+        if((abs(eventPlayer.TargetHandling[0].x-eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].y))**2 + (abs(eventPlayer.TargetHandling[0].z-eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].z))**2<abs(eventPlayer.TargetHandling[1])**2):
             eventPlayer.Target[0]=eventPlayer.Temp_DistanceSort[eventPlayer.Target_i]
             if(eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].x<10):
                 eventPlayer.Target[1] = PlayerFromID(eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].x)
@@ -150,8 +150,17 @@ def Target():
                 eventPlayer.Target[1]=null
             return
         else:
-            println("{} returned".format(eventPlayer))
-            return
+            if(eventPlayer.TargetHandling[1]>0): #If not in attack move mode, as the closest object to the cursor is further than the limit, move on
+                return
+            else:
+                goto attackMove
+    return
+    attackMove:
+    if(eventPlayer.TargetHandling[1]<0):
+        eventPlayer.Target=null
+        eventPlayer.AttackMove=eventPlayer.TargetHandling[0]
+    return
+
 def AbilityProcess():
     if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][1][0]):
         eventPlayer.Mana[0]-=HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][1][0]
@@ -203,7 +212,7 @@ rule "MoveToCPos":
         async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     if(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos)>1):
         eventPlayer.startThrottleInDirection(vectorTowards(eventPlayer.getPosition(), eventPlayer.MovetoPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
-   
+    
 rule "Look While Moving":
     @Event eachPlayer
     @Condition Ready==true
@@ -212,16 +221,14 @@ rule "Look While Moving":
     @Condition getTotalTimeElapsed()%0.225<0.017
     if(not (HeroSpecs[eventPlayer.CHero_Index][2][3] and (distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target))):
         eventPlayer.LookAtPos = (vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)))
-      
+    
 
 ### 1 ###
-rule "tbd":
+rule "":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(1)
- 
-        
 
 
 
@@ -259,6 +266,7 @@ rule "Use Basic Attack":
                 eventPlayer.LookAtPos = (directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)))
             else:
                 eventPlayer.LookAtPos = (directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos))
+            wait(angleDifference(horizontalAngleOfDirection(eventPlayer.LookAtPos),horizontalAngleOfDirection(eventPlayer.getFacingDirection()))/800)
         if(distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][2][0]):
             if(eventPlayer.Target[2][0]):
                 eventPlayer.Target[2]=[false,eventPlayer.Target[2][1]]

@@ -169,7 +169,7 @@ rule "Move To":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
-    
+    eventPlayer.ControlledRef.AttackMove=0
     eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
     startAction(0,eventPlayer.ControlledRef)
     eventPlayer.MovementGroundCursor = true
@@ -196,7 +196,7 @@ rule "Set Target to Cursor":
     else:
         eventPlayer.Target=null
         wait()
-        eventPlayer.TargetHandling=[eventPlayer.cursor,0.75]
+        eventPlayer.TargetHandling=[eventPlayer.cursor,-1.25] #negative value indicates that we move player to the position selected first
         Target()
         if(eventPlayer.Target[0]):
             eventPlayer.ControlledRef.Target=eventPlayer.Target
@@ -205,6 +205,15 @@ rule "Set Target to Cursor":
             eventPlayer.UICursorStyles[0]=Color.WHITE
             eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]]
             startAction(2,eventPlayer.ControlledRef)
+        elif(eventPlayer.AttackMove):
+            eventPlayer.UICursorStyles[0]=rgb(238,148,148)
+            wait(0.1)
+            eventPlayer.UICursorStyles[0]=Color.WHITE
+            eventPlayer.ControlledRef.AttackMove=eventPlayer.AttackMove #Convert target return data to controlled ref data
+            eventPlayer.AttackMove=0 #clear self data
+            eventPlayer.ControlledRef.MovetoPos=eventPlayer.ControlledRef.AttackMove
+            eventPlayer.MovementGroundCursor=true
+            startAction(0,eventPlayer.ControlledRef)
 
 #!define cast(abilityplus2,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2]):/*if exists*/\

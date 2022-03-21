@@ -76,8 +76,9 @@ rule "UI Definitions - Global Cursor":
     ScreenLimits = [1.25,0.68]
     #!define uiPos(xpos,ypos) updateEveryTick(EYE+DAMPER*((xpos)/SCALE*XSCALE+DIR + (ypos)/SCALE*ZSCALE))
     createInWorldText(getAllPlayers(), "•", uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, localPlayer.UICursorStyles[0], SpecVisibility.NEVER)
-    createInWorldText(localPlayer if localPlayer.MovementGroundCursor else null,"¤",localPlayer.ControlledRef.MovetoPos-vect(1.25,0,0),2.0,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,Color.SKY_BLUE,SpecVisibility.NEVER)
-    createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.cursor,0.1,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createInWorldText(localPlayer if localPlayer.MovementGroundCursor else null,"¤",localPlayer.ControlledRef.MovetoPos-vect(1.25,0,0),2.0,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,rgb(238,148,148) if localPlayer.ControlledRef.AttackMove else Color.SKY_BLUE,SpecVisibility.NEVER)
+    #createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.cursor,0.1,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+
 rule "Start Camera": 
     @Event eachPlayer
     @Condition Ready == true

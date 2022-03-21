@@ -16,15 +16,21 @@ rule "Idle Basic Attack":
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
     @Condition (not eventPlayer.Target) or (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0])
-    @Condition eventPlayer.getSpeed()==0
+    @Condition eventPlayer.getSpeed()==0 #or eventPlayer.AttackMove
     eventPlayer.TargetHandling=[eventPlayer.getPosition(),(HeroSpecs[eventPlayer.CHero_Index][2][0])]
     Target()
     if(eventPlayer.Target[0]):
+        StopThrottle()
         eventPlayer.Target[2]=[false,false]
         wait(0.3)
         startAction(2,eventPlayer)
         waitUntil(not eventPlayer.Target,99)
-    
+    if(eventPlayer.AttackMove):
+        eventPlayer.MovetoPos=eventPlayer.AttackMove
+        startAction(0,eventPlayer)
+    wait(0.2)
+    if(RULE_CONDITION):
+        goto RULE_START
         /*
         else:
         for(eventPlayer.Target_i in range(len(0,CPlayers[2-eventPlayer.Team]))):

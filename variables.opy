@@ -150,6 +150,7 @@ playervar Health #current,max,[regen/dots,duration,rate], [damager,healer]
 playervar Mana #current,max
 playervar CPos
 playervar MovetoPos
+playervar AttackMove #value that dictates whether to use overriding movement or attacking moving attacking moving movement, true if it has a value, false if its zero
 playervar LookAtPos
 playervar Alive
 playervar CHero
@@ -172,8 +173,11 @@ playervar UltCD
 playervar DamageHandler
 playervar TimerHandler
 playervar Disabled #[m1,m2,abilities[0]]
-#Subroutine names
 
+playervar HeroSpecificVar1
+playervar HeroSpecificVar2
+
+#Subroutine names
 subroutine CameraSetup 
 subroutine UI_Process 
 subroutine UI_Setup 
