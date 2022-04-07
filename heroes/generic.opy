@@ -16,7 +16,7 @@ addUI(getLastCreatedEntity(),AbilityStage.MOVETO)
     for eventPlayer.DamageHandler in range(len(eventPlayer.Temp_DistanceSort)):\
         HealthChange.append([eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler].x,(damagein),eventPlayer])
 
-
+#!define startDoT #
 #!include "heroes/reaper.opy"
 #!include "heroes/tracer.opy"
 
@@ -73,22 +73,26 @@ rule "Heroes_Init":
     /*Baptiste*/       [],
     /*Sigma*/          ["By PharingWell"],
     ]
-#!define attachControlled createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
+#!define attachControlled \
+    createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
     CPlayers[eventPlayer.Team-1]=insert(getLastCreatedEntity(),eventPlayer.Slot,CPlayers[eventPlayer.Team-1])\
     eventPlayer.ControlledRef=CPlayers[eventPlayer.Team-1][eventPlayer.Slot]\
     eventPlayer.ControlledRef.startForcingPosition(vect(0,100,0),true)\
     eventPlayer.ControlledRef.stopForcingPosition()\
     eventPlayer.ControlledRef.Owner = eventPlayer\
     eventPlayer.ControlledRef.startForcingName("{}".format(eventPlayer))\
-    eventPlayer.startForcingName("{}".format("_/?"))\
-    eventPlayer.CHero=ForcedHero\
+    eventPlayer.startForcingName("{}".format("_--_"))\
     eventPlayer.ControlledRef.CHero=eventPlayer.CHero\
-    eventPlayer.startForcingHero(eventPlayer.CHero)\
     eventPlayer.ControlledRef.setDamageDealt(0)\
     eventPlayer.ControlledRef.setDamageReceived(0)\
     eventPlayer.setDamageReceived(0)\
     eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+eventPlayer.Slot/100\
     
+rule "On Game Enter":
+    @Event eachPlayer
+    @Condition not eventPlayer.isDummy()
+    @Condition not eventPlayer.hasSpawned()
+    eventPlayer.setAllowedHeroes([elem for elem, index in getAllHeroes() if HeroSpecs[index][0]])
 
 rule "Check Hero Change":
     @Event eachPlayer
@@ -98,9 +102,10 @@ rule "Check Hero Change":
     OnSpawn()
 
 def OnSpawn():
+    print(eventPlayer.ControlledRef.AttackMove)
     eventPlayer.disableScoreboard()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
-    if(eventPlayer.Team!=0): #catches team switch
+    if(eventPlayer.Team!=0): #catches team switch as team should be zero right now
         startAction(8,eventPlayer.ControlledRef)
     if(eventPlayer.getTeam()==Team.1):
         eventPlayer.Team=1
@@ -108,11 +113,8 @@ def OnSpawn():
         eventPlayer.Team=2
     eventPlayer.Slot=eventPlayer.getSlot()
     Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
-    if(eventPlayer.ControlledRef.CHero==0):
-        eventPlayer.CHero=ForcedHero
-        #eventPlayer.getCurrentHero()
-    eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
     attachControlled
+    eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
     wait()
     CameraSetup()
     OnHero()
@@ -123,6 +125,7 @@ def OnSpawn():
     eventPlayer.CamAttach=true
     moveCameraWithPlayer()
     wait()
+    
     async(UI_Process,AsyncBehavior.NOOP)
     eventPlayer.enableScoreboard()
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]):
@@ -170,6 +173,8 @@ rule "Move To":
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
     eventPlayer.ControlledRef.AttackMove=0
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]):
+        eventPlayer.ControlledRef.Target=null
     eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
     startAction(0,eventPlayer.ControlledRef)
     eventPlayer.MovementGroundCursor = true
@@ -184,15 +189,15 @@ rule "Move To":
         wait(0.128)
     eventPlayer.MovementGroundCursor = true
 
-rule "Set Target to Cursor":
+rule "Set Target to Cursor/Ability Verify":
     @Event eachPlayer
     @Condition Ready==true
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) #**2 **2
+    eventPlayer.ControlledRef.AttackMove=null
     eventPlayer.CPos = eventPlayer.cursor
     if(eventPlayer.AbilityVerify[0]):
-        eventPlayer.AbilityVerify[0]=false
-        eventPlayer.AbilityVerify[1]=false
+        eventPlayer.AbilityVerify=[false,false,null]
     else:
         eventPlayer.Target=null
         wait()
@@ -253,7 +258,7 @@ def CastConfirm():
     eventPlayer.AbilityVerify[0]=true
     eventPlayer.AbilityVerify[1]=true
     waitUntil(eventPlayer.AbilityVerify[0]==false,15)
-    destroyEffect(eventPlayer.ControlledRef.Hero_Ability[0][1])
+    clearEffectUI()
     if(not eventPlayer.AbilityVerify[1]):
         eventPlayer.ControlledRef.CPos=eventPlayer.cursor
         startAction(eventPlayer.AbilityVerify[3],eventPlayer.ControlledRef)

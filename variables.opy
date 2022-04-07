@@ -2,8 +2,6 @@
 
 #stores variables, global macros and enums
 
-#!define ForcedHero Hero.TRACER
-
 #!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice((i)+1,len((array))-1))
 #!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice(i,len((array))-1))
 
@@ -19,14 +17,16 @@
 
 #!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0.5,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))
 
-#!defineMember deal(target,rawdamage) eventPlayer.HealthQueue.append([[(target),(rawdamage)]]) /*input is target or id*/\
-    CalcDealt()
+#!defineMember deal(target,rawdamage) eventPlayer.HealthQueue.append([[(target),(rawdamage)]]) /*input is target or id. if the input is an id, it is added to heath queue by the player dealing the damage*/\
+ProcessHealthQueue()
 #DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
-#range(0,30) is min          k             2-type[1=min,2=struct]            team               structures
-#!define NonPLoc(id) ((id) % floor(id))*100   + (2-floor((id)/10))     *  30*(floor((id)-1) % 10) + ((id)-1)*(floor((id)-1) % 10)*8
+#!define MinionHalfCount (24+1)
+#!define MinionsPerWave 6
+#must check before passing
+#!define MinionSlotFromID(id) Minions_IDs.index(id)
+#!define NonPLoc(id) NonPlayer_Loc[MinionSlotFromID(id)]
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
-#!define MinionFromID(id) Minions[floor((id))%10*30+((id))%1*100]
-#!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else MinionFromID((id))[2]
+#!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
 # team = floor()%10, k = ()%1*100
 #floor(id/10)
 #floor(id) % 10
@@ -71,46 +71,35 @@ globalvar Players
 globalvar TeamSize
 globalvar ScreenLimits
 globalvar Characters
-globalvar Minions
-globalvar LocationChange #vect3(MinionID, x change, z change)
-globalvar HealthChange #(id, health change amt (+ = dmg, - = healing), damage dealer)
-globalvar NonPlayer_Loc #(id,x,z) minions are registered as 1,[team][2 digit id], structures are 2.[team][2 digit id] (e.g. 1.234, 2.124)
+
+
 #...
 #Structures
 globalvar Structures #id, health, blank
 globalvar StructuresMP #midpoint of structure (id,x,z)
 globalvar StructuresWH #width and height (id,w,h)
-#Minions
+#Temp
 globalvar M_tTemp
-globalvar M_DataTemp
+globalvar Slot_Temp
 globalvar MA_Temp #Minions Array Temp
 globalvar PA_Temp #Player Array Temp
-globalvar MR_Temp #Minion ranges temp array
 globalvar Temp_ID
-globalvar MinionQualities
-globalvar MinionTypes
-globalvar MWeapons
-globalvar MinionTypesQualities
-#Minion Waves
-globalvar MinionWaves
-globalvar MinionRenders
+globalvar PrintText_Temp
+globalvar PrintData_Temp
+globalvar LocTemp_var
+globalvar LocTemp_i
+globalvar Temp_Slot
 #General variables
 globalvar ThreadClear #is thread clear for damaging minions 
 globalvar i
 globalvar j
 globalvar k
 globalvar l
-#PrintLn
-globalvar PrintText_Temp
-globalvar PrintData_Temp
 #UI 
 globalvar UIContainer
 #...
 globalvar DoT_In
 #...
-globalvar LocTemp_var
-globalvar LocTemp_i
-
 globalvar Ready
 #Players
 globalvar CD_Buttons
@@ -118,6 +107,25 @@ globalvar PlayerLeft_i
 globalvar HeroSpecs
 globalvar FunctionToggle #used for debugging for optimization
 
+#Minion Array
+globalvar MinionPool #Pool of initialized minions 
+globalvar Minions_IDs #Key array for minions. Holds id at the given slot
+globalvar Minions_Target #Stores target id
+globalvar Minions_HP #health
+globalvar Minions_Visibility #is set to the minion's team number per tick and then is incremented by 1 conditionally (if () elif () elif () elif ())
+globalvar Minions_Distances #tbd
+globalvar Minions_Info #Minion class [team (1-2),class,wave,count]
+globalvar Minions_DLoc #location change. vect3(MinionID, x change, z change)
+globalvar Minions_Render #[text id, entity id]
+globalvar HealthChange #(id, health change amt (+ = dmg, - = healing), damage dealer)
+globalvar NonPlayer_Loc #(x,id,z) minions are registered as 1[team].[2 digit id], structures are 2[team].[2 digit id] (e.g. 12.34, 21.24)
+#!define MinionClass_Names ["ι","Minion","ί","Mage","ϊ","Seige","ΐ","Brute"]
+#!define MinionClass_Ranges [1,6,12,3]
+#!define MinionClass_Damage [10,16,40,80]
+#!define MinionClass_BaseHP [80,60,150,400]
+#Minion Waves
+globalvar MinionWaves #value 0 is total wave count
+globalvar MinionCounts #[team 1 minions, team 2 minions]
 #settings
 
 globalvar Setting_CamSpeed
@@ -189,9 +197,9 @@ subroutine OnSpawn
 subroutine OnHero 
 subroutine Minions_Main
 subroutine Minions_Init
-subroutine HealthHandle
-subroutine Minion_Wave 
+subroutine Minions_Wave 
 subroutine Minions_Move 
+subroutine HealthHandle
 subroutine Ready
 subroutine PrintMinions
 subroutine Left
@@ -201,3 +209,4 @@ subroutine AbilityUsedFunc
 subroutine AbilityProcess
 subroutine StopThrottle
 subroutine CalcDealt
+subroutine Minion_setNullStats

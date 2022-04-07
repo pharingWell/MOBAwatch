@@ -16,7 +16,7 @@ rule "Idle Basic Attack":
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
     @Condition (not eventPlayer.Target) or (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0])
-    @Condition eventPlayer.getSpeed()==0 #or eventPlayer.AttackMove
+    @Condition eventPlayer.getSpeed()==0 or eventPlayer.AttackMove
     eventPlayer.TargetHandling=[eventPlayer.getPosition(),(HeroSpecs[eventPlayer.CHero_Index][2][0])]
     Target()
     if(eventPlayer.Target[0]):
@@ -37,3 +37,15 @@ rule "Idle Basic Attack":
             if(distance(CPlayers[][eventPlayer.Target_i],eventPlayer)<10
     if(RULE_CONDITION):
         goto RULE_START*/
+
+rule "Drop idle-target on distance":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
+    @Condition (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target)
+    wait(0.1)
+    if(eventPlayer.Target[2]==[false,false]):
+        eventPlayer.Target=null
+
+

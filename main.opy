@@ -50,9 +50,9 @@ settings {
 #!extension spawnMoreDummyBots
 #!extension beamEffects
 #!include "variables.opy"
+#!include "ui.opy"
 #!include "minions.opy"
 #!include "controlled.opy"
-#!include "ui.opy"
 
 #!include "heroes/generic.opy"
 
@@ -65,14 +65,14 @@ rule "Set setting vars":
     
     
 rule "InitiateGame":
-    @Condition len(CPlayers[0]) + len(CPlayers[1]) < len(getAllPlayers())
+    #@Condition len(CPlayers[0]) + len(CPlayers[1]) < len(getAllPlayers())
     if(getNumberOfSlots(Team.ALL)/2!=getNumberOfSlots(Team.1) or (not getAllPlayers()[0] == hostPlayer and not len(getAllPlayers()) == 1)):
         #print("{} {}".format(getAllPlayers()[0],len(getAllPlayers())))
         wait(4)
         returnToLobby()
-    Minions=[[-1],[-1]] 
     Players=[-1]
-    
+    MinionPool=-1
+    /*
     createDummy(Hero.ROADHOG,Team.2,6,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]
     getLastCreatedEntity().setDamageReceived(0)
@@ -106,7 +106,6 @@ rule "InitiateGame":
         setMatchTime(2700)
     else:
         disableGamemodeCompletion()
-   
     
 def Ready():
     for(i in range(0,TeamSize)):
@@ -130,11 +129,11 @@ rule "Display server performance characteristics":
 
 rule "Minions Tick":
     @Condition Ready == true
-    wait(15)
+    wait(1)
     #Minions_Main()
     
     #Minion_Wave()
-    #top
+    top
 
 rule "start dot":
     @Event eachPlayer
@@ -178,4 +177,5 @@ rule "On Player Left":
 rule "POV":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-    FunctionToggle=not FunctionToggle
+    Minions_Wave()
+    

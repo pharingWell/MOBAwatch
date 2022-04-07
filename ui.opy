@@ -60,6 +60,10 @@ def UI_Process():
     top
 
 rule "UI Definitions - Global Cursor":
+    waitUntil(Ready==true,100)
+    #>=(zpos-0.1)*0.016 and getTotalTimeElapsed()%(0.032*highestZpos)<=(zpos)*0.016
+    #!define highestZpos 144
+    #!define zPos(draw,zpos) null if getTotalTimeElapsed()%(0.016*highestZpos)==(zpos)*0.016-0.001 else (draw)
     #!define CamPos vect(-5,10,0)
     #!define EYE localPlayer.getPosition()+vect(0,10,0)+CamPos
     #!define LOOK localPlayer.getPosition()+vect(0,10,0)
@@ -75,8 +79,8 @@ rule "UI Definitions - Global Cursor":
     #-angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90)
     ScreenLimits = [1.25,0.68]
     #!define uiPos(xpos,ypos) updateEveryTick(EYE+DAMPER*((xpos)/SCALE*XSCALE+DIR + (ypos)/SCALE*ZSCALE))
-    createInWorldText(getAllPlayers(), "•", uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, localPlayer.UICursorStyles[0], SpecVisibility.NEVER)
-    createInWorldText(localPlayer if localPlayer.MovementGroundCursor else null,"¤",localPlayer.ControlledRef.MovetoPos-vect(1.25,0,0),2.0,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,rgb(238,148,148) if localPlayer.ControlledRef.AttackMove else Color.SKY_BLUE,SpecVisibility.NEVER)
+    createInWorldText(zPos(localPlayer,1), "•",uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, localPlayer.UICursorStyles[0], SpecVisibility.NEVER)
+    createInWorldText(localPlayer if localPlayer.MovementGroundCursor else null,"¤",localPlayer.ControlledRef.MovetoPos-vect(1.25,0,0),2.0,Clip.SURFACES,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,rgb(238,148,148) if localPlayer.ControlledRef.AttackMove else Color.SKY_BLUE,SpecVisibility.NEVER)
     #createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.cursor,0.1,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
 rule "Start Camera": 
@@ -93,10 +97,11 @@ rule "Start Camera":
     eventPlayer.ControlledRef.MovetoPos=vect(0,0,0)
 
 
+
 rule "Print":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy() and eventPlayer.isHoldingButton(Button.INTERACT)
-    print(eventPlayer.CamLoc)
+    print(eventPlayer.CamLoc) 
     #PrintMinions()
     /*print("1{}2{}3{}".format( 
         directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))

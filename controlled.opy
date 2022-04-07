@@ -13,8 +13,7 @@ rule "On Controller Detach":
     @Condition eventPlayer.isDummy()
     @Condition not entityExists(eventPlayer.Owner)
     
-
-rule "On Player Join - Ignores respawn":
+rule "On Controlled Join - Ignores respawn":
     @Event playerJoined
     @Condition eventPlayer.isDummy()
     eventPlayer.Actions=[false,false,false,false,false,false,false,false] #moveToCPos, setTarget, use ability 1, use ability 2,use ultimate, ___ , Attach , Free
@@ -26,7 +25,7 @@ rule "On Player Join - Ignores respawn":
     "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if eventPlayer.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
     eventPlayer.Level=1
 
-rule "On Player Join - Pre-spawn":
+rule "On Controlled Join - Pre-spawn":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()==false
@@ -35,7 +34,6 @@ rule "On Player Join - Pre-spawn":
         eventPlayer.Team=1
     else:
         eventPlayer.Team=2
-    eventPlayer.CHero=ForcedHero
     eventPlayer.stopForcingCurrentHero()
     wait()
     eventPlayer.startForcingHero(eventPlayer.CHero)
@@ -44,7 +42,7 @@ rule "On Player Join - Pre-spawn":
     eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][0][0],HeroSpecs[eventPlayer.CHero_Index][0][0],1]
     eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][0][3]
     #print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
-    if(eventPlayer.Owner):
+    hudHeader(localPlayer,localPlayer.Team,HudPosition.TOP,0,Color.AQUA,HudReeval.VISIBILITY_SORT_ORDER_STRING_AND_COLOR,SpecVisibility.ALWAYS)
 
 rule "Bot - Hero Connection":
     @Event eachPlayer
@@ -60,7 +58,7 @@ rule "Bot - Hero Connection":
     #eventPlayer.startForcingOutlineFor()
     goto RULE_START
 
-def CalcDealt():
+def ProcessHealthQueue(): #Called by deal, processes health queue
     #eventPlayer.HealthQueue[0][0] will always be 0
     if(eventPlayer.HealthQueue[1][0].Health):#checks if target is a player
         if(eventPlayer.HealthQueue[1][0].isAlive()):
@@ -98,6 +96,7 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
                     waitUntil(eventPlayer.ArrivedAtM2P==-1 or eventPlayer.MoveAbilityCancel,99)
             if(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][1]==CastType.GROUND): /*is ability looking at ground*/
                 eventPlayer.LookAtPos=directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,0,eventPlayer.CPos.z))
+                wait(0.225)
             elif(HeroSpecs[eventPlayer.CHero_Index][(eventPlayer.AbilityUse[1])+2][0][1]==CastType.DIRECTION): /*is ability looking at ground*/
                 if(eventPlayer.Owner):
                     eventPlayer.CPos=eventPlayer.Owner.cursor
@@ -263,9 +262,9 @@ rule "Use Basic Attack":
                 wait(0.2)
         if(not (HeroSpecs[eventPlayer.CHero_Index][2][3] and (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target))):
             if(eventPlayer.Target[1]):
-                eventPlayer.LookAtPos = (directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)))
+                eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
             else:
-                eventPlayer.LookAtPos = (directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos))
+                eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
             wait(angleDifference(horizontalAngleOfDirection(eventPlayer.LookAtPos),horizontalAngleOfDirection(eventPlayer.getFacingDirection()))/800)
         if(distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][2][0]):
             if(eventPlayer.Target[2][0]):
