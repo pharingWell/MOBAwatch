@@ -36,6 +36,7 @@ rule "On Controlled Join - Pre-spawn":
         eventPlayer.Team=2
     eventPlayer.stopForcingCurrentHero()
     wait()
+    print(abs(angleBetweenVectors(angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),directionTowards(eventPlayer.getEyePosition()+angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),eventPlayer.LookAtPos))))
     eventPlayer.startForcingHero(eventPlayer.CHero)
     eventPlayer.CHero_Index=getAllHeroes().index(eventPlayer.CHero)
     eventPlayer.Mana=[HeroSpecs[eventPlayer.CHero_Index][0][1],HeroSpecs[eventPlayer.CHero_Index][0][1],1]
@@ -71,10 +72,10 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
                 eventPlayer.HealthQueue[1][0].Health[0]+=(abs(eventPlayer.HealthQueue[1][1])*eventPlayer.HealingModifiers[0])
                 eventPlayer.HealthQueue[1][0].Health[3]=[eventPlayer.HealthQueue[1][0].Health[3][0],eventPlayer]
             else:
-                println("{} tried to deal 0 damage to {}".format(eventPlayer,eventPlayer.HealthQueue[1][0]))
+                print("{} tried to deal 0 damage to {}".format(eventPlayer,eventPlayer.HealthQueue[1][0]))
         else:
             freetarget:
-            println("{} has died".format(eventPlayer.Target[1]))
+            print("{} has died".format(eventPlayer.Target[1]))
             eventPlayer.Target=null
     else:
         #thing to disconnect minions as targets goes here
@@ -245,12 +246,12 @@ rule "Use Basic Attack":
                 if(eventPlayer.Target[1]):
                     eventPlayer.CPos=vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)
                     if(not eventPlayer.CPos):
-                        println("Error with entity in Target ref")
+                        print("Error with entity in Target ref")
                         return
                 elif(eventPlayer.Target[0].x>=10):
                     eventPlayer.CPos=vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0].x)].z) #turns id to coords
                 else:
-                    println("Entity has broken ref or id. Id of >10 missing entity ref")
+                    print("Entity has broken ref or id. Id of >10 missing entity ref")
                     return #for some reason, the dummy bot was deleted and we have a broken ref
                 eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][2][0]-1)/*starts at cpos and moves player to closest point within range*/
                 startAction(0,eventPlayer)
@@ -262,10 +263,14 @@ rule "Use Basic Attack":
                 wait(0.2)
         if(not (HeroSpecs[eventPlayer.CHero_Index][2][3] and (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target))):
             if(eventPlayer.Target[1]):
-                eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
+                eventPlayer.LookAtPos = directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y,eventPlayer.Target[1].getEyePosition().z))
+                #eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
             else:
-                eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
-            wait(angleDifference(horizontalAngleOfDirection(eventPlayer.LookAtPos),horizontalAngleOfDirection(eventPlayer.getFacingDirection()))/800)
+                eventPlayer.LookAtPos = directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos)
+                
+                #eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
+        waitUntil(abs(angleBetweenVectors(angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),directionTowards(eventPlayer.getEyePosition()+angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),eventPlayer.LookAtPos)))<15,1)
+        eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
         if(distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][2][0]):
             if(eventPlayer.Target[2][0]):
                 eventPlayer.Target[2]=[false,eventPlayer.Target[2][1]]
@@ -274,8 +279,10 @@ rule "Use Basic Attack":
                 eventPlayer.Hero_Ability[0]=AbilityStage.CAST
             else:
                 eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
+            
             deal(eventPlayer.Target[1] if eventPlayer.Target[1] else eventPlayer.Target[0].x,HeroSpecs[eventPlayer.CHero_Index][2][1])
             waitUntil(not eventPlayer.Target[0].x>0,1/HeroSpecs[eventPlayer.CHero_Index][2][2]*1)
+            
         else:
             wait(0.03)
             continue
@@ -327,6 +334,8 @@ rule "Controller Left":
     eventPlayer.startForcingName("«{}»".format(eventPlayer.getCurrentHero()))
     wait()
     if(eventPlayer.Owner):
+        if(Setting_Mode==1):
+            #prsChange[eventPlayer.Slot] = -50
         eventPlayer.stopForcingOutlineFor(eventPlayer.Owner)
         eventPlayer.Owner.ControlledRef=null
         if(Players[floor(eventPlayer.Slot)-1][(eventPlayer.Slot)%1*100]==eventPlayer.Owner):

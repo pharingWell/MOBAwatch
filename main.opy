@@ -179,3 +179,42 @@ rule "POV":
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
     Minions_Wave()
     
+/*
+rule "PRS check on Join":
+    @Event playerJoined
+    @Condition not eventPlayer.isDummy()
+    if(Setting_Mode==1 and prsChange[eventPlayer.getSlot()]): #if opened in standalone mode and the player slot they are going to be added to already has info, 
+                                                              #print the name and the rank score of the previous player
+        println("PRS~{}:{}".format(prsChangeName[eventPlayer.getSlot()],prsChange[eventPlayer.getSlot()]))
+    prsChangeName[eventPlayer.getSlot()] = "{}".format(eventPlayer)
+    prsChange[eventPlayer.getSlot()] = 1
+*/
+rule "set db index":
+    @Event eachPlayer
+    @Condition not eventPlayer.isDummy()
+    for eventPlayer.Temp in range(len(dbKeys)):
+        if(dbKeys[eventPlayer.Temp]=="{}".format(eventPlayer)):
+            eventPlayer.dbIndex = eventPlayer.Temp
+            eventPlayer.Temp = 0
+            return
+    eventPlayer.Temp = 0
+    eventPlayer.dbIndex = len(dbKeys)
+    dbKeys[eventPlayer.dbIndex] = "{}".format(eventPlayer)
+    dbPRS[eventPlayer.dbIndex] = 1500
+    println("PRS~{}>{}".format("{}".format(eventPlayer),dbPRS[eventPlayer.dbIndex]))
+
+/*
+    @Condition not eventPlayer.scoreRank
+    @Condition ThreadClear
+    for i in range(0,len(playerScoreRank)):
+        if(playerScoreRank[i][0]=="{}".format(eventPlayer)):
+            eventPlayer.scoreRank=playerScoreRank[i][1]
+            goto setupPRS
+    dbPRS[eventPlayer.dbIndex] = 1500
+    setupPRS:
+    ThreadClear = true
+    println("PRS~{}>{}".format("{}".format(eventPlayer),dbPRS[eventPlayer.dbIndex]))
+    
+*/
+#
+#!include "../CrossOver/CrossOver/db/db.opy"

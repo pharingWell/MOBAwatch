@@ -42,7 +42,7 @@ rule "Heroes_Init":
     HeroSpecs=[        #0                                1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
     /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
     /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          [[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[[]]],
+    /*Mercy*/          /*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
     /*Reinhardt*/      [],
@@ -71,8 +71,9 @@ rule "Heroes_Init":
     /*Ashe*/           [],
     /*Echo*/           [],
     /*Baptiste*/       [],
-    /*Sigma*/          ["By PharingWell"],
+    /*Sigma*/          [],
     ]
+
 #!define attachControlled \
     createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
     CPlayers[eventPlayer.Team-1]=insert(getLastCreatedEntity(),eventPlayer.Slot,CPlayers[eventPlayer.Team-1])\
@@ -200,7 +201,6 @@ rule "Set Target to Cursor/Ability Verify":
         eventPlayer.AbilityVerify=[false,false,null]
     else:
         eventPlayer.Target=null
-        wait()
         eventPlayer.TargetHandling=[eventPlayer.cursor,-1.25] #negative value indicates that we move player to the position selected first
         Target()
         if(eventPlayer.Target[0]):

@@ -57,7 +57,6 @@ def PrintMinions():
     #         PrintData_Temp=""
     #     PrintText_Temp="{0}]{1}".format(PrintText_Temp,PrintData_Temp)
     #     println("{0} Team {1}, Length {2}".format(PrintText_Temp,i+1,j))
-    println("\n\n\n\n\n\n\n\n\n\n")
     ThreadClear=true
 
 def Minions_Wave():
@@ -81,7 +80,6 @@ def Minions_Wave():
         PrintText_Temp=""
         for l in range(0,len(MinionPool)):
             PrintText_Temp="{},{}".format(PrintText_Temp,MinionPool[l])
-        println(PrintText_Temp)
         ThreadClear=true
 def Minions_Init():
     waitUntil(ThreadClear==true,100)
@@ -99,13 +97,17 @@ def Minions_Init():
             #!define MinionVis localPlayer if (Minions_Info[evalOnce(Temp_Slot)][0] == localPlayer.Team and Minions_Visibility[evalOnce(Temp_Slot)] == 1) or Minions_Visibility[evalOnce(Temp_Slot)] == 2 else null
             #!define MinionPos NonPlayer_Loc[evalOnce(Temp_Slot)] + (getTotalTimeElapsed()+0.25*Minions_Info[evalOnce(Temp_Slot)][3]%4)%1 * Minions_DLoc[evalOnce(Temp_Slot)] /*should lerp minion between defined points based on direction*/
             #!define MinionColor Color.TEAM_1 if Minions_Info[evalOnce(Temp_Slot)][0]==1 else Color.TEAM_2 if Minions_Info[evalOnce(Temp_Slot)][0]==2 else null
+            #println([elem + (((0.075 + angleBetweenVectors(directionTowards(EYE,LOOK), directionTowards(EYE, elem)))/2000 * distance(EYE, elem)) * Vector.DOWN) for elem in MinionPos][0])
+            #Global.A = Mapped Array(Vector(0,0,0), Current Array Element + (0.075 - Angle Between Vectors(Facing Direction Of(Local Player), Direction Towards(Eye Position(Local Player), Current Array Element))/2000) * Distance Between(Eye Position(Local Player), Current Array Element) * Down)
+
             createInWorldText(MinionVis,MinionClass_Names[Minions_Info[evalOnce(Temp_Slot)][1]*2],
-            MinionPos,3+Minions_Info[evalOnce(Temp_Slot)][1],Clip.SURFACES,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,MinionColor,SpecVisibility.NEVER)
+            [pos - crossProduct(vect(0,0,-1),directionTowards(LOOK,pos))*distance(LOOK,pos)/16 for pos in [MinionPos-vect(0.45,0,0)]],3+Minions_Info[evalOnce(Temp_Slot)][1],Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,MinionColor,SpecVisibility.NEVER)
             createBeam(MinionVis,Beam.GRAPPLE,MinionPos+vect(0,0,-0.05),MinionPos+vect(0,0,0.05),MinionColor,EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
             Minions_Render[Temp_Slot] = [getLastCreatedText,getLastCreatedEntity]
     ThreadClear=true
     Ready()
 #createBeam(Minions[evalOnce(i)][evalOnce(k)][7],Beam.GRAPPLE,vect(Minions[evalOnce(i)][evalOnce(k)][1]-0.25,1,Minions[evalOnce(i)][evalOnce(k)][2]),vect(Minions[evalOnce(i)][evalOnce(k)][1]+0.5*(Minions[evalOnce(i)][evalOnce(k)][3]/MinionClasses[Minions[evalOnce(i)][evalOnce(k)][0]*MinionClassQualities+4]),1,Minions[evalOnce(i)][evalOnce(k)][2]),null,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+
 
 def Minion_setNullStats():
     Minions_IDs[Temp_Slot] = -0.001

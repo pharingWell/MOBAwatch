@@ -14,7 +14,6 @@ rule "Tracer - Recall ":
     @Condition getTotalTimeElapsed()%0.1==0
     eventPlayer.TracerRecall[30]=[eventPlayer.Health,1]
     eventPlayer.TracerRecall=eventPlayer.TracerRecall.slice(1,30)
-    println(eventPlayer.TracerRecall[0])
     
 rule "Tracer - UI Prep":
     @Event eachPlayer

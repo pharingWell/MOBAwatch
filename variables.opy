@@ -71,8 +71,11 @@ globalvar Players
 globalvar TeamSize
 globalvar ScreenLimits
 globalvar Characters
-
-
+#...
+#database
+globalvar dbKeys
+globalvar dbPRS
+globalvar dbRPT
 #...
 #Structures
 globalvar Structures #id, health, blank
@@ -141,6 +144,7 @@ playervar CamAttach #P
 playervar ControlledRef #P
 playervar MovementGroundCursor #P
 playervar Ready
+playervar dbIndex
 playervar cursorAngles
 playervar cursor
 playervar UIContainer #P
@@ -180,6 +184,7 @@ playervar ClearAllUI
 playervar UltCD
 playervar DamageHandler
 playervar TimerHandler
+playervar Temp
 playervar Disabled #[m1,m2,abilities[0]]
 
 playervar HeroSpecificVar1
