@@ -60,6 +60,9 @@ def UI_Process():
     top
 
 rule "UI Definitions - Global Cursor":
+
+
+
     waitUntil(Ready==true,100)
     #>=(zpos-0.1)*0.016 and getTotalTimeElapsed()%(0.032*highestZpos)<=(zpos)*0.016
     #!define highestZpos 144

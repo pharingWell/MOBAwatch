@@ -52,9 +52,10 @@ settings {
 #!include "variables.opy"
 #!include "ui.opy"
 #!include "minions.opy"
+#!include "heroes/generic.opy"
 #!include "controlled.opy"
 
-#!include "heroes/generic.opy"
+
 
 
 
@@ -217,4 +218,4 @@ rule "set db index":
     
 */
 #
-#!include "../CrossOver/CrossOver/db/db.opy"
+#!include "../CrossOver/db/db.opy"

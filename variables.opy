@@ -27,6 +27,9 @@ ProcessHealthQueue()
 #!define NonPLoc(id) NonPlayer_Loc[MinionSlotFromID(id)]
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
 #!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
+#!define ifAction(a) @Condition eventPlayer.Actions[a]==true\
+    eventPlayer.Actions[a]=false
+#!define startAction(a,ref) (ref).Actions[a]=true
 # team = floor()%10, k = ()%1*100
 #floor(id/10)
 #floor(id) % 10
@@ -51,7 +54,7 @@ enum TargetState:
 enum AbilityType:
     NORMAL,
     CHANNEL,
-enum DType:
+enum DamageType:
     UNKNOWN,
     PHYSICAL,
     MAGICAL 
@@ -215,3 +218,4 @@ subroutine AbilityProcess
 subroutine StopThrottle
 subroutine CalcDealt
 subroutine Minion_setNullStats
+subroutine Target_Func

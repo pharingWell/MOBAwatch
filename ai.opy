@@ -18,7 +18,7 @@ rule "Idle Basic Attack":
     @Condition (not eventPlayer.Target) or (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0])
     @Condition eventPlayer.getSpeed()==0 or eventPlayer.AttackMove
     eventPlayer.TargetHandling=[eventPlayer.getPosition(),(HeroSpecs[eventPlayer.CHero_Index][2][0])]
-    Target()
+    Target_Func()
     if(eventPlayer.Target[0]):
         StopThrottle()
         eventPlayer.Target[2]=[false,false]

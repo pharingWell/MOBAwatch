@@ -2,10 +2,9 @@
 
 #This file handles the bot's actions and is player independent to allow for automation
 
-#!define ifAction(a) @Condition eventPlayer.Actions[a]==true\
-    eventPlayer.Actions[a]=false
+
 ##!define ifAction_withConditions(a) @Condition eventPlayer.Actions[a][0]==true
-#!define startAction(a,ref) (ref).Actions[a]=true
+
 ##!define startAction_withConditions(a,conditions,ref) (ref).Actions[a]=[[true].concat((conditions))]
 
 rule "On Controller Detach":
@@ -134,7 +133,7 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
         clearEffectUI()
         eventPlayer.AbilityVerify=[false,false]
 
-def Target():
+def Target_Func():
     eventPlayer.Temp_DistanceSort=[]
     for eventPlayer.Target_i in range(0,len(CPlayers[2-eventPlayer.Team])):
         eventPlayer.Temp_DistanceSort[eventPlayer.Target_i]=(vect(3-eventPlayer.Team+eventPlayer.Target_i/100,CPlayers[2-eventPlayer.Team][eventPlayer.Target_i].getPosition().x,CPlayers[2-eventPlayer.Team][eventPlayer.Target_i].getPosition().z))
@@ -219,7 +218,7 @@ rule "Look While Moving":
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.getSpeed()>0.3
     @Condition getTotalTimeElapsed()%0.225<0.017
-    if(not (HeroSpecs[eventPlayer.CHero_Index][2][3] and (distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target))):
+    if(not (HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.AUTOTARGET] and (distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE] and eventPlayer.Target))):
         eventPlayer.LookAtPos = (vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)))
     
 
@@ -242,9 +241,9 @@ rule "Use Basic Attack":
     eventPlayer.setAmmo(0,2000)
     while(eventPlayer.Target[0].x>0):
         if(eventPlayer.Target[2][0] or eventPlayer.Target[2][1]):
-            while(not eventPlayer.Target[0].x>0 or distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0]):
+            while(not eventPlayer.Target[0].x>0 or distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE]):
                 if(eventPlayer.Target[1]):
-                    eventPlayer.CPos=vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)
+                    eventPlayer.CPos=vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/(HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE]),eventPlayer.Target[1].getEyePosition().z)
                     if(not eventPlayer.CPos):
                         print("Error with entity in Target ref")
                         return
@@ -253,15 +252,15 @@ rule "Use Basic Attack":
                 else:
                     print("Entity has broken ref or id. Id of >10 missing entity ref")
                     return #for some reason, the dummy bot was deleted and we have a broken ref
-                eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][2][0]-1)/*starts at cpos and moves player to closest point within range*/
+                eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE]-1)/*starts at cpos and moves player to closest point within range*/
                 startAction(0,eventPlayer)
                 wait(0.03)
             if(not eventPlayer.Target[0].x>0):
                 eventPlayer.Target=null
                 return
-            if(distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0]):
+            if(distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE]):
                 wait(0.2)
-        if(not (HeroSpecs[eventPlayer.CHero_Index][2][3] and (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target))):
+        if(not (HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.AUTOTARGET] and (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE] and eventPlayer.Target))):
             if(eventPlayer.Target[1]):
                 eventPlayer.LookAtPos = directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y,eventPlayer.Target[1].getEyePosition().z))
                 #eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
@@ -270,8 +269,8 @@ rule "Use Basic Attack":
                 
                 #eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
         waitUntil(abs(angleBetweenVectors(angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),directionTowards(eventPlayer.getEyePosition()+angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),eventPlayer.LookAtPos)))<15,1)
-        eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
-        if(distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][2][0]):
+        eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/(HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
+        if(distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][Basic.RANGE]):
             if(eventPlayer.Target[2][0]):
                 eventPlayer.Target[2]=[false,eventPlayer.Target[2][1]]
             if(eventPlayer.CHero in BasicAttackExceptions):

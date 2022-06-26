@@ -17,10 +17,56 @@ addUI(getLastCreatedEntity(),AbilityStage.MOVETO)
         HealthChange.append([eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler].x,(damagein),eventPlayer])
 
 #!define startDoT #
-#!include "heroes/reaper.opy"
-#!include "heroes/tracer.opy"
 
+enum Stat:
+    BASE,
+    LEVELRATE,
+    BASIC,
+    ABIL1,
+    ABIL2,
+    ABIL3,
+    ABIL4
 
+enum Base:
+    HEALTH,
+    MANA,
+    DMGMOD,
+
+enum Base_Dmgmod:
+    ARMOR,
+    TAKENMULT,
+    DEALTMULT
+
+enum Basic:
+    RANGE,
+    DAMAGE,
+    SHOTSPERSEC,
+    AUTOTARGET #Y/N
+
+enum Abil:
+    CAST,
+    COST,
+    USE,
+    DMG
+
+enum Abil_Cast:
+    MODE,
+    TYPE,
+    TARGET,
+    RANGE
+
+enum Abil_Cost:
+    MANA
+
+enum Abil_Use:
+    CHANNEL,
+    DURATION,
+    DELAY
+
+enum Abil_Damage:
+    AMOUNT,
+    RATE
+    
 
 rule "Heroes_Init":                                            
         /*
@@ -38,10 +84,10 @@ rule "Heroes_Init":
         */
 
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-                        #[base hp,base mana,damage type, [base armor,dmgtakenmult,damagedealtmult]],levelrate[[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
-    HeroSpecs=[        #0                                1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,0,DType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
-    /*Tracer*/         [[150,0,DType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
+                        #[base hp,base mana,damage type, [base armor,dmgtakenmult,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
+    HeroSpecs=[        #0                               1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
+    /*Reaper*/         [[250,0,DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
+    /*Tracer*/         [[150,0,DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          /*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
@@ -73,7 +119,10 @@ rule "Heroes_Init":
     /*Baptiste*/       [],
     /*Sigma*/          [],
     ]
-
+    #!include "heroes/reaper.opy"
+    #!include "heroes/tracer.opy"
+    
+    
 #!define attachControlled \
     createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
     CPlayers[eventPlayer.Team-1]=insert(getLastCreatedEntity(),eventPlayer.Slot,CPlayers[eventPlayer.Team-1])\
@@ -103,7 +152,6 @@ rule "Check Hero Change":
     OnSpawn()
 
 def OnSpawn():
-    print(eventPlayer.ControlledRef.AttackMove)
     eventPlayer.disableScoreboard()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
     if(eventPlayer.Team!=0): #catches team switch as team should be zero right now
@@ -129,7 +177,7 @@ def OnSpawn():
     
     async(UI_Process,AsyncBehavior.NOOP)
     eventPlayer.enableScoreboard()
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]):
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][Stat.BASIC][Basic.AUTOTARGET]):
         createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.BLUE,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
@@ -174,7 +222,7 @@ rule "Move To":
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
     eventPlayer.ControlledRef.AttackMove=0
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]):
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][Stat.BASIC][Basic.AUTOTARGET]):
         eventPlayer.ControlledRef.Target=null
     eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
     startAction(0,eventPlayer.ControlledRef)
@@ -202,13 +250,13 @@ rule "Set Target to Cursor/Ability Verify":
     else:
         eventPlayer.Target=null
         eventPlayer.TargetHandling=[eventPlayer.cursor,-1.25] #negative value indicates that we move player to the position selected first
-        Target()
+        Target_Func()
         if(eventPlayer.Target[0]):
             eventPlayer.ControlledRef.Target=eventPlayer.Target
             eventPlayer.UICursorStyles[0]=Color.RED
             wait(0.1)
             eventPlayer.UICursorStyles[0]=Color.WHITE
-            eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][2][3]]
+            eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][Stat.BASIC][Basic.AUTOTARGET]]
             startAction(2,eventPlayer.ControlledRef)
         elif(eventPlayer.AttackMove):
             eventPlayer.UICursorStyles[0]=rgb(238,148,148)
@@ -222,13 +270,13 @@ rule "Set Target to Cursor/Ability Verify":
 
 #!define cast(abilityplus2,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2]):/*if exists*/\
-        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0][0]==CastMode.QUICK):\
+        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.QUICK):\
             startAction(abilityplus2,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0][0]==CastMode.RELEASE):\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.RELEASE):\
             eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilityplus2-2,0]\
             waitUntil(eventPlayer.isHoldingButton(button)==false,99)\
             startAction(abilityplus2,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][0][0]==CastMode.CONFIRM):\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.CONFIRM):\
             eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilityplus2-2,0]\
             eventPlayer.AbilityVerify[2]=(button)\
             eventPlayer.AbilityVerify[3]=abilityplus2\
