@@ -44,7 +44,6 @@ settings {
 }
 
 #Activated extensions "numbani"
-
 #!extension beamSounds
 #!extension playMoreEffects
 #!extension spawnMoreDummyBots
@@ -57,7 +56,11 @@ settings {
 
 
 
-
+rule "print .":
+    @Event eachPlayer
+    @Condition eventPlayer.hasSpawned()
+    println(".")
+    enableInspector()
 
 
 rule "Set setting vars":
@@ -178,7 +181,7 @@ rule "On Player Left":
 rule "POV":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-    Minions_Wave()
+    #Minions_Wave()
     
 /*
 rule "PRS check on Join":

@@ -9,7 +9,7 @@ disableInspector()
 #!define MinionPositionLane1n3(t,j) (((t)/8)+(3-j-1)*50*sqrt(ln(1-abs((t)-100)/138.75)/1.3635+(0.967**2))-2) 
 #MOBA Map, Desmos
 #!define MinionPositionLane2(t) (((t)/8)*(4 < (t) and (t) < 16))
-#!define M_id(i,k) 10+(i+1)+k/100
+#!define M_id(i,k_) 10+(i+1)+k_/100
 #!define ft(a,i) (((a)+0.02)*(1-i)+(i)*(19.98-(a)))
 #!define MinionLimit(a) a*0+(1-a)*20
 
@@ -43,11 +43,11 @@ def PrintMinions():
     #             println(PrintText_Temp)
     #             PrintText_Temp="Team {0}, Index {1}:\n".format(i+1,j)
     #         PrintText_Temp="{0}[".format(PrintText_Temp)
-    #         for k in range(len(Minions[i][j])):
+    #         for k_ in range(len(Minions[i][j])):
     #             PrintData_Temp=","
-    #             if(k>=len(Minions[i][j])-1):
+    #             if(k_>=len(Minions[i][j])-1):
     #                 PrintData_Temp=""
-    #             PrintText_Temp="{0}{1}{2}".format(PrintText_Temp,Minions[i][j][k],PrintData_Temp)
+    #             PrintText_Temp="{0}{1}{2}".format(PrintText_Temp,Minions[i][j][k_],PrintData_Temp)
     #         PrintData_Temp="],\n" 
     #         if(j>=len(Minions[i])-1):
     #             PrintData_Temp="]"
@@ -65,10 +65,12 @@ def Minions_Wave():
         MinionWaves[0]++
         if(MinionPool!=[0] and len(MinionPool)):
             for i in range(0,2):
-                for j in range(1,MinionsPerWave+(MinionWaves[0]>15 and MinionWaves[0]%3==0)+1): #3 waves per side, 6 each, adds one if wave is late in game
+                for j in range((1-i),MinionsPerWave+(MinionWaves[0]>15 and MinionWaves[0]%3==0)+1): #3 waves per side, 6 each, adds one if wave is late in game
+                    
+                    MinionCounts[i]=(MinionCounts[i]+1)%100 #causes wraparound
                     Temp_Slot=MinionPool[0]   #grabs minion slot before removing it
                     del MinionPool[0] #removes it from pool
-                    MinionCounts[i]++
+                    Temp_ID = MinionCounts[i]+i*100+1000
                     Minions_Info[Temp_Slot] = [i,0 if j<6 else 1 if j==6 else 2 if j==7 else 3 if j==8 else -1,MinionWaves[0],MinionCounts[i]]
                     Minions_Visibility[Temp_Slot]=1
                     Minions_HP[Temp_Slot] = MinionClass_BaseHP[Minions_Info[evalOnce(Temp_Slot)][1]]
@@ -86,8 +88,9 @@ def Minions_Init():
     ThreadClear=false
     #MWeapons = [["ο","ơ","δ","σ"],["Y","ϒ", "ϔ", "Ẏ"]]
     for i in range(0,2): 
-        for k in range(1,MinionHalfCount): #skips 0, which is potentially problematic
-            Temp_Slot = i*MinionHalfCount+k
+    #!define MinionHalf 4
+        for k_ in range((1-i),MinionHalf+(1-i)): #sk_ips 0, which is potentially problematic
+            Temp_Slot = i*MinionHalf+k_
             Minion_setNullStats()
             if(MinionPool!=-1):
                 MinionPool.append(Temp_Slot)
@@ -99,14 +102,14 @@ def Minions_Init():
             #!define MinionColor Color.TEAM_1 if Minions_Info[evalOnce(Temp_Slot)][0]==1 else Color.TEAM_2 if Minions_Info[evalOnce(Temp_Slot)][0]==2 else null
             #println([elem + (((0.075 + angleBetweenVectors(directionTowards(EYE,LOOK), directionTowards(EYE, elem)))/2000 * distance(EYE, elem)) * Vector.DOWN) for elem in MinionPos][0])
             #Global.A = Mapped Array(Vector(0,0,0), Current Array Element + (0.075 - Angle Between Vectors(Facing Direction Of(Local Player), Direction Towards(Eye Position(Local Player), Current Array Element))/2000) * Distance Between(Eye Position(Local Player), Current Array Element) * Down)
-
-            createInWorldText(MinionVis,MinionClass_Names[Minions_Info[evalOnce(Temp_Slot)][1]*2],
-            [pos - crossProduct(vect(0,0,-1),directionTowards(LOOK,pos))*distance(LOOK,pos)/16 for pos in [MinionPos-vect(0.45,0,0)]],3+Minions_Info[evalOnce(Temp_Slot)][1],Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,MinionColor,SpecVisibility.NEVER)
+            #text(MinionVis,MinionClass_Names[Minions_Info[evalOnce(Temp_Slot)][1]*2],MinionPos,MinionColor)
+            
+            #createInWorldText(MinionVis,,[pos - crossProduct(vect(0,0,-1),directionTowards(LOOK,pos))*distance(LOOK,pos)/16 for pos in [MinionPos-vect(0.45,0,0)]],3+Minions_Info[evalOnce(Temp_Slot)][1],Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR,MinionColor,SpecVisibility.NEVER)
             createBeam(MinionVis,Beam.GRAPPLE,MinionPos+vect(0,0,-0.05),MinionPos+vect(0,0,0.05),MinionColor,EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
             Minions_Render[Temp_Slot] = [getLastCreatedText,getLastCreatedEntity]
     ThreadClear=true
     Ready()
-#createBeam(Minions[evalOnce(i)][evalOnce(k)][7],Beam.GRAPPLE,vect(Minions[evalOnce(i)][evalOnce(k)][1]-0.25,1,Minions[evalOnce(i)][evalOnce(k)][2]),vect(Minions[evalOnce(i)][evalOnce(k)][1]+0.5*(Minions[evalOnce(i)][evalOnce(k)][3]/MinionClasses[Minions[evalOnce(i)][evalOnce(k)][0]*MinionClassQualities+4]),1,Minions[evalOnce(i)][evalOnce(k)][2]),null,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+#createBeam(Minions[evalOnce(i)][evalOnce(k_)][7],Beam.GRAPPLE,vect(Minions[evalOnce(i)][evalOnce(k_)][1]-0.25,1,Minions[evalOnce(i)][evalOnce(k_)][2]),vect(Minions[evalOnce(i)][evalOnce(k_)][1]+0.5*(Minions[evalOnce(i)][evalOnce(k_)][3]/MinionClasses[Minions[evalOnce(i)][evalOnce(k_)][0]*MinionClassQualities+4]),1,Minions[evalOnce(i)][evalOnce(k_)][2]),null,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
 
 def Minion_setNullStats():

@@ -1,12 +1,12 @@
 #!mainFile "../main.opy"
 #you can declare hero specific variables here. Do not make them global
-rule "Hero - Init":
+rule "Reaper - Init":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
     #print("{}, {}".format(eventPlayer.Hero_Ability[0],eventPlayer.Hero_Ability[1]))
     
-rule "Hero - UI Prep":
+rule "Reaper - UI Prep":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
@@ -35,14 +35,14 @@ rule "Hero - UI Prep":
         default:
             defaultEffectUI()
 
-rule "Hero - UI MoveTo":
+rule "Reaper - UI MoveTo":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.MOVETO #show ui for
     clearEffectUI()
 
-rule "Hero - Cast":
+rule "Reaper - Cast":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy() 
@@ -66,15 +66,15 @@ rule "Hero - Cast":
             if(eventPlayer.isUsingUltimate()):
                 createEffect(getAllPlayers(),Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
                 addUI(getLastCreatedEntity(),AbilityStage.COMPLETE)
-                eventPlayer.TimerHandler=evalOnce(getTotalTimeElapsed())+HeroSpecs[0][6][2][1]
+                eventPlayer.TimerHandler=evalOnce(getTotalTimeElapsed())+HeroSpecs[Heroes.REAPER][Stat.ABIL4][Abil.USE][Abil_Use.DURATION]
                 while(eventPlayer.TimerHandler > getTotalTimeElapsed()):
-                    wait(HeroSpecs[0][6][3][1])
-                    damageInRadius(8,eventPlayer.getPosition(),HeroSpecs[0][6][3][0])
+                    wait(HeroSpecs[Heroes.REAPER][Stat.ABIL4][Abil.DMG][Abil_Damage.RATE])
+                    damageInRadius(8,eventPlayer.getPosition(),HeroSpecs[Heroes.REAPER][Stat.ABIL4][Abil.DMG][Abil_Damage.AMOUNT],0)
                     
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
 
-rule "Hero - Complete":
+rule "Reaper - Complete":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()

@@ -8,15 +8,7 @@ AbilityProcess()
 #!define addUI(UI_id,DestroyAt) eventPlayer.Ability_UI[DestroyAt]=eventPlayer.Ability_UI[DestroyAt].concat(UI_id)
 #!define AreaHighlight(effect,radius) createEffect(eventPlayer.Owner,effect,Color.GREEN,updateEveryTick(eventPlayer.Owner.cursor),(radius),EffectReeval.VISIBILITY_POSITION_AND_RADIUS)\
 addUI(getLastCreatedEntity(),AbilityStage.MOVETO)
-#!defineMember damageInRadius(radius,positon,damagein) /**/\
-    eventPlayer.Temp_DistanceSort=getPlayersInRadius((positon),(radius),getOppositeTeam(eventPlayer.getTeam()),LosCheck.OFF)\
-    for eventPlayer.DamageHandler in range(len(eventPlayer.Temp_DistanceSort)):\
-        damage(eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler],eventPlayer.Owner,(damagein))\
-    eventPlayer.Temp_DistanceSort=[i for i in NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48) if ((abs((positon).x-i.y))**2 + (abs((positon).z-i.z))**2 <= (radius))]\
-    for eventPlayer.DamageHandler in range(len(eventPlayer.Temp_DistanceSort)):\
-        HealthChange.append([eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler].x,(damagein),eventPlayer])
 
-#!define startDoT #
 
 enum Stat:
     BASE,
@@ -86,7 +78,7 @@ rule "Heroes_Init":
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
                         #[base hp,base mana,damage type, [base armor,dmgtakenmult,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                               1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,0,DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [2.4,0.016]  ]], #
+    /*Reaper*/         [[250,0,DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [34,0.2]  ]], #
     /*Tracer*/         [[150,0,DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          /*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
     /*Hanzo*/          [],
@@ -119,8 +111,42 @@ rule "Heroes_Init":
     /*Baptiste*/       [],
     /*Sigma*/          [],
     ]
-    #!include "heroes/reaper.opy"
-    #!include "heroes/tracer.opy"
+enum Heroes:
+    REAPER,        
+    TRACER,        
+    MERCY,         
+    HANZO,         
+    TORBJORN,      
+    REINHARDT,     
+    PHARAH,        
+    WINSTON,       
+    WIDOWMAKER,    
+    BASTION,       
+    SYMMETRA,      
+    ZENYATTA,      
+    GENJI,         
+    ROADHOG,       
+    CASSIDY,       
+    JUNKRAT,       
+    ZARYA,         
+    SOLDIER76,   
+    LUCIO,         
+    DVA,          
+    MEI,           
+    SOMBRA,        
+    DOOMFIST,      
+    ANA,           
+    ORISA,         
+    BRIGITTE,      
+    MOIRA,         
+    WRECKING BALL, 
+    ASHE,          
+    ECHO,          
+    BAPTISTE,      
+    SIGMA
+
+#!include "heroes/reaper.opy"
+#!include "heroes/tracer.opy"
     
     
 #!define attachControlled \
@@ -136,7 +162,7 @@ rule "Heroes_Init":
     eventPlayer.ControlledRef.setDamageDealt(0)\
     eventPlayer.ControlledRef.setDamageReceived(0)\
     eventPlayer.setDamageReceived(0)\
-    eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+eventPlayer.Slot/100\
+    eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+eventPlayer.Slot/100/*sets player id*/\
     
 rule "On Game Enter":
     @Event eachPlayer

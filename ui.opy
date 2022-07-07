@@ -72,20 +72,21 @@ rule "UI Definitions - Global Cursor":
     #!define LOOK localPlayer.getPosition()+vect(0,10,0)
     #!define CURSORX (localPlayer.cursorAngles[0].x)
     #!define CURSORZ (localPlayer.cursorAngles[0].z+3)
-    #!define SCALE 50
-    #!define DAMPER 80
-    #!define DIR vect(0.45,-0.89,0)
+    #!define vFOR vect(0.45,-0.89,0)
     #directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))
-    #!define XSCALE vect(0,0,-1)
-    #-crossProduct(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0)), angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90))
-    #!define ZSCALE vect(-0.89,-0.45,0)
-    #-angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90)
+    #!define vLEFT vect(0,0,-1)
+    #crossProduct(vect(0,1,0),vFOR)
+    #!define vDOWN vect(-0.89,-0.45,0)
+    #crossProduct(vect(0,0,-1),vFOR)
+    #!define textPos(pos) updateEveryTick((pos) + vDOWN * (dotProduct(vFOR, (pos) - EYE) / 18)) /*text is anchored to its correct position*/
+    #!define SCALE 50 /*used for UI, defines screen size. Lowering this value changes your Y upper and lower limit and the wraparound distance for the X*/
+    #!define uiPos(xpos,ypos) (EYE+SCALE*vFOR+(xpos)*vLEFT+ (ypos)*vDOWN)
     ScreenLimits = [1.25,0.68]
-    #!define uiPos(xpos,ypos) updateEveryTick(EYE+DAMPER*((xpos)/SCALE*XSCALE+DIR + (ypos)/SCALE*ZSCALE))
+    #!define text(vis,text,pos,color) createInWorldText((vis), (text), textPos(pos) , (size), Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, (color), SpecVisibility.DEFAULT)
     createInWorldText(zPos(localPlayer,1), "•",uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, localPlayer.UICursorStyles[0], SpecVisibility.NEVER)
     createInWorldText(localPlayer if localPlayer.MovementGroundCursor else null,"¤",localPlayer.ControlledRef.MovetoPos-vect(1.25,0,0),2.0,Clip.SURFACES,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,rgb(238,148,148) if localPlayer.ControlledRef.AttackMove else Color.SKY_BLUE,SpecVisibility.NEVER)
     #createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.cursor,0.1,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-
+ 
 rule "Start Camera": 
     @Event eachPlayer
     @Condition Ready == true
@@ -99,18 +100,11 @@ rule "Start Camera":
     eventPlayer.startForcingPosition(vect(eventPlayer.CamLoc.x,-10,eventPlayer.CamLoc.z),true)
     eventPlayer.ControlledRef.MovetoPos=vect(0,0,0)
 
-
-
 rule "Print":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy() and eventPlayer.isHoldingButton(Button.INTERACT)
     print(eventPlayer.CamLoc) 
     #PrintMinions()
-    /*print("1{}2{}3{}".format( 
-        directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))
-        ,-crossProduct(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0)), angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90))
-        ,-angleToDirection(horizontalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))), verticalAngleOfDirection(directionTowards(eventPlayer.getPosition()+vect(0,10,0)+CamPos, eventPlayer.getPosition()+vect(0,10,0))) - 90)
-        ))#prints DIR,XSCALE and ZSCALE for reevalulation*/
 rule "Toggle CamAttach":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
@@ -157,7 +151,7 @@ rule "Camera Bounds":
             eventPlayer.cursorAngles[1]=eventPlayer.cursorAngles[0]
             #set last angle based on temp holding
         #negative height of EYE over y component of cursor component times the cursor plus EYE position
-        eventPlayer.cursor=(0-CamPos.y)/(DIR.y+eventPlayer.cursorAngles[0].z/SCALE*ZSCALE.y)*(DIR+eventPlayer.cursorAngles[0].x/SCALE*XSCALE+eventPlayer.cursorAngles[0].z/SCALE*ZSCALE)+eventPlayer.getPosition()+vect(0,10,0)+CamPos
+        eventPlayer.cursor=(0-CamPos.y)/(vFOR.y+eventPlayer.cursorAngles[0].z/SCALE*vDOWN.y)*(vFOR+eventPlayer.cursorAngles[0].x/SCALE*vLEFT+eventPlayer.cursorAngles[0].z/SCALE*vDOWN)+eventPlayer.getPosition()+vect(0,10,0)+CamPos
     wait(0.032)
     top
 rule "Prevent Cursor Wrapping":

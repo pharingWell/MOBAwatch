@@ -43,7 +43,7 @@ rule "Drop idle-target on distance":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
-    @Condition (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0] and eventPlayer.Target)
+    @Condition (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][Stat.BASIC][0] and eventPlayer.Target)
     wait(0.1)
     if(eventPlayer.Target[2]==[false,false]):
         eventPlayer.Target=null

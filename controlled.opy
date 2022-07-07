@@ -2,11 +2,6 @@
 
 #This file handles the bot's actions and is player independent to allow for automation
 
-
-##!define ifAction_withConditions(a) @Condition eventPlayer.Actions[a][0]==true
-
-##!define startAction_withConditions(a,conditions,ref) (ref).Actions[a]=[[true].concat((conditions))]
-
 rule "On Controller Detach":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
@@ -66,7 +61,8 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
                 eventPlayer.HealthQueue[1][0].Health[0]-=(eventPlayer.HealthQueue[1][1])*(1-eventPlayer.DamageModifiers[0]/100) * (eventPlayer.DamageModifiers[1] if eventPlayer.DamageModifiers[1]>0 else 1)  * (eventPlayer.HealthQueue[1][0].DamageModifiers[2])
                 eventPlayer.HealthQueue[1][0].Health[3]=[eventPlayer,eventPlayer.HealthQueue[1][0].Health[3][1]]
                 if(eventPlayer.HealthQueue[1][0].Health[0]<=0):
-                    goto freetarget
+                    if(eventPlayer.Target==eventPlayer.HealthQueue[1][0]):
+                        goto freetarget
             elif(eventPlayer.HealthQueue[1][1]<0): #healing
                 eventPlayer.HealthQueue[1][0].Health[0]+=(abs(eventPlayer.HealthQueue[1][1])*eventPlayer.HealingModifiers[0])
                 eventPlayer.HealthQueue[1][0].Health[3]=[eventPlayer.HealthQueue[1][0].Health[3][0],eventPlayer]
@@ -74,11 +70,13 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
                 print("{} tried to deal 0 damage to {}".format(eventPlayer,eventPlayer.HealthQueue[1][0]))
         else:
             freetarget:
-            print("{} has died".format(eventPlayer.Target[1]))
+            #print("{} has died".format(eventPlayer.Target[1]))
             eventPlayer.Target=null
     else:
-        #thing to disconnect minions as targets goes here
-        if(eventPlayer.HealthQueue[1][1]>0): #minions cannot be healed
+        if(Minions_HP[Minions_IDs.index(eventPlayer.HealthQueue[1][0])]<=0):
+            if(eventPlayer.Target==eventPlayer.HealthQueue[1][0]):
+                eventPlayer.Target=null
+        elif(eventPlayer.HealthQueue[1][1]>0): #minions cannot be healed
             HealthChange.append(vect(eventPlayer.HealthQueue[1][0],(eventPlayer.HealthQueue[1][1] * (1-eventPlayer.DamageModifiers[2])/100 * (1+eventPlayer.DamageModifiers[3]/100)),eventPlayer.Slot))
     del eventPlayer.HealthQueue[1]
 
@@ -285,7 +283,7 @@ rule "Use Basic Attack":
         else:
             wait(0.03)
             continue
-        
+    endAbilityAction(2)
 
 ### 3 ###
 rule "Use Ability 1":
@@ -294,6 +292,8 @@ rule "Use Ability 1":
     @Condition eventPlayer.isDummy()
     ifAction(3)
     Ability_Used(Button.ABILITY_1,1)
+    endAbilityAction(3)
+
     
 ### 4 ###
 rule "Use Ability 2":
@@ -302,6 +302,7 @@ rule "Use Ability 2":
     @Condition eventPlayer.isDummy()
     ifAction(4)
     Ability_Used(Button.ABILITY_2,2)
+    endAbilityAction(4)
 
 ### 5 ###
 rule "Use Secondary (e)":
@@ -310,6 +311,7 @@ rule "Use Secondary (e)":
     @Condition eventPlayer.isDummy()
     ifAction(5)
     Ability_Used(Button.SECONDARY_FIRE,3)
+    endAbilityAction(5)
 
 ### 6 ###
 rule "Use Ult":
@@ -319,7 +321,7 @@ rule "Use Ult":
     ifAction(6)
     if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]):
         Ability_Used(Button.ULTIMATE,4)         
-
+    endAbilityAction(6)
 
 
 ### 8 ### 
