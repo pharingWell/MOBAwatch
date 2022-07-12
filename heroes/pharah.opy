@@ -1,13 +1,13 @@
 #!mainFile "../main.opy"
-#you can declare hero specific variables here. Do not make them global
-rule "Hero - Init":
+
+rule "Pharah - Init":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero pharah
     @Condition eventPlayer.isDummy()
     
-rule "Hero - UI Prep":
+rule "Pharah - UI Prep":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero pharah
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
     clearEffectUI()
@@ -31,17 +31,17 @@ rule "Hero - UI Prep":
         default:
             defaultEffectUI()
 
-rule "Hero - UI MoveTo":
+rule "Pharah - UI MoveTo":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero pharah
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.MOVETO #show ui for
     clearEffectUI()
     #does not pass to cast for obvious reasons
 
-rule "Hero - Cast":
+rule "Pharah - Cast":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero pharah
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
@@ -60,9 +60,9 @@ rule "Hero - Cast":
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
 
-rule "Hero - Complete":
+rule "Pharah - Complete":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero pharah
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()

@@ -38,20 +38,30 @@ ProcessHealthQueue()
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
 #!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
 
-#!define startAction(a,ref) (ref).Actions[a]+=1
-#!define ifAction(a) @Condition eventPlayer.Actions[a]==1
+#!define startAction(a,ref) /**/\
+if(not eventPlayer.Actions):\
+    eventPlayer.Actions= (a)+0.15 /*0.15 is used to differentiate 0 from null*/\
+else:\
+    println("action {} not run".format((a)))
+#!define ifAction(a) @Condition eventPlayer.Actions==((a)+0.15) /*0.15 is used to differentiate 0 from null*/\
+waitUntil_verify(a+0.15 == eventPlayer.Actions)\
+    smallMessage(localPlayer,"event {} trigged".format(a))\
+else:\
+    return
 #!define endAbilityAction(a) /**/\
-    waitUntil_verify(eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE)\
-        print("boom")\
-        eventPlayer.Actions[a]=-1\
+    waitUntil_verify(eventPlayer.Hero_Ability[0]==AbilityStage.NONE)\
+       eventPlayer.Actions=0\
     else:\
-        return\
+        return
 
 # team = floor()%10, k = ()%1*100
 #floor(id/10)
 #floor(id) % 10
 #id % floor(id)
-
+enum ResourceType:
+    NONE,
+    MANA,
+    ENERGY
 enum CastMode:
     NULL,
     CONFIRM,
@@ -150,7 +160,7 @@ globalvar NonPlayer_Loc #(x,id,z) minions are registered as 1[team].[2 digit id]
 globalvar MinionWaves #value 0 is total wave count
 globalvar MinionCounts #[team 1 minions, team 2 minions]
 #settings
-
+globalvar mousetoggle
 globalvar Setting_CamSpeed
 globalvar Setting_Mode
 
@@ -179,7 +189,7 @@ playervar Actions
 playervar ControlledSlot
 playervar Level
 playervar Health #current,max,[regen/dots,duration,rate], [damager,healer]
-playervar Mana #current,max
+playervar Resource #current,max
 playervar CPos
 playervar MovetoPos
 playervar AttackMove #value that dictates whether to use overriding movement or attacking moving attacking moving movement, true if it has a value, false if its zero
@@ -206,6 +216,10 @@ playervar DamageHandler
 playervar TimerHandler
 playervar Temp
 playervar Disabled #[m1,m2,abilities[0]]
+playervar Settings
+enum PlayerSettings:
+    NULL,
+    CAMERA_NUDGE,
 
 playervar HeroSpecificVar1
 playervar HeroSpecificVar2

@@ -50,10 +50,10 @@ rule "Reaper - Cast":
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         case 1: 
-            Ability(Button.ABILITY_1,false)
+            Ability(Button.ABILITY_1)
             break
         case 2:
-            Ability(Button.ABILITY_2,false)
+            Ability(Button.ABILITY_2)
             wait()
             eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
             wait(1) #teleport camera to player after 1 sec
@@ -61,15 +61,15 @@ rule "Reaper - Cast":
                 eventPlayer.Owner.CamLoc=vect(eventPlayer.CPos.x,eventPlayer.Owner.CamLoc.y,eventPlayer.CPos.z)
             break
         case 4:
-            Ability(Button.ULTIMATE,false)
+            Ability(Button.ULTIMATE)
             wait()
             if(eventPlayer.isUsingUltimate()):
                 createEffect(getAllPlayers(),Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
                 addUI(getLastCreatedEntity(),AbilityStage.COMPLETE)
-                eventPlayer.TimerHandler=evalOnce(getTotalTimeElapsed())+HeroSpecs[Heroes.REAPER][Stat.ABIL4][Abil.USE][Abil_Use.DURATION]
+                eventPlayer.TimerHandler=evalOnce(getTotalTimeElapsed())+HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.USE][Abil_Use.DURATION]
                 while(eventPlayer.TimerHandler > getTotalTimeElapsed()):
-                    wait(HeroSpecs[Heroes.REAPER][Stat.ABIL4][Abil.DMG][Abil_Damage.RATE])
-                    damageInRadius(8,eventPlayer.getPosition(),HeroSpecs[Heroes.REAPER][Stat.ABIL4][Abil.DMG][Abil_Damage.AMOUNT],0)
+                    wait(HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.RATE])
+                    damageInRadius(8,eventPlayer.getPosition(),HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.AMOUNT],0)
                     
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE

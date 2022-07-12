@@ -58,7 +58,7 @@ rule "Tracer - Cast":
     switch eventPlayer.Hero_Ability[1]:
         case 1:
             eventPlayer.startThrottleInDirection(eventPlayer.LookAtPos,1,Relativity.TO_WORLD,Throttle.REPLACE_EXISTING,ThrottleReeval.NONE)
-            Ability(Button.ABILITY_1,false)
+            Ability(Button.ABILITY_1)
             wait()
             if(eventPlayer.Owner):
                 if(not eventPlayer.Owner.isHoldingButton(Button.SECONDARY_FIRE)):
@@ -70,7 +70,7 @@ rule "Tracer - Cast":
                 eventPlayer.stopThrottleInDirection()
             break
         case 2:
-            Ability(Button.ABILITY_2,false)
+            Ability(Button.ABILITY_2)
             wait(0.6)
             eventPlayer.MovetoPos=(eventPlayer.getPosition())
             if(eventPlayer.Owner):
@@ -79,10 +79,10 @@ rule "Tracer - Cast":
             eventPlayer.Health[0]=sorted(eventPlayer.TracerRecall,lambda x: eventPlayer.Health[1]-x[0])[0][0]
             break
         case 3:
-            Ability(Button.RELOAD,false)
+            Ability(Button.RELOAD)
             break
         case 4:
-            Ability(Button.ULTIMATE,false)
+            Ability(Button.ULTIMATE)
             break
 
 

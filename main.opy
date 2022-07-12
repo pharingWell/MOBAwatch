@@ -60,9 +60,7 @@ rule "print .":
     @Event eachPlayer
     @Condition eventPlayer.hasSpawned()
     println(".")
-    enableInspector()
-
-
+    
 rule "Set setting vars":
     Setting_CamSpeed=createWorkshopSetting(float[0.0:1.0],"Cosmetic","Unbound Camera Speed",0.5,23)
     Setting_Mode=createWorkshopSetting(enum["Open","Standalone"],"Significant","Open: Allow players to join mid-game, Standalone: Full match",1,63)
@@ -125,7 +123,7 @@ rule "Inspector":
     disableInspector()
     
     #enableInspector()
-    #top    
+    top    
 
 rule "Display server performance characteristics":
     #hudHeader(getAllPlayers(), "{}{} {}{} {}{}".format("Load:", "{0}%".format(getServerLoad()), "Load Average:", "{0}%".format(getAverageServerLoad()), "Load Peak:", "{0}%".format(getPeakServerLoad())), HudPosition.RIGHT, -10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)

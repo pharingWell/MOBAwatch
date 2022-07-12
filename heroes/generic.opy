@@ -2,15 +2,15 @@
 
 #This file is used for things regarding any hero and the player's input
 
-#!define Ability(button,cost) eventPlayer.AbilityUse[0]=button\
-AbilityProcess()
+#!define Ability(button) eventPlayer.AbilityUse[0]=button\
+ AbilityProcess()
 
 #!define addUI(UI_id,DestroyAt) eventPlayer.Ability_UI[DestroyAt]=eventPlayer.Ability_UI[DestroyAt].concat(UI_id)
 #!define AreaHighlight(effect,radius) createEffect(eventPlayer.Owner,effect,Color.GREEN,updateEveryTick(eventPlayer.Owner.cursor),(radius),EffectReeval.VISIBILITY_POSITION_AND_RADIUS)\
 addUI(getLastCreatedEntity(),AbilityStage.MOVETO)
 
 
-enum Stat:
+enum HeroStat:
     BASE,
     LEVELRATE,
     BASIC,
@@ -21,8 +21,12 @@ enum Stat:
 
 enum Base:
     HEALTH,
-    MANA,
+    RESOURCE,
     DMGMOD,
+
+enum Base_Resource:
+    TYPE,
+    STARTING_AMT
 
 enum Base_Dmgmod:
     ARMOR,
@@ -48,7 +52,7 @@ enum Abil_Cast:
     RANGE
 
 enum Abil_Cost:
-    MANA
+    RESOURCE
 
 enum Abil_Use:
     CHANNEL,
@@ -78,13 +82,13 @@ rule "Heroes_Init":
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
                         #[base hp,base mana,damage type, [base armor,dmgtakenmult,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[channel, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                               1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,0,DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [34,0.2]  ]], #
-    /*Tracer*/         [[150,0,DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          /*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
+    /*Reaper*/         [[250,[],DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMode.QUICK,CastType.SELF] ],[ [CastMode.CONFIRM,CastType.GROUND,TargetState.NONE,10] ],null,[  [CastMode.RELEASE,CastType.SELF],null,[AbilityType.CHANNEL,3], [34,0.2]  ]], #
+    /*Tracer*/         [[150,[],DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMode.QUICK,CastType.DIRECTION] ],[ [CastMode.QUICK,CastType.SELF] ],null,[ [CastMode.RELEASE,CastType.DIRECTION],null,[AbilityType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Mercy*/          [],/*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
     /*Hanzo*/          [],
     /*Torbjörn*/       [],
     /*Reinhardt*/      [],
-    /*Pharah*/         [],
+    /*Pharah*/         [[200,[ResourceType.ENERGY,1],0,[0,1,1]],[],[6,40,1],[ [CastMode.QUICK,CastType.SELF],  ],/*projectile*/],
     /*Winston*/        [],
     /*Widowmaker*/     [],
     /*Bastion*/        [],
@@ -147,7 +151,11 @@ enum Heroes:
 
 #!include "heroes/reaper.opy"
 #!include "heroes/tracer.opy"
-    
+#Mercy
+#Hanzo
+#Torborn
+#Reinhardt
+#!include "heroes/pharah.opy"
     
 #!define attachControlled \
     createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
@@ -200,10 +208,10 @@ def OnSpawn():
     eventPlayer.CamAttach=true
     moveCameraWithPlayer()
     wait()
-    
+    #eventPlayer.disableHeroHUD()
     async(UI_Process,AsyncBehavior.NOOP)
     eventPlayer.enableScoreboard()
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][Stat.BASIC][Basic.AUTOTARGET]):
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
         createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.BLUE,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
@@ -248,16 +256,18 @@ rule "Move To":
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
     eventPlayer.ControlledRef.AttackMove=0
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][Stat.BASIC][Basic.AUTOTARGET]):
+    eventPlayer.ControlledRef.LookAtPos = (vectorTowards(eventPlayer.ControlledRef.getEyePosition(),vect(eventPlayer.ControlledRef.MovetoPos.x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.MovetoPos.z)))
+    eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtPos,Relativity.TO_WORLD)
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
         eventPlayer.ControlledRef.Target=null
     eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
     startAction(0,eventPlayer.ControlledRef)
+    eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtPos,Relativity.TO_WORLD)
     eventPlayer.MovementGroundCursor = true
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
     while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
         eventPlayer.MovementGroundCursor = false
         eventPlayer.ControlledRef.MovetoPos = eventPlayer.cursor
-        startAction(1,eventPlayer.ControlledRef)
         if(getTotalTimeElapsed()%2<0.5):
             startAction(0,eventPlayer.ControlledRef)
         waitUntil(not(eventPlayer.isUsingAbility1() or eventPlayer.isUsingAbility2() or eventPlayer.isUsingUltimate())==true,1)
@@ -282,7 +292,7 @@ rule "Set Target to Cursor/Ability Verify":
             eventPlayer.UICursorStyles[0]=Color.RED
             wait(0.1)
             eventPlayer.UICursorStyles[0]=Color.WHITE
-            eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][Stat.BASIC][Basic.AUTOTARGET]]
+            eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]]
             startAction(2,eventPlayer.ControlledRef)
         elif(eventPlayer.AttackMove):
             eventPlayer.UICursorStyles[0]=rgb(238,148,148)
@@ -299,13 +309,11 @@ rule "Set Target to Cursor/Ability Verify":
         if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.QUICK):\
             startAction(abilityplus2,eventPlayer.ControlledRef)\
         elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.RELEASE):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilityplus2-2,0]\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,(abilityplus2)-2,0]\
             waitUntil(eventPlayer.isHoldingButton(button)==false,99)\
             startAction(abilityplus2,eventPlayer.ControlledRef)\
         elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.CONFIRM):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilityplus2-2,0]\
-            eventPlayer.AbilityVerify[2]=(button)\
-            eventPlayer.AbilityVerify[3]=abilityplus2\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,(abilityplus2)-2,(button),abilityplus2]\
             async(CastConfirm,AsyncBehavior.RESTART)\
         else:\
             eventPlayer.CPos=eventPlayer.cursor\
@@ -331,7 +339,10 @@ def CastConfirm():
     #this has to be async because of the waitUntil
     eventPlayer.AbilityVerify[0]=true
     eventPlayer.AbilityVerify[1]=true
-    waitUntil(eventPlayer.AbilityVerify[0]==false,15)
+    waitUntil_verify(eventPlayer.AbilityVerify[0]==false)
+    else:
+        print("CastConfirm timed out")
+        return
     clearEffectUI()
     if(not eventPlayer.AbilityVerify[1]):
         eventPlayer.ControlledRef.CPos=eventPlayer.cursor
@@ -339,6 +350,7 @@ def CastConfirm():
         eventPlayer.AbilityVerify=[]
     else:
         eventPlayer.AbilityVerify=[]
+        eventPlayer.ControlledRef.Actions = 0
         return /*ability cast cancelled*/
 
 
