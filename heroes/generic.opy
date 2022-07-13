@@ -2,8 +2,7 @@
 
 #This file is used for things regarding any hero and the player's input
 
-#!define Ability(button) eventPlayer.AbilityUse[0]=button\
- AbilityProcess()
+
 
 #!define addUI(UI_id,DestroyAt) eventPlayer.Ability_UI[DestroyAt]=eventPlayer.Ability_UI[DestroyAt].concat(UI_id)
 #!define AreaHighlight(effect,radius) createEffect(eventPlayer.Owner,effect,Color.GREEN,updateEveryTick(eventPlayer.Owner.cursor),(radius),EffectReeval.VISIBILITY_POSITION_AND_RADIUS)\
@@ -148,7 +147,7 @@ enum Heroes:
     ECHO,          
     BAPTISTE,      
     SIGMA
-
+#!include "controlled.opy"
 #!include "heroes/reaper.opy"
 #!include "heroes/tracer.opy"
 #Mercy
@@ -304,20 +303,19 @@ rule "Set Target to Cursor/Ability Verify":
             eventPlayer.MovementGroundCursor=true
             startAction(0,eventPlayer.ControlledRef)
 
-#!define cast(abilityplus2,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2]):/*if exists*/\
-        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.QUICK):\
-            startAction(abilityplus2,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.RELEASE):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,(abilityplus2)-2,0]\
-            waitUntil(eventPlayer.isHoldingButton(button)==false,99)\
-            startAction(abilityplus2,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilityplus2][Abil.CAST][Abil_Cast.MODE]==CastMode.CONFIRM):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,(abilityplus2)-2,(button),abilityplus2]\
-            async(CastConfirm,AsyncBehavior.RESTART)\
+#!define cast(abilitynum,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum+2]):/*if exists*/\
+        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum+2][Abil.CAST][Abil_Cast.MODE]==CastMode.QUICK):\
+            startAction(abilitynum+2,eventPlayer.ControlledRef)\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum+2][Abil.CAST][Abil_Cast.MODE]==CastMode.RELEASE):\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,0]\
+            waitUntil_verify(not eventPlayer.isHoldingButton(button))\
+            startAction(abilitynum+2,eventPlayer.ControlledRef)\
+        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum+2][Abil.CAST][Abil_Cast.MODE]==CastMode.CONFIRM):\
+            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,(button),abilitynum+2]\
+            async(CastConfirm,AsyncBehavior.NOOP)\
         else:\
-            eventPlayer.CPos=eventPlayer.cursor\
-            startAction(abilityplus2,eventPlayer.ControlledRef)\
+            print("Cast called with no mode")\
 
 
 rule "Use Ability":
@@ -327,26 +325,23 @@ rule "Use Ability":
     if(eventPlayer.AbilityVerify[0]):
         eventPlayer.AbilityVerify=[false,true,null]
     if(eventPlayer.isHoldingButton(Button.ABILITY_1)):
-        cast(3,Button.ABILITY_1)
+        cast(1,Button.ABILITY_1)
     elif(eventPlayer.isHoldingButton(Button.ABILITY_2)):
-        cast(4,Button.ABILITY_2)
+        cast(2,Button.ABILITY_2)
     elif(eventPlayer.isHoldingButton(Button.RELOAD)):
-        cast(5,Button.RELOAD)
+        cast(3,Button.RELOAD)
     elif(eventPlayer.isHoldingButton(Button.ULTIMATE)):
-        cast(6,Button.ULTIMATE)
+        cast(4,Button.ULTIMATE)
 
 def CastConfirm():
     #this has to be async because of the waitUntil
     eventPlayer.AbilityVerify[0]=true
     eventPlayer.AbilityVerify[1]=true
-    waitUntil_verify(eventPlayer.AbilityVerify[0]==false)
-    else:
-        print("CastConfirm timed out")
-        return
+    waitUntil_verify(not eventPlayer.AbilityVerify[0])
     clearEffectUI()
     if(not eventPlayer.AbilityVerify[1]):
         eventPlayer.ControlledRef.CPos=eventPlayer.cursor
-        startAction(eventPlayer.AbilityVerify[3],eventPlayer.ControlledRef)
+        startAction(eventPlayer.ControlledRef.Hero_Ability[3],eventPlayer.ControlledRef)
         eventPlayer.AbilityVerify=[]
     else:
         eventPlayer.AbilityVerify=[]
@@ -356,9 +351,9 @@ def CastConfirm():
 
 
 def defaultEffectUI():
-    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[1]+2] and eventPlayer.Hero_Ability[1]!=0): #does referenced ability number even exist
-        if(HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][0][3]>0):
-            createEffect(eventPlayer.Owner,Effect.RING,Color.YELLOW,updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[1])+2][0][3], EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.Hero_Ability[3]] and eventPlayer.Hero_Ability[1]!=0): #does referenced ability number even exist
+        if(HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[3])][Abil.CAST][Abil_Cast.RANGE]>0):
+            createEffect(eventPlayer.Owner,Effect.RING,Color.YELLOW,updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), HeroSpecs[eventPlayer.CHero_Index][evalOnce(eventPlayer.Hero_Ability[3])][Abil.CAST][Abil_Cast.RANGE], EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
             addUI(getLastCreatedEntity(),AbilityStage.MOVETO)
 
 def clearEffectUI():

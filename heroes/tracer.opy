@@ -58,11 +58,12 @@ rule "Tracer - Cast":
     switch eventPlayer.Hero_Ability[1]:
         case 1:
             eventPlayer.startThrottleInDirection(eventPlayer.LookAtPos,1,Relativity.TO_WORLD,Throttle.REPLACE_EXISTING,ThrottleReeval.NONE)
-            Ability(Button.ABILITY_1)
+            eventPlayer.setFacing(eventPlayer.LookAtPos,Relativity.TO_PLAYER)
             wait()
+            Ability(Button.ABILITY_1)
             if(eventPlayer.Owner):
                 if(not eventPlayer.Owner.isHoldingButton(Button.SECONDARY_FIRE)):
-                    eventPlayer.stopThrottleInDirection()
+                    StopThrottle()
                 eventPlayer.Owner.MovementGroundCursor=false
                 if(eventPlayer.Owner.CamAttach):
                     eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
@@ -84,6 +85,7 @@ rule "Tracer - Cast":
         case 4:
             Ability(Button.ULTIMATE)
             break
+    eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
 
 
 rule "Tracer - Complete":

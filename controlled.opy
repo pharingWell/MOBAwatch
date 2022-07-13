@@ -1,5 +1,4 @@
 #!mainFile "main.opy"
-
 #This file handles the bot's actions and is player independent to allow for automation
 
 rule "On Controller Detach":
@@ -79,26 +78,29 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
     del eventPlayer.HealthQueue[1]
 
 #!define Ability_Used(button,abilitynum) eventPlayer.AbilityUse=[(button),(abilitynum)]\
-    async(AbilityUsedFunc(),AsyncBehavior.NOOP)\
+AbilityTrigger()\
     eventPlayer.AbilityUse=[]
-def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while automating eventPlayer.AbilityUsfacine[0]=button,eventPlayer.AbilityUse[1]=abilitynum*/
+def AbilityTrigger(): /*use ability is run as the ref, and can be used while automating eventPlayer.AbilityUsfacine[0]=button,eventPlayer.AbilityUse[1]=abilitynum*/
     if(((eventPlayer.getAbilityCooldown(eventPlayer.AbilityUse[0])<=0.1 or eventPlayer.getAbilityCharge(eventPlayer.AbilityUse[0])>0) or not eventPlayer.AbilityUse[0]==Button.ULTIMATE) or (eventPlayer.getUltCharge()>99.5 and (eventPlayer.AbilityUse[0])==Button.ULTIMATE)):
         if(eventPlayer.Resource[0]>=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][1][0] or not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][1][0]): # mana
-            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][3]>0 and distance(eventPlayer.CPos,eventPlayer)>HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][3]):
-                eventPlayer.ArrivedAtM2P=1
-                eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer)*HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][3]/*starts at cpos and moves player to closest point within range*/
-                    eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
-                    startAction(0,eventPlayer)
-                    waitUntil(eventPlayer.ArrivedAtM2P==-1 or eventPlayer.MoveAbilityCancel,99)
-            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][1]==CastType.GROUND): /*is ability looking at ground*/
+            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]>0 and distance(eventPlayer.CPos,eventPlayer)>HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):
+                eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer)*HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]/*starts at cpos and moves player to closest point within range*/
+                eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
+                startAction(0,eventPlayer)
+                waitUntil_verify(eventPlayer.Actions==0)
+                if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):
+                    goto cancelled
+            else:
+                eventPlayer.MovetoPos=eventPlayer.cursor
+                #endAbilityAction(0)
+            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TYPE]==CastType.GROUND): /*is ability looking at ground*/
                 eventPlayer.LookAtPos=directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,0,eventPlayer.CPos.z))
                 eventPlayer.setFacing(eventPlayer.LookAtPos,Relativity.TO_WORLD)
-                wait(0.08)
-            elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][1]==CastType.DIRECTION): /*is ability looking at ground*/
+            elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TYPE]==CastType.DIRECTION): /*is ability looking at ground*/
                 if(eventPlayer.Owner):
                     eventPlayer.CPos=eventPlayer.Owner.cursor
                 eventPlayer.LookAtPos=(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.getEyePosition().y,eventPlayer.CPos.z))) #,Relativity.TO_WORLD)
-                
+                eventPlayer.setFacing(eventPlayer.LookAtPos,Relativity.TO_WORLD)
             elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]=TargetState.ENEMY)*/
                 if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TARGET] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):
@@ -106,7 +108,7 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
             if(eventPlayer.MoveAbilityCancel==false):
                 if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):/*ensures any onmove ui removal still takes place*/
                     eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
-                    wait()
+                    clearEffectUI()
                 if(not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE] or eventPlayer.Resource[0]-HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]>0):
                     eventPlayer.Resource[0]-=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]
                 else:
@@ -125,11 +127,22 @@ def AbilityUsedFunc(): /*use ability is run as the ref, and can be used while au
     cancelled:
         eventPlayer.Actions=0
         eventPlayer.MoveAbilityCancel=false
-        eventPlayer.AbilityVerify=[true,true]
+        eventPlayer.Owner.AbilityVerify=[true,true]
         eventPlayer.Hero_Ability[0]=AbilityStage.NONE
         eventPlayer.ClearAllUI=true
         clearEffectUI()
-        eventPlayer.AbilityVerify=[false,false]
+        eventPlayer.Owner.AbilityVerify=[false,false]
+
+#!define Ability(button) eventPlayer.AbilityUse[0]=button\
+    AbilityUse()
+def AbilityUse():
+    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]):
+        eventPlayer.Resource[0]-=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]
+    eventPlayer.startForcingButton(eventPlayer.AbilityUse[0])
+    wait(0.08)
+    wait(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.USE][Abil_Use.DURATION])
+    eventPlayer.stopForcingButton(eventPlayer.AbilityUse[0])
+
 
 def Target_Func():
     eventPlayer.Temp_DistanceSort=[]
@@ -158,19 +171,11 @@ def Target_Func():
         eventPlayer.AttackMove=eventPlayer.TargetHandling[0]
     return
 
-def AbilityProcess():
-    if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]):
-        eventPlayer.Resource[0]-=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][1][0]
-    eventPlayer.startForcingButton(eventPlayer.AbilityUse[0])
-    wait(0.08)
-    wait(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.USE][Abil_Use.DURATION])
-    eventPlayer.stopForcingButton(eventPlayer.AbilityUse[0])
-
-
 
 rule "Stop Basic Attack":
     @Event eachPlayer
     @Condition Ready==true
+    @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Target==null
     eventPlayer.disallowButton(Button.PRIMARY_FIRE)
     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
@@ -181,14 +186,15 @@ rule "Arrived":
     @Condition Ready == true
     @Condition eventPlayer.isDummy()
     @Condition distance(eventPlayer.MovetoPos,eventPlayer)<0.6
-    StopThrottle()
+    async(StopThrottle,AsyncBehavior.NOOP)
+    if(RULE_CONDITION):
+        goto RULE_START
 
 def StopThrottle():
     if(eventPlayer.Owner):
         eventPlayer.Owner.MovementGroundCursor = false
     eventPlayer.stopThrottleInDirection()
-    eventPlayer.ArrivedAtM2P=-1
-
+    endAbilityAction(0)
 
 ### 0 ###
 rule "MoveToCPos":
@@ -196,14 +202,12 @@ rule "MoveToCPos":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(0)
-    if(eventPlayer.ArrivedAtM2P==1):
-        eventPlayer.ArrivedAtM2P=0
-        return
     if(eventPlayer.Owner != "null" and eventPlayer.Owner != 0):
         async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     if(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos)>1):
         eventPlayer.startThrottleInDirection(vectorTowards(eventPlayer.getPosition(), eventPlayer.MovetoPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
-    endAbilityAction(0)
+    else:
+        endAbilityAction(0)
 
 rule "Look While Moving":
     @Event eachPlayer

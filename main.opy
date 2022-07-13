@@ -52,7 +52,6 @@ settings {
 #!include "ui.opy"
 #!include "minions.opy"
 #!include "heroes/generic.opy"
-#!include "controlled.opy"
 
 
 
@@ -179,6 +178,7 @@ rule "On Player Left":
 rule "POV":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+    hostPlayer.ControlledRef.Actions=0
     #Minions_Wave()
     
 /*

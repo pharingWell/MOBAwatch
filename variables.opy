@@ -15,8 +15,10 @@
     disableInspector()
 #!define clamp(val,min_,max_) max((min_),min((val),(max_)))
 #!define waitUntil_verify(condition) /**/\
-waitUntil(condition,100)\
-if(condition):
+waitUntil((condition)==true,100)\
+if(not (condition)):\
+    print("waitUntil_TimedOut")\
+    return
 #!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0.5,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))
 #!define getLocation(a) /*type: id or playerref*/ a.getPosition() if(entityExists(a)) else NonPlayer_Loc[Minions_IDs.index(a)]
 #!defineMember deal(target,rawdamage) eventPlayer.HealthQueue.append([[(target),(rawdamage)]]) /*input is target or id. if the input is an id, it is added to heath queue by the player dealing the damage*/\
@@ -38,21 +40,17 @@ ProcessHealthQueue()
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
 #!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
 
-#!define startAction(a,ref) /**/\
-if(not eventPlayer.Actions):\
-    eventPlayer.Actions= (a)+0.15 /*0.15 is used to differentiate 0 from null*/\
-else:\
-    println("action {} not run".format((a)))
+#!define startAction(a,ref) (ref).Actions=(a)+0.15 if not (ref).Actions or (ref).Actions==0.15 else (ref).Actions
 #!define ifAction(a) @Condition eventPlayer.Actions==((a)+0.15) /*0.15 is used to differentiate 0 from null*/\
-waitUntil_verify(a+0.15 == eventPlayer.Actions)\
-    smallMessage(localPlayer,"event {} trigged".format(a))\
-else:\
-    return
+waitUntil_verify(eventPlayer.Actions==(a)+0.15 )\
+smallMessage(localPlayer,"event {} trigged".format(a))
+
+
 #!define endAbilityAction(a) /**/\
-    waitUntil_verify(eventPlayer.Hero_Ability[0]==AbilityStage.NONE)\
-       eventPlayer.Actions=0\
-    else:\
-        return
+    if(eventPlayer.Actions==(a)+0.15):\
+        waitUntil_verify(eventPlayer.Hero_Ability[0]!=AbilityStage.CAST)\
+        eventPlayer.Actions=0\
+    #print("Stopped")
 
 # team = floor()%10, k = ()%1*100
 #floor(id/10)
@@ -245,8 +243,8 @@ subroutine Left
 subroutine ProcessHealthQueue
 subroutine defaultEffectUI
 subroutine clearEffectUI
-subroutine AbilityUsedFunc
-subroutine AbilityProcess
+subroutine AbilityTrigger
+subroutine AbilityUse
 subroutine StopThrottle
 subroutine CalcDealt
 subroutine Minion_setNullStats
