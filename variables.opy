@@ -17,7 +17,7 @@
 #!define waitUntil_verify(condition) /**/\
 waitUntil((condition)==true,100)\
 if(not (condition)):\
-    print("waitUntil_TimedOut")\
+    printLog("waitUntil_TimedOut")\
     return
 #!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0.5,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))
 #!define getLocation(a) /*type: id or playerref*/ a.getPosition() if(entityExists(a)) else NonPlayer_Loc[Minions_IDs.index(a)]

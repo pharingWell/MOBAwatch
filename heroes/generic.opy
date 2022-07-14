@@ -305,6 +305,7 @@ rule "Set Target to Cursor/Ability Verify":
 
 #!define cast(abilitynum,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum+2]):/*if exists*/\
+        eventPlayer.ControlledRef.CPos=eventPlayer.cursor\
         if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum+2][Abil.CAST][Abil_Cast.MODE]==CastMode.QUICK):\
             startAction(abilitynum+2,eventPlayer.ControlledRef)\
         elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum+2][Abil.CAST][Abil_Cast.MODE]==CastMode.RELEASE):\
