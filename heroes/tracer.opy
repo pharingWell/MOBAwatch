@@ -1,6 +1,7 @@
 #!mainFile "../main.opy"
 #you can declare hero specific variables here. Do not make them global
 #!define TracerRecall HeroSpecificVar1 /*[health,anything else]*/
+#!define PreviousThrottle HeroSpecificVar2
 rule "Tracer - Init ":
     @Event eachPlayer
     @Hero tracer
@@ -23,19 +24,19 @@ rule "Tracer - UI Prep":
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         /*
-        case 1:
+        case AbilID.ABIL1:
             break
         */
         /*
-        case 2:
+        case AbilID.ABIL2:
             break
         */
         /*
-        case 3:
+        case AbilID.ABIL3:
             break
         */
         /*
-        case 4:
+        case AbilID.ABIL4:
             break
         */  
         default:
@@ -56,21 +57,26 @@ rule "Tracer - Cast":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
-        case 1:
-            eventPlayer.startThrottleInDirection(eventPlayer.LookAtPos,1,Relativity.TO_WORLD,Throttle.REPLACE_EXISTING,ThrottleReeval.NONE)
-            eventPlayer.setFacing(eventPlayer.LookAtPos,Relativity.TO_PLAYER)
-            wait()
-            Ability(Button.ABILITY_1)
-            if(eventPlayer.Owner):
-                if(not eventPlayer.Owner.isHoldingButton(Button.SECONDARY_FIRE)):
-                    StopThrottle()
-                eventPlayer.Owner.MovementGroundCursor=false
-                if(eventPlayer.Owner.CamAttach):
-                    eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
-            else:
-                eventPlayer.stopThrottleInDirection()
+        case AbilID.ABIL1:
+            @TODO: fix tracer ability
+            # eventPlayer.startForcingThrottle(1,1,0,0,0,0)
+            # eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
+            # Ability(Button.ABILITY_1)
+            # eventPlayer.MovetoPos=eventPlayer.LookAtDir*25+eventPlayer.getPosition()
+            # #eventPlayer.stopForcingThrottle()
+            # eventPlayer.Actions=0
+            
+            # if(eventPlayer.Owner):
+            #     if(eventPlayer.Owner.isHoldingButton(Button.SECONDARY_FIRE)):
+            #         eventPlayer.MovetoPos=eventPlayer.LookAtDir*25+eventPlayer.getPosition()
+            #     else:
+            #         endAbilityAction(0)
+            #         eventPlayer.MovetoPos=eventPlayer.getPosition()
+            #     if(eventPlayer.Owner.CamAttach):
+            #         eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
+            # startAction(0,eventPlayer)
             break
-        case 2:
+        case AbilID.ABIL2:
             Ability(Button.ABILITY_2)
             wait(0.6)
             eventPlayer.MovetoPos=(eventPlayer.getPosition())
@@ -79,10 +85,10 @@ rule "Tracer - Cast":
             wait(0.65)
             eventPlayer.Health[0]=sorted(eventPlayer.TracerRecall,lambda x: eventPlayer.Health[1]-x[0])[0][0]
             break
-        case 3:
+        case AbilID.ABIL3:
             Ability(Button.RELOAD)
             break
-        case 4:
+        case AbilID.ABIL4:
             Ability(Button.ULTIMATE)
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE

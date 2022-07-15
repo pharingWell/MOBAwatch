@@ -85,12 +85,13 @@ rule "UI Definitions - Global Cursor":
     #!define text(vis,text,pos,color) createInWorldText((vis), (text), textPos(pos) , (size), Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, (color), SpecVisibility.DEFAULT)
     #!define Vect(pos1,vect1) createBeam(localPlayer,Beam.GOOD,(pos1),(pos1)+(vect1),Color.AQUA,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createInWorldText(localPlayer,"¤",localPlayer.ControlledRef.MovetoPos-vect(1.25,0,0)+vect(0,100*(not localPlayer.MovementGroundCursor),0),2.0,Clip.SURFACES,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,rgb(238,148,148) if localPlayer.ControlledRef.AttackMove else Color.SKY_BLUE,SpecVisibility.NEVER)
-    createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.cursor,0.1,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.ControlledRef.LookAtDir+localPlayer.ControlledRef,0.1,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createInWorldText(localPlayer, "•",uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, localPlayer.UICursorStyles[0], SpecVisibility.NEVER)
     print(localPlayer.ControlledRef.Actions)
     print("Hero Ability: [{},{},{},{}]".format(["NONE","PREP","MOVETO","CAST","COMPLETE"][localPlayer.ControlledRef.Hero_Ability[0]],localPlayer.ControlledRef.Hero_Ability[1],localPlayer.ControlledRef.Hero_Ability[2],localPlayer.ControlledRef.Hero_Ability[3]))
     print("Ability Verify: [{},{},{},{}]".format(localPlayer.AbilityVerify[0],localPlayer.AbilityVerify[1],localPlayer.AbilityVerify[2],localPlayer.AbilityVerify[3]))
-rule "Start Camera": 
+
+rule "Start Camera":  
     @Event eachPlayer
     @Condition Ready == true
     @Condition not eventPlayer.isDummy()
@@ -163,6 +164,9 @@ rule "Camera Bounds":
     wait(0.032)
     top
 rule "Prevent Cursor Wrapping":
+
+
+    
     @Event eachPlayer
     @Condition eventPlayer.Ready
     @Condition not eventPlayer.isDummy()

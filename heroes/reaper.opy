@@ -15,21 +15,20 @@ rule "Reaper - UI Prep":
     switch eventPlayer.Hero_Ability[1]:
 
         /*
-        case 1:
+        case AbilID.ABIL1:
             break
         */
         
-        case 2:
+        case AbilID.ABIL2:
             AreaHighlight(Effect.RING,1)
-            #eventPlayer.Owner.cursorNew=eventPlayer.MovetoPos
             defaultEffectUI()
             break
         /*
-        case 3:
+        case AbilID.ABIL3:
             break
         */
         /*
-        case 4:
+        case AbilID.ABIL4:
             break
         */  
         default:
@@ -49,10 +48,11 @@ rule "Reaper - Cast":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
-        case 1: 
+        case AbilID.ABIL1: 
             Ability(Button.ABILITY_1)
+            waitUntil(not eventPlayer.isUsingAbility1() or eventPlayer.Hero_Ability[0]==AbilityStage.CANCELLED,3)#runs until cancelled
             break
-        case 2:
+        case AbilID.ABIL2:
             Ability(Button.ABILITY_2)
             wait()
             eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
@@ -60,7 +60,7 @@ rule "Reaper - Cast":
             if(eventPlayer.Owner and eventPlayer.isUsingAbility2() and eventPlayer.Owner.CamAttach):
                 eventPlayer.Owner.CamLoc=vect(eventPlayer.CPos.x,eventPlayer.Owner.CamLoc.y,eventPlayer.CPos.z)
             break
-        case 4:
+        case AbilID.ABIL4:
             Ability(Button.ULTIMATE)
             wait()
             if(eventPlayer.isUsingUltimate()):

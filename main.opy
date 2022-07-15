@@ -52,6 +52,14 @@ settings {
 #!include "ui.opy"
 #!include "minions.opy"
 #!include "heroes/generic.opy"
+#!include "controlled.opy"
+#!include "heroes/reaper.opy"
+#!include "heroes/tracer.opy"
+#Mercy
+#Hanzo
+#Torborn
+#Reinhardt
+#!include "heroes/pharah.opy"
 
 
 

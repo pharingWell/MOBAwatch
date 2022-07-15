@@ -1,5 +1,5 @@
 #!mainFile "../main.opy"
-
+#you can declare hero specific variables here. Do not make them global
 rule "Pharah - Init":
     @Event eachPlayer
     @Hero pharah
@@ -13,19 +13,19 @@ rule "Pharah - UI Prep":
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         /*
-        case 1:
+        case AbilID.ABIL1:
             break
         */
         /*
-        case 2:
+        case AbilID.ABIL2:
             break
         */
         /*
-        case 3:
+        case AbilID.ABIL3:
             break
         */
         /*
-        case 4:
+        case AbilID.ABIL4:
             break
         */  
         default:
@@ -46,16 +46,16 @@ rule "Pharah - Cast":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
-        case 1: 
+        case AbilID.ABIL1: 
             Ability(Button.ABILITY_1)
             break
-        case 2:
+        case AbilID.ABIL2:
             Ability(Button.ABILITY_2)
             break
-        case 3:
+        case AbilID.ABIL3:
             Ability(Button.RELOAD)
             break
-        case 4:
+        case AbilID.ABIL4:
             Ability(Button.ULTIMATE)
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE

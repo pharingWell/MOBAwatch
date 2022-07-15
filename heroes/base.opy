@@ -2,30 +2,30 @@
 #you can declare hero specific variables here. Do not make them global
 rule "Hero - Init":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero changeme
     @Condition eventPlayer.isDummy()
     
 rule "Hero - UI Prep":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero changeme
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.PREP #show ui for
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         /*
-        case 1:
+        case AbilID.ABIL1:
             break
         */
         /*
-        case 2:
+        case AbilID.ABIL2:
             break
         */
         /*
-        case 3:
+        case AbilID.ABIL3:
             break
         */
         /*
-        case 4:
+        case AbilID.ABIL4:
             break
         */  
         default:
@@ -33,7 +33,7 @@ rule "Hero - UI Prep":
 
 rule "Hero - UI MoveTo":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero changeme
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.MOVETO #show ui for
     clearEffectUI()
@@ -41,28 +41,28 @@ rule "Hero - UI MoveTo":
 
 rule "Hero - Cast":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero changeme
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.CAST #otherwise show ui
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
-        case 1: 
+        case AbilID.ABIL1: 
             Ability(Button.ABILITY_1)
             break
-        case 2:
+        case AbilID.ABIL2:
             Ability(Button.ABILITY_2)
             break
-        case 3:
+        case AbilID.ABIL3:
             Ability(Button.RELOAD)
             break
-        case 4:
+        case AbilID.ABIL4:
             Ability(Button.ULTIMATE)
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
 
 rule "Hero - Complete":
     @Event eachPlayer
-    @Hero CHANGEME
+    @Hero changeme
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()

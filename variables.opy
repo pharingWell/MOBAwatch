@@ -40,7 +40,7 @@ ProcessHealthQueue()
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
 #!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
 
-#!define startAction(a,ref) (ref).Actions=(a)+0.15 if not (ref).Actions or (ref).Actions==0.15 else (ref).Actions
+#!define startAction(a,ref) (ref).Actions=(a)+0.15 if eventPlayer.Hero_Ability[0]!=AbilityStage.CAST else (ref).Actions
 #!define ifAction(a) @Condition eventPlayer.Actions==((a)+0.15) /*0.15 is used to differentiate 0 from null*/\
 waitUntil_verify(eventPlayer.Actions==(a)+0.15 )\
 smallMessage(localPlayer,"event {} trigged".format(a))
@@ -56,42 +56,7 @@ smallMessage(localPlayer,"event {} trigged".format(a))
 #floor(id/10)
 #floor(id) % 10
 #id % floor(id)
-enum ResourceType:
-    NONE,
-    MANA,
-    ENERGY
-enum CastMode:
-    NULL,
-    CONFIRM,
-    QUICK,
-    RELEASE
-enum CastType:
-    SELF,
-    DIRECTION,
-    GROUND,
-    CURSOR,
-    TARGET
-enum TargetState:
-    NONE,
-    SELF,
-    ALLY,
-    ENEMY,
-enum AbilityType:
-    NORMAL,
-    CHANNEL,
-enum DamageType:
-    UNKNOWN,
-    PHYSICAL,
-    MAGICAL 
-enum AbilityStage:
-    NONE,
-    PREP,
-    MOVETO,
-    CAST,
-    COMPLETE,
-enum Activation:
-    NONE,
-    M1 #TODO: good way to handle activation
+
 
 
 globalvar CPlayers
@@ -191,7 +156,7 @@ playervar Resource #current,max
 playervar CPos
 playervar MovetoPos
 playervar AttackMove #value that dictates whether to use overriding movement or attacking moving attacking moving movement, true if it has a value, false if its zero
-playervar LookAtPos
+playervar LookAtDir
 playervar Alive
 playervar CHero
 playervar CHero_Index
@@ -204,7 +169,6 @@ playervar Target #[vect(id,posx,posz),ref,[engage,pursue]]
 playervar AbilityVerify #[waiting for ability verify, cancelled, button, abilitynum]
 playervar Hero_Ability #casts ability from the perspective of the hero. e.g: ability1 is called with eventPlayer.ControlledRef as the event player with Ability Verify. It is then cast to the specific hero based on this variable
 playervar HA_temp
-playervar MoveAbilityCancel #cancel planned cast on move
 playervar Ability_UI
 playervar TargetHandling
 playervar Temp_DistanceSort
@@ -229,7 +193,8 @@ subroutine UI_Setup
 subroutine moveCameraWithPlayer
 subroutine teleportCamera
 subroutine chaseCursorValues
-subroutine CastConfirm 
+subroutine CastConfirm
+subroutine CancelCurrent
 subroutine OnSpawn
 subroutine OnHero 
 subroutine Minions_Main

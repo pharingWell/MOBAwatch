@@ -16,7 +16,7 @@ rule "On Controlled Join - Ignores respawn":
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<1 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75)),5)),
     "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if eventPlayer.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
     eventPlayer.Level=1
-
+    print(eventPlayer)
 rule "On Controlled Join - Pre-spawn":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
@@ -32,7 +32,7 @@ rule "On Controlled Join - Pre-spawn":
     eventPlayer.CHero_Index=getAllHeroes().index(eventPlayer.CHero)
     eventPlayer.Resource=[HeroSpecs[eventPlayer.CHero_Index][0][1][0],HeroSpecs[eventPlayer.CHero_Index][0][1][0],1]
     eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][0][0],HeroSpecs[eventPlayer.CHero_Index][0][0],1]
-    eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][0][3]
+    eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.DMGMOD]
     #print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
     hudHeader(localPlayer,localPlayer.Team,HudPosition.TOP,0,Color.AQUA,HudReeval.VISIBILITY_SORT_ORDER_STRING_AND_COLOR,SpecVisibility.ALWAYS)
 
@@ -77,6 +77,9 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
             HealthChange.append(vect(eventPlayer.HealthQueue[1][0],(eventPlayer.HealthQueue[1][1] * (1-eventPlayer.DamageModifiers[2])/100 * (1+eventPlayer.DamageModifiers[3]/100)),eventPlayer.Slot))
     del eventPlayer.HealthQueue[1]
 
+
+
+
 #!define Ability_Used(button,abilitynum) eventPlayer.AbilityUse=[(button),(abilitynum)]\
 AbilityTrigger()\
     eventPlayer.AbilityUse=[]
@@ -86,43 +89,39 @@ def AbilityTrigger(): /*use ability is run as the ref, and can be used while aut
             if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]>0 and distance(eventPlayer.CPos,eventPlayer.getPosition())>HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):#if abil has range and cast point is out if range
                 eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer)*(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]+1)/*starts at cpos and moves player to closest point within range*/
                 eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
-                if(eventPlayer.Actions==eventPlayer.Hero_Ability[3]+0.15):
+                if(eventPlayer.Actions==eventPlayer.Hero_Ability[1]+0.15):
                     eventPlayer.Actions=0.15 #sets action to movement and as actions is set, prohibits interaction except by cancelling 
                 else:
                     goto cancelled
                 waitUntil(eventPlayer.Actions!=0.15 or evalOnce(eventPlayer.MovetoPos)!=eventPlayer.MovetoPos,100) #move to pos changing hopefully overwrites any repositioning. This should also have a waituntil_verify, but it cannot because of how evalonce works
                 if(not eventPlayer.Actions):
-                    eventPlayer.Actions=eventPlayer.Hero_Ability[3]+0.15 #resumes ability use
+                    eventPlayer.Actions=eventPlayer.Hero_Ability[1]+0.15 #resumes ability use
                 else: #if the actions gets overridden/movement is redirrected
                     goto cancelled
                 if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):
                     goto cancelled
             eventPlayer.MovetoPos=eventPlayer.getPosition()
-            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TYPE]==CastType.GROUND): /*is ability looking at ground*/
-                eventPlayer.LookAtPos=directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,0,eventPlayer.CPos.z))
-                eventPlayer.setFacing(eventPlayer.LookAtPos,Relativity.TO_WORLD)
-            elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TYPE]==CastType.DIRECTION): /*is ability looking at ground*/
+            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.MODE]==CastMode.GROUND): /*is ability looking at ground*/
+                eventPlayer.LookAtDir=directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,0,eventPlayer.CPos.z))
+                eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
+            elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.MODE]==CastMode.DIRECTION): /*is ability looking at ground*/
                 if(eventPlayer.Owner):
                     eventPlayer.CPos=eventPlayer.Owner.cursor
-                eventPlayer.LookAtPos=(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.CPos.x,eventPlayer.getEyePosition().y,eventPlayer.CPos.z))) #,Relativity.TO_WORLD)
-                eventPlayer.setFacing(eventPlayer.LookAtPos,Relativity.TO_WORLD)
+                eventPlayer.LookAtDir=(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos*vect(1,0,1)+vect(0,eventPlayer.getEyePosition().y,0))*30) #,Relativity.TO_WORLD)
+                #eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
+                wait(0.128)
             elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]=TargetState.ENEMY)*/
                 if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TARGET] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):
                     smallMessage(eventPlayer,"Targeted Ability{0} Activated".format(eventPlayer.AbilityUse[1]))
-            if(eventPlayer.MoveAbilityCancel==false):
                 if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):/*ensures any onmove ui removal still takes place*/
-                    eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
-                    clearEffectUI()
-                if(not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE] or eventPlayer.Resource[0]-HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]>0):
-                    eventPlayer.Resource[0]-=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]
-                else:
-                    goto cancelled
-                eventPlayer.Hero_Ability[1]=eventPlayer.AbilityUse[1]-2
-                eventPlayer.Hero_Ability[0]=AbilityStage.CAST
-                
+                eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
+                clearEffectUI()
+            if(not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE] or eventPlayer.Resource[0]-HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]>0):
+                eventPlayer.Resource[0]-=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]
             else:
                 goto cancelled
+            eventPlayer.Hero_Ability[0]=AbilityStage.CAST
             wait()
         else:
             if(eventPlayer.Owner):
@@ -131,9 +130,8 @@ def AbilityTrigger(): /*use ability is run as the ref, and can be used while aut
     return
     cancelled:
         eventPlayer.Actions=0
-        eventPlayer.MoveAbilityCancel=false
         eventPlayer.Owner.AbilityVerify=[true,true]
-        eventPlayer.Hero_Ability[0]=AbilityStage.NONE
+        eventPlayer.Hero_Ability=[]
         eventPlayer.ClearAllUI=true
         clearEffectUI()
         eventPlayer.Owner.AbilityVerify=[false,false]
@@ -144,9 +142,9 @@ def AbilityUse():
     if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]):
         eventPlayer.Resource[0]-=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]
     eventPlayer.startForcingButton(eventPlayer.AbilityUse[0])
-    wait(0.08)
-    wait(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.USE][Abil_Use.DURATION])
     eventPlayer.stopForcingButton(eventPlayer.AbilityUse[0])
+    wait(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.USE][Abil_Use.DURATION])
+    
 
 
 def Target_Func():
@@ -219,21 +217,26 @@ rule "Look While Moving":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.NONE
     @Condition distance(eventPlayer.MovetoPos,eventPlayer.getPosition())>0.5
-    @Condition getTotalTimeElapsed()%0.080<0.017
+    @Condition getTotalTimeElapsed()%0.080<0.016
     if(not (HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET] and (distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE] and eventPlayer.Target))):
-        eventPlayer.LookAtPos = (vectorTowards(eventPlayer.getEyePosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getEyePosition().y,eventPlayer.MovetoPos.z)))
+        eventPlayer.LookAtDir = (directionTowards(eventPlayer.getPosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getPosition().y,eventPlayer.MovetoPos.z)))
     
 
 ### 1 ###
-rule "":
+rule "Cancel Current Ability":
     @Event eachPlayer
-    @Condition Ready==true
+    @Condition Ready == true
     @Condition eventPlayer.isDummy()
     ifAction(1)
+    CancelCurrent()
     endAbilityAction(1)
 
-
+def CancelCurrent():
+    eventPlayer.AbilityUse[0]=AbilityStage.CANCELLED
+    waitUntil_verify(eventPlayer.AbilityUse[0]==AbilityStage.NONE)
+    
 
 ### 2 ###
 #!define BasicAttackExceptions []
@@ -266,13 +269,13 @@ rule "Use Basic Attack":
                 wait(0.2)
         if(not (HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET] and (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE] and eventPlayer.Target))):
             if(eventPlayer.Target[1]):
-                eventPlayer.LookAtPos = directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y,eventPlayer.Target[1].getEyePosition().z))
+                eventPlayer.LookAtDir = directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y,eventPlayer.Target[1].getEyePosition().z))
                 #eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/([eventPlayer.CHero_Index][2][0]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
             else:
-                eventPlayer.LookAtPos = directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos)
+                eventPlayer.LookAtDir = directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos)
                 
                 #eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos),Relativity.TO_WORLD)
-        waitUntil(abs(angleBetweenVectors(angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),directionTowards(eventPlayer.getEyePosition()+angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),eventPlayer.LookAtPos)))<15,1)
+        waitUntil(abs(angleBetweenVectors(angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),directionTowards(eventPlayer.getEyePosition()+angleToDirection(eventPlayer.getHorizontalFacingAngle(),0),eventPlayer.LookAtDir)))<15,1)
         eventPlayer.setFacing(directionTowards(eventPlayer.getEyePosition(),vect(eventPlayer.Target[1].getEyePosition().x,eventPlayer.Target[1].getEyePosition().y/(HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE]),eventPlayer.Target[1].getEyePosition().z)),Relativity.TO_WORLD)
         if(distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE]):
             if(eventPlayer.Target[2][0]):
@@ -384,7 +387,7 @@ rule "(Re)spawn":
 
     eventPlayer.Health[1]=max(100,eventPlayer.Health[1])
     eventPlayer.Health[4]=[null,null]
-    eventPlayer.startFacing(eventPlayer.LookAtPos,600,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
+    eventPlayer.startFacing(eventPlayer.LookAtDir,1000,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
     chase(eventPlayer.CamLoc,toCamLoc,duration=0.2,ChaseReeval.DESTINATION_AND_DURATION)
     
 ### Death ###
