@@ -2,6 +2,7 @@
 #you can declare hero specific variables here. Do not make them global
 #!define TracerRecall HeroSpecificVar1 /*[health,anything else]*/
 #!define PreviousThrottle HeroSpecificVar2
+
 rule "Tracer - Init ":
     @Event eachPlayer
     @Hero tracer
@@ -58,23 +59,24 @@ rule "Tracer - Cast":
     clearEffectUI()
     switch eventPlayer.Hero_Ability[1]:
         case AbilID.ABIL1:
-            @TODO: fix tracer ability
-            # eventPlayer.startForcingThrottle(1,1,0,0,0,0)
-            # eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
-            # Ability(Button.ABILITY_1)
-            # eventPlayer.MovetoPos=eventPlayer.LookAtDir*25+eventPlayer.getPosition()
-            # #eventPlayer.stopForcingThrottle()
-            # eventPlayer.Actions=0
+            eventPlayer.startForcingThrottle(1,1,0,0,0,0)
+            eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
+            wait(0.016)
+            eventPlayer.MovementGroundCursor = true
+            eventPlayer.MovetoPos=eventPlayer.LookAtDir*50+eventPlayer.getPosition()
+            Ability(Button.ABILITY_1)
+            #eventPlayer.stopForcingThrottle()
+            #eventPlayer.Actions=0
             
             # if(eventPlayer.Owner):
             #     if(eventPlayer.Owner.isHoldingButton(Button.SECONDARY_FIRE)):
             #         eventPlayer.MovetoPos=eventPlayer.LookAtDir*25+eventPlayer.getPosition()
             #     else:
-            #         endAbilityAction(0)
+            #         
             #         eventPlayer.MovetoPos=eventPlayer.getPosition()
             #     if(eventPlayer.Owner.CamAttach):
             #         eventPlayer.Owner.CamLoc=vect(eventPlayer.getPosition().x,eventPlayer.Owner.CamLoc.y,eventPlayer.getPosition().z)
-            # startAction(0,eventPlayer)
+            #     startAction(0,eventPlayer)
             break
         case AbilID.ABIL2:
             Ability(Button.ABILITY_2)
@@ -101,3 +103,11 @@ rule "Tracer - Complete":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()
     eventPlayer.Hero_Ability[0]=AbilityStage.NONE
+    endAbilityAction(eventPlayer.Hero_Ability[1])
+    switch eventPlayer.Hero_Ability[1]:
+        case AbilID.ABIL1:
+            wait(0.1)
+            if(eventPlayer.Hero_Ability[1]!=0.15):
+                eventPlayer.stopForcingThrottle()
+                StopThrottle()
+            break

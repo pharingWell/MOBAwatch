@@ -9,14 +9,15 @@ rule "On Controller Detach":
 rule "On Controlled Join - Ignores respawn":
     @Event playerJoined
     @Condition eventPlayer.isDummy()
-    createInWorldText(null if not eventPlayer.isAlive() else getAllPlayers() if not eventPlayer.Hidden else getPlayers(eventPlayer.getTeam()),"{}\n|{}|{}|{}|{}|\n{}".format("            <•>" if not eventPlayer.Hidden else " ", 
+    createInWorldText(null if not eventPlayer.isAlive() else localPlayer if not eventPlayer.Hidden else getPlayers(eventPlayer.getTeam()),"{}\n|{}|{}|{}|{}|\n{}".format("            <•>" if not eventPlayer.Hidden else " ", 
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>0)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1]))),5)),
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.25))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.5 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.25)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.25)),5)),
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.5))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.75 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.5), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.5)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.5)),5)),
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<1 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75)),5)),
     "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if eventPlayer.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
     eventPlayer.Level=1
-    print(eventPlayer)
+    createEffect(localPlayer if not eventPlayer.Hidden and eventPlayer.isAlive() else getPlayers(eventPlayer.getTeam()),Effect.RING,Color.TEAM_1 if eventPlayer.Team==0 else Color.TEAM_2, updateEveryTick(eventPlayer.getPosition()*vect(1,0,1)),0.7,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+
 rule "On Controlled Join - Pre-spawn":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
@@ -34,7 +35,7 @@ rule "On Controlled Join - Pre-spawn":
     eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][0][0],HeroSpecs[eventPlayer.CHero_Index][0][0],1]
     eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.DMGMOD]
     #print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
-    hudHeader(localPlayer,localPlayer.Team,HudPosition.TOP,0,Color.AQUA,HudReeval.VISIBILITY_SORT_ORDER_STRING_AND_COLOR,SpecVisibility.ALWAYS)
+    #hudHeader(localPlayer,localPlayer.Team,HudPosition.TOP,0,Color.AQUA,HudReeval.VISIBILITY_SORT_ORDER_STRING_AND_COLOR,SpecVisibility.ALWAYS)
 
 rule "Bot - Hero Connection":
     @Event eachPlayer
@@ -108,13 +109,13 @@ def AbilityTrigger(): /*use ability is run as the ref, and can be used while aut
                 if(eventPlayer.Owner):
                     eventPlayer.CPos=eventPlayer.Owner.cursor
                 eventPlayer.LookAtDir=(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos*vect(1,0,1)+vect(0,eventPlayer.getEyePosition().y,0))*30) #,Relativity.TO_WORLD)
-                #eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
-                wait(0.128)
+                eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
+                wait(angleDifference(horizontalAngleOfDirection(eventPlayer.LookAtDir),eventPlayer.getHorizontalFacingAngle())/1000)
             elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]=TargetState.ENEMY)*/
                 if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TARGET] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):
                     smallMessage(eventPlayer,"Targeted Ability{0} Activated".format(eventPlayer.AbilityUse[1]))
-                if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):/*ensures any onmove ui removal still takes place*/
+            if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):/*ensures any onmove ui removal still takes place*/
                 eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
                 clearEffectUI()
             if(not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE] or eventPlayer.Resource[0]-HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]>0):
@@ -219,10 +220,13 @@ rule "Look While Moving":
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.NONE
     @Condition distance(eventPlayer.MovetoPos,eventPlayer.getPosition())>0.5
-    @Condition getTotalTimeElapsed()%0.080<0.016
+    #@Condition false
     if(not (HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET] and (distanceToTarget<=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE] and eventPlayer.Target))):
         eventPlayer.LookAtDir = (directionTowards(eventPlayer.getPosition(),vect(eventPlayer.MovetoPos.x,eventPlayer.getPosition().y,eventPlayer.MovetoPos.z)))
-    
+        waitUntil(angleBetweenVectors(eventPlayer.getFacingDirection(),eventPlayer.LookAtDir)>30,0.064)
+        wait()
+        if(RULE_CONDITION):
+            goto RULE_START
 
 ### 1 ###
 rule "Cancel Current Ability":
@@ -301,8 +305,6 @@ rule "Use Ability 1":
     @Condition eventPlayer.isDummy()
     ifAction(3)
     Ability_Used(Button.ABILITY_1,3)
-    endAbilityAction(3)
-
     
 ### 4 ###
 rule "Use Ability 2":
@@ -311,7 +313,6 @@ rule "Use Ability 2":
     @Condition eventPlayer.isDummy()
     ifAction(4)
     Ability_Used(Button.ABILITY_2,4)
-    endAbilityAction(4)
 
 ### 5 ###
 rule "Use Secondary (e)":
@@ -320,7 +321,6 @@ rule "Use Secondary (e)":
     @Condition eventPlayer.isDummy()
     ifAction(5)
     Ability_Used(Button.SECONDARY_FIRE,5)
-    endAbilityAction(5)
 
 ### 6 ###
 rule "Use Ult":
@@ -329,8 +329,7 @@ rule "Use Ult":
     @Condition eventPlayer.isDummy()
     ifAction(6)
     if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]):
-        Ability_Used(Button.ULTIMATE,6)         
-    endAbilityAction(6)
+        Ability_Used(Button.ULTIMATE,6)
 
 
 ### 8 ### 
@@ -407,6 +406,7 @@ rule "Is Dead":
     kill(eventPlayer,eventPlayer.Health[3][0].Owner)
     eventPlayer.setDamageReceived(0)
 
+       
 
 
 #!include "ai.opy"          

@@ -137,6 +137,7 @@ playervar CamAttach #P
 playervar ControlledRef #P
 playervar MovementGroundCursor #P
 playervar Ready
+playervar Hidden
 playervar dbIndex
 playervar cursorAngles
 playervar cursor
@@ -163,7 +164,7 @@ playervar CHero_Index
 playervar Owner
 playervar AbilityUse #passes vars to Ability_Used function
 playervar ArrivedAtM2P
-playervar Hidden
+
 playervar Team #1 or 2 
 playervar Target #[vect(id,posx,posz),ref,[engage,pursue]]
 playervar AbilityVerify #[waiting for ability verify, cancelled, button, abilitynum]

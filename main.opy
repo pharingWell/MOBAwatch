@@ -1,4 +1,4 @@
-# #!obfuscate noConstantObfuscation 
+ ##!obfuscate noConstantObfuscation
 
 settings {
     "main": {
@@ -81,11 +81,12 @@ rule "InitiateGame":
         returnToLobby()
     Players=[-1]
     MinionPool=-1
-    /*
+    
     createDummy(Hero.ROADHOG,Team.2,6,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]
     getLastCreatedEntity().setDamageReceived(0)
     wait()
+    /*
     createDummy(Hero.TORBJORN,Team.2,7,vect(-2,0,2),vect(0,0,0))
     getLastCreatedEntity().setDamageReceived(0)
     CPlayers[1]=[CPlayers[1][0],getLastCreatedEntity()]

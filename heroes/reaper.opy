@@ -54,7 +54,7 @@ rule "Reaper - Cast":
             break
         case AbilID.ABIL2:
             Ability(Button.ABILITY_2)
-            wait()
+            
             eventPlayer.forceButtonPress(Button.PRIMARY_FIRE)
             wait(1) #teleport camera to player after 1 sec
             if(eventPlayer.Owner and eventPlayer.isUsingAbility2() and eventPlayer.Owner.CamAttach):
@@ -66,8 +66,7 @@ rule "Reaper - Cast":
             if(eventPlayer.isUsingUltimate()):
                 createEffect(getAllPlayers(),Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
                 addUI(getLastCreatedEntity(),AbilityStage.COMPLETE)
-                eventPlayer.TimerHandler=evalOnce(getTotalTimeElapsed())+HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.USE][Abil_Use.DURATION]
-                while(eventPlayer.TimerHandler > getTotalTimeElapsed()):
+                while(evalOnce(getTotalTimeElapsed()+HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.USE][Abil_Use.DURATION]) > getTotalTimeElapsed()):
                     wait(HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.RATE])
                     damageInRadius(8,eventPlayer.getPosition(),HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.AMOUNT],0)
                     
@@ -80,4 +79,11 @@ rule "Reaper - Complete":
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()
+    wait()
     eventPlayer.Hero_Ability[0]=AbilityStage.NONE
+    endAbilityAction(eventPlayer.Hero_Ability[1])
+    switch eventPlayer.Hero_Ability[1]:
+        default:
+            break
+
+            

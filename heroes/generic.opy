@@ -244,7 +244,7 @@ def OnSpawn():
     async(UI_Process,AsyncBehavior.NOOP)
     eventPlayer.enableScoreboard()
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
-        createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.BLUE,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+        createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.AQUA,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
 
@@ -267,7 +267,6 @@ rule "Controlled Spawned":
     @Condition Ready==true
     @Condition not eventPlayer.isDummy()
     @Condition eventPlayer.ControlledRef.isAlive()
-    createEffect(eventPlayer if eventPlayer.ControlledRef.isInViewAngle(eventPlayer.ControlledRef.CPos,90) else null,Effect.SPHERE,Color.WHITE,eventPlayer.ControlledRef,0.25,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     if(eventPlayer.CamAttach):
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=1,ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.enableHeroHud()
@@ -285,7 +284,6 @@ rule "Move To":
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
     eventPlayer.ControlledRef.AttackMove=0
-    eventPlayer.ControlledRef.LookAtDir = (directionTowards(eventPlayer.ControlledRef.getEyePosition(),vect(eventPlayer.ControlledRef.MovetoPos.x,eventPlayer.ControlledRef.getEyePosition().y,eventPlayer.ControlledRef.MovetoPos.z)))
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
         eventPlayer.ControlledRef.Target=null
@@ -295,10 +293,9 @@ rule "Move To":
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
     while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
         eventPlayer.ControlledRef.MovetoPos = eventPlayer.cursor
-        if(getTotalTimeElapsed()%0.08<0.016):
+        if(eventPlayer.ControlledRef.Actions==0):
             startAction(0,eventPlayer.ControlledRef)
-        waitUntil(not(eventPlayer.isUsingAbility1() or eventPlayer.isUsingAbility2() or eventPlayer.isUsingUltimate())==true,1)
-        wait(0.128)
+        waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), 0.25)    
 
 rule "Set Target to Cursor/Ability Verify":
     @Event eachPlayer
