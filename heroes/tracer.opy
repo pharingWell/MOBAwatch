@@ -60,8 +60,6 @@ rule "Tracer - Cast":
     switch eventPlayer.Hero_Ability[1]:
         case AbilID.ABIL1:
             eventPlayer.startForcingThrottle(1,1,0,0,0,0)
-            eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)
-            wait(0.016)
             eventPlayer.MovementGroundCursor = true
             eventPlayer.MovetoPos=eventPlayer.LookAtDir*50+eventPlayer.getPosition()
             Ability(Button.ABILITY_1)

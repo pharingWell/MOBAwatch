@@ -82,8 +82,9 @@ rule "InitiateGame":
     Players=[-1]
     MinionPool=-1
     
-    createDummy(Hero.ROADHOG,Team.2,6,vect(2,0,2),vect(0,0,0))
+    createDummy(Hero.REAPER,Team.2,6,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]
+    CPlayers[1].CHero=Hero.REAPER 
     getLastCreatedEntity().setDamageReceived(0)
     wait()
     /*

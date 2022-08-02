@@ -69,7 +69,6 @@ rule "Reaper - Cast":
                 while(evalOnce(getTotalTimeElapsed()+HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.USE][Abil_Use.DURATION]) > getTotalTimeElapsed()):
                     wait(HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.RATE])
                     damageInRadius(8,eventPlayer.getPosition(),HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.AMOUNT],0)
-                    
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
 
@@ -85,5 +84,3 @@ rule "Reaper - Complete":
     switch eventPlayer.Hero_Ability[1]:
         default:
             break
-
-            

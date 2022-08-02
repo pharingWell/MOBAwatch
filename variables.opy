@@ -19,13 +19,13 @@ waitUntil((condition)==true,100)\
 if(not (condition)):\
     printLog("waitUntil_TimedOut")\
     return
-#!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].y,0.5,NonPlayer_Loc[NonPLoc(eventPlayer.Target[0])].z))
-#!define getLocation(a) /*type: id or playerref*/ a.getPosition() if(entityExists(a)) else NonPlayer_Loc[Minions_IDs.index(a)]
-#!defineMember deal(target,rawdamage) eventPlayer.HealthQueue.append([[(target),(rawdamage)]]) /*input is target or id. if the input is an id, it is added to heath queue by the player dealing the damage*/\
+#!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(Minions_Loc[MinionsLoc(eventPlayer.Target[0])].y,0.5,Minions_Loc[MinionsLoc(eventPlayer.Target[0])].z))
+#!define getLocation(a) /*type: id or playerref*/ a.getPosition() if(entityExists(a)) else Minions_Loc[Minions_IDs.index(a)]
+#!defineMember deal(target,rawdamage) eventPlayer.HealthQueue = eventPlayer.HealthQueue.concat([[(target),(rawdamage)]]) /*input is target or id. if the input is an id, it is added to heath queue by the player dealing the damage*/\
 ProcessHealthQueue()
 
-#!defineMember damageInRadius(radius,positon,damagein,falloff) /**/\
-    eventPlayer.Temp_DistanceSort=getPlayersInRadius((positon),(radius),getOppositeTeam(eventPlayer.getTeam()),LosCheck.OFF).concat([i for i in NonPlayer_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48) if ((abs((positon).x-i.y))**2 + (abs((positon).z-i.z))**2 <= (radius))])\
+#!defineMember damageInRadius(radius,positon,damagein,falloff) /*.concat([i for i in Minions_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48) if ((abs((positon).x-i.y))**2 + (abs((positon).z-i.z))**2 <= (radius))])*/\
+    eventPlayer.Temp_DistanceSort=getPlayersInRadius((positon),(radius),getOppositeTeam(eventPlayer.getTeam()),LosCheck.OFF)\
     for eventPlayer.DamageHandler in range(len(eventPlayer.Temp_DistanceSort)):\
         deal(eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler],((damagein)-(falloff)*(distance(eventPlayer.getPosition(),getLocation(eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler]))/(radius))))\ 
 
@@ -35,7 +35,7 @@ ProcessHealthQueue()
 #!define MinionsPerWave 6
 #must check before passing
 #!define MinionSlotFromID(id) Minions_IDs.index(id)
-#!define NonPLoc(id) NonPlayer_Loc[MinionSlotFromID(id)]
+#!define MinionsLoc(id) Minions_Loc[MinionSlotFromID(id)]
 #!defineMember id y
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
 #!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
@@ -114,7 +114,7 @@ globalvar Minions_Info #Minion class [team (1-2),class,wave,count]
 globalvar Minions_DLoc #location change. vect3(MinionID, x change, z change)
 globalvar Minions_Render #[text id, entity id]
 globalvar HealthChange #(id, health change amt (+ = dmg, - = healing), damage dealer id)
-globalvar NonPlayer_Loc #(x,id,z) minions are registered as 1[team].[2 digit id], structures are 2[team].[2 digit id] (e.g. 12.34, 21.24)
+globalvar Minions_Loc #(x,id,z) minions are registered as 1[team].[2 digit id], structures are 2[team].[2 digit id] (e.g. 12.34, 21.24)
 #!define MinionClass_Names ["ι","Minion","ί","Mage","ϊ","Seige","ΐ","Brute"]
 #!define MinionClass_Ranges [1,6,12,3]
 #!define MinionClass_Damage [10,16,40,80]
@@ -164,7 +164,7 @@ playervar CHero_Index
 playervar Owner
 playervar AbilityUse #passes vars to Ability_Used function
 playervar ArrivedAtM2P
-
+playervar SnapLook
 playervar Team #1 or 2 
 playervar Target #[vect(id,posx,posz),ref,[engage,pursue]]
 playervar AbilityVerify #[waiting for ability verify, cancelled, button, abilitynum]

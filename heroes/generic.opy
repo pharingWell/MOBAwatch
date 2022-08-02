@@ -41,6 +41,7 @@ enum AbilityStage:
     NONE,
     PREP,
     MOVETO,
+    PRECAST,
     CAST,
     CANCELLED,
     COMPLETE,
@@ -196,7 +197,7 @@ enum Heroes:
     eventPlayer.ControlledRef.startForcingPosition(vect(0,100,0),true)\
     eventPlayer.ControlledRef.stopForcingPosition()\
     eventPlayer.ControlledRef.Owner = eventPlayer\
-    eventPlayer.ControlledRef.startForcingName("{}".format(eventPlayer))\
+    eventPlayer.ControlledRef.startForcingName("_{}_".format(eventPlayer))\
     eventPlayer.startForcingName("{}".format("_--_"))\
     eventPlayer.ControlledRef.CHero=eventPlayer.CHero\
     eventPlayer.ControlledRef.setDamageDealt(0)\
@@ -244,7 +245,7 @@ def OnSpawn():
     async(UI_Process,AsyncBehavior.NOOP)
     eventPlayer.enableScoreboard()
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
-        createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.AQUA,vect(NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].y,0,NonPlayer_Loc[NonPLoc(eventPlayer.ControlledRef.Target[0].x)].z) if (eventPlayer.ControlledRef.Target[0].x and not eventPlayer.ControlledRef.Target[1]) else eventPlayer.ControlledRef.Target[1].getPosition(),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+        createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.AQUA,getLocation(eventPlayer.ControlledRef.Target[1]),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
 
@@ -285,8 +286,6 @@ rule "Move To":
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
     eventPlayer.ControlledRef.AttackMove=0
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
-        eventPlayer.ControlledRef.Target=null
     eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
     startAction(0,eventPlayer.ControlledRef)
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)

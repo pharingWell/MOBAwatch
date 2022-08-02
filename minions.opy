@@ -12,14 +12,14 @@ disableInspector()
 #!define M_id(i,k_) 10+(i+1)+k_/100
 #!define ft(a,i) (((a)+0.02)*(1-i)+(i)*(19.98-(a)))
 #!define MinionLimit(a) a*0+(1-a)*20
-
+#!define slot(id) Minions_IDs.index(id)
 
 def Minions_Move():
     for LocTemp_i in range(len(Minions_DLoc)):
         LocTemp_var=floor(Minions_DLoc[LocTemp_i].x * 1000) % 100
-        if (NonPlayer_Loc[LocTemp_var].y!=Minions_DLoc[LocTemp_i].y):
-            LocTemp_var=NonPlayer_Loc.index([elem for elem in NonPlayer_Loc if elem.y==Minions_DLoc[LocTemp_i].y][0])
-        NonPlayer_Loc[LocTemp_var]=NonPlayer_Loc[LocTemp_var]+Minions_DLoc[LocTemp_i]*vect(1,0,1) #don't want to add the id twice, so we add 0
+        if (Minions_Loc[LocTemp_var].y!=Minions_DLoc[LocTemp_i].y):
+            LocTemp_var=Minions_Loc.index([elem for elem in Minions_Loc if elem.y==Minions_DLoc[LocTemp_i].y][0])
+        Minions_Loc[LocTemp_var]=Minions_Loc[LocTemp_var]+Minions_DLoc[LocTemp_i]*vect(1,0,1) #don't want to add the id twice, so we add 0
     wait(0.1)
 def Minions_Main():
     LocTemp_var=getTotalTimeElapsed()*100
@@ -27,7 +27,7 @@ def Minions_Main():
     ThreadClear=false
     for i in range(0,2):
         for j in range(0,MinionHalfCount):
-            NonPlayer_Loc[i*MinionHalfCount+j]=NonPlayer_Loc[i*MinionHalfCount+j]+Minions_DLoc[i*MinionHalfCount+j]
+            Minions_Loc[i*MinionHalfCount+j]=Minions_Loc[i*MinionHalfCount+j]+Minions_DLoc[i*MinionHalfCount+j]
            # Minions_DLoc recalculate
     ThreadClear=true
     
@@ -77,7 +77,7 @@ def Minions_Wave():
                     Minions_IDs[Temp_Slot] = Temp_ID
                     #Minions info is set after the text and entity are created
                     Minions_DLoc[Temp_Slot] = vect(1,Temp_ID,1)
-                    NonPlayer_Loc[Temp_Slot] = vect(0,Temp_ID,0)        
+                    Minions_Loc[Temp_Slot] = vect(0,Temp_ID,0)        
                     wait(0.25)
         PrintText_Temp=""
         for l in range(0,len(MinionPool)):
@@ -96,9 +96,9 @@ def Minions_Init():
                 MinionPool.append(Temp_Slot)
             else:
                 MinionPool=[Temp_Slot]
-            #+vect(-0.43,0,0)-0.01*vect(NonPlayer_Loc[evalOnce(Temp_Slot)].x-(localPlayer.getPosition().x-5),0,NonPlayer_Loc[evalOnce(Temp_Slot)].z-localPlayer.getPosition().z)
+            #+vect(-0.43,0,0)-0.01*vect(Minions_Loc[evalOnce(Temp_Slot)].x-(localPlayer.getPosition().x-5),0,Minions_Loc[evalOnce(Temp_Slot)].z-localPlayer.getPosition().z)
             #!define MinionVis localPlayer if (Minions_Info[evalOnce(Temp_Slot)][0] == localPlayer.Team and Minions_Visibility[evalOnce(Temp_Slot)] == 1) or Minions_Visibility[evalOnce(Temp_Slot)] == 2 else null
-            #!define MinionPos NonPlayer_Loc[evalOnce(Temp_Slot)] + (getTotalTimeElapsed()+0.25*Minions_Info[evalOnce(Temp_Slot)][3]%4)%1 * Minions_DLoc[evalOnce(Temp_Slot)] /*should lerp minion between defined points based on direction*/
+            #!define MinionPos Minions_Loc[evalOnce(Temp_Slot)] + (getTotalTimeElapsed()+0.25*Minions_Info[evalOnce(Temp_Slot)][3]%4)%1 * Minions_DLoc[evalOnce(Temp_Slot)] /*should lerp minion between defined points based on direction*/
             #!define MinionColor Color.TEAM_1 if Minions_Info[evalOnce(Temp_Slot)][0]==1 else Color.TEAM_2 if Minions_Info[evalOnce(Temp_Slot)][0]==2 else null
             #println([elem + (((0.075 + angleBetweenVectors(directionTowards(EYE,LOOK), directionTowards(EYE, elem)))/2000 * distance(EYE, elem)) * Vector.DOWN) for elem in MinionPos][0])
             #Global.A = Mapped Array(Vector(0,0,0), Current Array Element + (0.075 - Angle Between Vectors(Facing Direction Of(Local Player), Direction Towards(Eye Position(Local Player), Current Array Element))/2000) * Distance Between(Eye Position(Local Player), Current Array Element) * Down)
@@ -117,4 +117,5 @@ def Minion_setNullStats():
     Minions_Visibility[Temp_Slot] = -0.001
     Minions_Info[Temp_Slot] = -0.001
     Minions_DLoc[Temp_Slot] = -0.001
-    NonPlayer_Loc[Temp_Slot] = -0.001
+    Minions_Loc[Temp_Slot] = -0.001
+ 

@@ -90,7 +90,10 @@ rule "UI Definitions - Global Cursor":
     print(localPlayer.ControlledRef.Actions)
     print("Hero Ability: [{},{},{},{}]".format(["NONE","PREP","MOVETO","CAST","COMPLETE"][localPlayer.ControlledRef.Hero_Ability[0]],localPlayer.ControlledRef.Hero_Ability[1],localPlayer.ControlledRef.Hero_Ability[2],localPlayer.ControlledRef.Hero_Ability[3]))
     print("Ability Verify: [{},{},{},{}]".format(localPlayer.AbilityVerify[0],localPlayer.AbilityVerify[1],localPlayer.AbilityVerify[2],localPlayer.AbilityVerify[3]))
-    
+    print("Target: {},{},{}".format(localPlayer.ControlledRef.Target[0],localPlayer.ControlledRef.Target[1],localPlayer.ControlledRef.Target[2]))
+    Vect(localPlayer.ControlledRef,localPlayer.ControlledRef.getFacingDirection())
+    Vect(localPlayer.ControlledRef,localPlayer.ControlledRef.LookAtDir)
+    print(localPlayer.ControlledRef.getAbilityCharge(localPlayer.ControlledRef.AbilityUse[0]))
 rule "Start Camera":  
     @Event eachPlayer
     @Condition Ready == true
