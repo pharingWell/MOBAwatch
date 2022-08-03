@@ -93,6 +93,8 @@ enum Abil_Cast:
     RANGE
 
 enum Abil_Cost:
+    COOLDOWN,
+    CHARGES,
     RESOURCE
 
 enum Abil_Use:
@@ -121,9 +123,9 @@ rule "Heroes_Init":
         */
 
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-                        #[base hp,base mana,damage type, [base armor,dmgtakenmult,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[mana] use[abilityType, duration, delay] damage[damage, rate]]
+                        #[base hp,base mana,damage type, [base armor,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[cooldown,charges,mana] use[abilityType, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                               1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,[],DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMethod.QUICK,CastMode.SELF],[null],[UseType.CANCELABLE] ],[ [CastMethod.CONFIRM,CastMode.GROUND,TargetState.NONE,10] ],[null],[  [CastMethod.RELEASE,CastMode.SELF],[null],[UseType.CHANNEL,3], [34,0.2]  ]], #
+    /*Reaper*/         [[250,[],DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMethod.QUICK,CastMode.SELF],[3,3],[UseType.CANCELABLE] ],[ [CastMethod.CONFIRM,CastMode.GROUND,TargetState.NONE,10] ],[null],[  [CastMethod.RELEASE,CastMode.SELF],[null],[UseType.CHANNEL,3], [34,0.2]  ]], #
     /*Tracer*/         [[150,[],DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMethod.QUICK,CastMode.DIRECTION] ],[ [CastMethod.QUICK,CastMode.SELF] ],[null],[ [CastMethod.RELEASE,CastMode.DIRECTION],[null],[UseType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          [],/*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
     /*Hanzo*/          [],
@@ -228,7 +230,7 @@ def OnSpawn():
     else:
         eventPlayer.Team=2
     eventPlayer.Slot=eventPlayer.getSlot()
-    Players[eventPlayer.Team-1]=replace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
+    Players[eventPlayer.Team-1]=arreplace(eventPlayer,eventPlayer.Slot,Players[eventPlayer.Team-1])
     attachControlled
     eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
     wait()

@@ -93,7 +93,15 @@ rule "UI Definitions - Global Cursor":
     print("Target: {},{},{}".format(localPlayer.ControlledRef.Target[0],localPlayer.ControlledRef.Target[1],localPlayer.ControlledRef.Target[2]))
     Vect(localPlayer.ControlledRef,localPlayer.ControlledRef.getFacingDirection())
     Vect(localPlayer.ControlledRef,localPlayer.ControlledRef.LookAtDir)
-    print(localPlayer.ControlledRef.getAbilityCharge(localPlayer.ControlledRef.AbilityUse[0]))
+    #!define getPStatAbil(player,num) "{}{}{}{}".format("Abil #{}:\nCast Method: {}, Range: {},\nCost: {}, CD: {}".format((num),["Slf","Dir","Gnd","Cur","Tgt"][(player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.CASTMETHOD]],(player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.RANGE],(player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.COST],(player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.COOLDOWN]),\
+        (", Charges: {}".format((player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.MAXCHARGES]) if (player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.MAXCHARGES]>0 else ""),\
+        (", \nDmg: {}, Dmg Rate: {}/s".format((player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.DAMAGE],(player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.DAMAGERATE]) if (player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.DAMAGE]!= 0 else ""),\
+        ", Dur: {} {}".format((player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.DURATION],(player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.ABILSPECIFICVAR] if (player).PlayerStats[PStat.ABIL+(num)-1][PStatAbil.ABILSPECIFICVAR]!=0 else ""))
+
+    #!define getPStats(player) ("Stats:\n{} HP, {} Resource, {} Armor, {}x Damage Mult\n{}% Move Speed, Basic Atk Range: {},\nBasic Atk Damage: {}, {}% Atk Speed"\
+        .format((player).PlayerStats[PStat.HEALTH],(player).PlayerStats[PStat.RESOURCE],(player).PlayerStats[PStat.ARMOR]*100,(player).PlayerStats[PStat.DEALMULT],(player).PlayerStats[PStat.MOVESPEED]*100,(player).PlayerStats[PStat.BASIC_RANGE],(player).PlayerStats[PStat.BASIC_DAMAGE],(player).PlayerStats[PStat.ATTACKSPEED]*100))
+    hudHeader(localPlayer if localPlayer.showStats[0] else null,"{}\n{}\n{}\n{}\n{}".format(getPStats(localPlayer.showStats[1]),getPStatAbil(localPlayer.showStats[1],1),getPStatAbil(localPlayer.showStats[1],2),getPStatAbil(localPlayer.showStats[1],3),getPStatAbil(localPlayer.showStats[1],4)),HudPosition.RIGHT,99,Color.BLUE,HudReeval.VISIBILITY_SORT_ORDER_AND_STRING,SpecVisibility.DEFAULT)
+
 rule "Start Camera":  
     @Event eachPlayer
     @Condition Ready == true
@@ -110,7 +118,7 @@ rule "Start Camera":
 rule "Print":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.isCommunicating(Comms.HELLO)
     mousetoggle = not mousetoggle
 
 rule "Toggle CamAttach":

@@ -6,7 +6,6 @@ eventPlayer.LookAtDir = dir\
 eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)\
 wait()\
 eventPlayer.startFacing(eventPlayer.LookAtDir,600,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
-
 rule "On Controller Detach":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
@@ -37,12 +36,21 @@ rule "On Controlled Join - Pre-spawn":
     wait()
     eventPlayer.startForcingHero(eventPlayer.CHero)
     eventPlayer.CHero_Index=getAllHeroes().index(eventPlayer.CHero)
-    eventPlayer.Resource=[HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT],HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT],1]
-    eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH],HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH],1]
-    eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.DMGMOD]
+    #eventPlayer.Resource=[HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT],HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT],1]
+    #eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH],HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH],1]
+    #eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.DMGMOD]
     #print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
     #hudHeader(localPlayer,localPlayer.Team,HudPosition.TOP,0,Color.AQUA,HudReeval.VISIBILITY_SORT_ORDER_STRING_AND_COLOR,SpecVisibility.ALWAYS)
-
+    eventPlayer.PlayerStats=[0,/*index 0 is left blank*/
+    /*health,resource,armor*/HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH], HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT], HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.DMGMOD][Base_Dmgmod.ARMOR],
+    /*dealmult(1),movespeed(1),basic range,basic damage,atkspeed(1)*/1,1,HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.DAMAGE],1,
+    /*ability info: castmethod, range, cost, cooldown, maxcharges, damage, channel_duration (opt), ability specific variable ((opt))*/
+    /*abil 1 info*/[HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.CAST][Abil_Cast.METHOD],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.CAST][Abil_Cast.RANGE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.COST][Abil_Cost.RESOURCE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.COST][Abil_Cost.COOLDOWN],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.COST][Abil_Cost.CHARGES],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.DMG][Abil_Damage.AMOUNT],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.DMG][Abil_Damage.RATE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL1][Abil.USE][Abil_Use.DURATION],0],
+    /*abil 2 info*/[HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.CAST][Abil_Cast.METHOD],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.CAST][Abil_Cast.RANGE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.COST][Abil_Cost.RESOURCE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.COST][Abil_Cost.COOLDOWN],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.COST][Abil_Cost.CHARGES],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.DMG][Abil_Damage.AMOUNT],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.DMG][Abil_Damage.RATE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL2][Abil.USE][Abil_Use.DURATION],0],
+    /*abil 3 info*/[HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.CAST][Abil_Cast.METHOD],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.CAST][Abil_Cast.RANGE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.COST][Abil_Cost.RESOURCE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.COST][Abil_Cost.COOLDOWN],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.COST][Abil_Cost.CHARGES],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.DMG][Abil_Damage.AMOUNT],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.DMG][Abil_Damage.RATE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL3][Abil.USE][Abil_Use.DURATION],0],
+    /*abil 4 info*/[HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.CAST][Abil_Cast.METHOD],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.CAST][Abil_Cast.RANGE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.COST][Abil_Cost.RESOURCE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.COST][Abil_Cost.COOLDOWN],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.COST][Abil_Cost.CHARGES],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.DMG][Abil_Damage.AMOUNT],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.DMG][Abil_Damage.RATE],HeroSpecs[eventPlayer.CHero_Index][HeroStat.ABIL4][Abil.USE][Abil_Use.DURATION],0]
+    ]
+    
 rule "Bot - Hero Connection":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
@@ -115,7 +123,6 @@ def AbilityTrigger(): /*use ability is run as the ref, and can be used while aut
                 if(eventPlayer.Owner):
                     eventPlayer.CPos=eventPlayer.Owner.cursor
                 setFacingDir(directionTowards(eventPlayer.getEyePosition(),eventPlayer.CPos*vect(1,0,1)+vect(0,eventPlayer.getEyePosition().y,0)))
-                #wait(angleDifference(horizontalAngleOfDirection(eventPlayer.LookAtDir),eventPlayer.getHorizontalFacingAngle())/1000)
             elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]=TargetState.ENEMY)*/
                 if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TARGET] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):
@@ -359,7 +366,7 @@ rule "Controller Left":
         eventPlayer.stopForcingOutlineFor(eventPlayer.Owner)
         eventPlayer.Owner.ControlledRef=null
         if(Players[floor(eventPlayer.Slot)-1][(eventPlayer.Slot)%1*100]==eventPlayer.Owner):
-            Players[floor(eventPlayer.Slot)-1]=replace(null,(eventPlayer.Slot)%1*100,Players[floor(eventPlayer.Slot)-1])
+            Players[floor(eventPlayer.Slot)-1]=arreplace(null,(eventPlayer.Slot)%1*100,Players[floor(eventPlayer.Slot)-1])
     eventPlayer.Owner=null
     endAbilityAction(8)
     

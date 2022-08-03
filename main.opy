@@ -188,8 +188,16 @@ rule "On Player Left":
 rule "POV":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-    hostPlayer.ControlledRef.Actions=0
+    eventPlayer.ControlledRef.Actions=0
     #Minions_Wave()
+    
+
+rule "POV":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    eventPlayer.showStats=[true,eventPlayer.ControlledRef]
+    waitUntil_verify(eventPlayer.isHoldingButton(Button.INTERACT)==false)
+    eventPlayer.showStats=[]
     
 /*
 rule "PRS check on Join":

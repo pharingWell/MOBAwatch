@@ -2,7 +2,7 @@
 
 #stores variables, global macros and enums
 
-#!defineMember replace(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice((i)+1,len((array))-1))
+#!defineMember arreplace(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice((i)+1,len((array))-1))
 #!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice(i,len((array))-1))
 
 #!define loopt if(RULE_CONDITION):\
@@ -138,6 +138,31 @@ playervar ControlledRef #P
 playervar MovementGroundCursor #P
 playervar Ready
 playervar Hidden
+playervar PlayerStats
+enum PStat:
+    NULL,
+    HEALTH,
+    RESOURCE,
+    ARMOR,
+    DEALMULT,
+    MOVESPEED,
+    BASIC_RANGE,
+    BASIC_DAMAGE,
+    ATTACKSPEED, /*multiplier of inital shots per second*/
+    ABIL
+enum PStatAbil:
+    CASTMETHOD,
+    RANGE,
+    COST,
+    COOLDOWN,
+    MAXCHARGES,
+    DAMAGE,
+    DAMAGERATE,
+    DURATION,
+    ABILSPECIFICVAR  
+# PStat structure:
+# [HEALTH,RESOURCE,ARMOR,DEALMULT,MOVESPEED,BASIC_RANGE,BASIC_DAMAGE,ATTACKSPEED,[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil]]
+playervar showStats #[true/false, ref]
 playervar dbIndex
 playervar cursorAngles
 playervar cursor
