@@ -2,8 +2,8 @@
 
 #stores variables, global macros and enums
 
-#!defineMember arreplace(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice((i)+1,len((array))-1))
-#!defineMember insert(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice(i,len((array))-1))
+#!define arreplace(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice((i)+1,len((array))-1))
+#!define insert(value,i,array) (array).slice(0,(i)-1).concat((value)).concat((array).slice(i,len((array))-1))
 
 #!define loopt if(RULE_CONDITION):\
     goto RULE_START
@@ -21,13 +21,13 @@ if(not (condition)):\
     return
 #!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(Minions_Loc[MinionsLoc(eventPlayer.Target[0])].y,0.5,Minions_Loc[MinionsLoc(eventPlayer.Target[0])].z))
 #!define getLocation(a) /*type: id or playerref*/ a.getPosition() if(entityExists(a)) else Minions_Loc[Minions_IDs.index(a)]
-#!defineMember deal(target,rawdamage) eventPlayer.HealthQueue = eventPlayer.HealthQueue.concat([[(target),(rawdamage)]]) /*input is target or id. if the input is an id, it is added to heath queue by the player dealing the damage*/\
+#!define deal(target,rawdamage) eventPlayer.HealthQueue = eventPlayer.HealthQueue.concat([[(target),(rawdamage)]]) /*input is target or id. if the input is an id, it is added to heath queue by the player dealing the damage*/\
 ProcessHealthQueue()
 
-#!defineMember damageInRadius(radius,positon,damagein,falloff) /*.concat([i for i in Minions_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48) if ((abs((positon).x-i.y))**2 + (abs((positon).z-i.z))**2 <= (radius))])*/\
-    eventPlayer.Temp_DistanceSort=getPlayersInRadius((positon),(radius),getOppositeTeam(eventPlayer.getTeam()),LosCheck.OFF)\
+#!define damageInRadius(radius,position,damagein,falloffAmt) /*.concat([i for i in Minions_Loc.slice((eventPlayer.ControlledRef.Team-1)*48,eventPlayer.ControlledRef.Team*48) if ((abs((positon).x-i.y))**2 + (abs((positon).z-i.z))**2 <= (radius))])*/\
+    eventPlayer.Temp_DistanceSort=getPlayersInRadius((position),(radius),getOppositeTeam(eventPlayer.getTeam()),LosCheck.OFF)\
     for eventPlayer.DamageHandler in range(len(eventPlayer.Temp_DistanceSort)):\
-        deal(eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler],((damagein)-(falloff)*(distance(eventPlayer.getPosition(),getLocation(eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler]))/(radius))))\ 
+        deal(eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler],(damagein)-(falloffAmt)*(distance((position)*vect(1,0,1),getLocation(eventPlayer.Temp_DistanceSort[eventPlayer.DamageHandler])*vect(1,0,1))/(radius)))
 
 #!define startDoT #
 #DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
@@ -65,6 +65,13 @@ globalvar TeamSize
 globalvar ScreenLimits
 globalvar Characters
 #...
+globalvar Grid #Stores ids and locations for cheaper access of arrays (grid of squares)
+globalvar GridTemp
+#!define GRID_ROW_LENGTH 3
+#!define GRID_ORIGIN vect(0,0,0)
+#!define TILE_W 35
+#!define TILE_H 20
+#!define SHOW_GRID true
 #database
 globalvar dbKeys
 globalvar dbPRS
@@ -75,22 +82,12 @@ globalvar Structures #id, health, blank
 globalvar StructuresMP #midpoint of structure (id,x,z)
 globalvar StructuresWH #width and height (id,w,h)
 #Temp
-globalvar M_tTemp
 globalvar Slot_Temp
-globalvar MA_Temp #Minions Array Temp
-globalvar PA_Temp #Player Array Temp
 globalvar Temp_ID
 globalvar PrintText_Temp
-globalvar PrintData_Temp
-globalvar LocTemp_var
-globalvar LocTemp_i
 globalvar Temp_Slot
 #General variables
 globalvar ThreadClear #is thread clear for damaging minions 
-globalvar i
-globalvar k_
-globalvar j
-globalvar l
 #UI 
 globalvar UIContainer
 #...
@@ -99,12 +96,12 @@ globalvar DoT_In
 globalvar Ready
 #Players
 globalvar CD_Buttons
-globalvar PlayerLeft_i
 globalvar HeroSpecs
 globalvar FunctionToggle #used for debugging for optimization
-
+#!define TICK_LENGTH 1
 #Minion Array
 globalvar MinionPool #Pool of initialized minions 
+globalvar MinionsActive
 globalvar Minions_IDs #Key array for minions. Holds id at the given slot
 globalvar Minions_Target #Stores target id
 globalvar Minions_HP #health
@@ -122,11 +119,23 @@ globalvar Minions_Loc #(x,id,z) minions are registered as 1[team].[2 digit id], 
 #Minion Waves
 globalvar MinionWaves #value 0 is total wave count
 globalvar MinionCounts #[team 1 minions, team 2 minions]
+#Projectiles
+globalvar ProjectilePool
+#!define PROJECTILE_POOLSIZE 48
+globalvar ProjectileActive
+globalvar ProjectileTemp
+globalvar ProjectileTempID
+globalvar Projectile_IDs
+globalvar Projectile_Velocity #movement in one tick
+globalvar Projectile_Accel #this may not be needed if accel is constant
+globalvar Projectile_Position #for checks ofc
+globalvar Projectile_Lifetime #used for projectiles that despawn
+globalvar Projectile_Tile #which tile(s) the projectile is on
 #settings
 globalvar mousetoggle
 globalvar Setting_CamSpeed
 globalvar Setting_Mode
-
+globalvar tickCt
 
 
 #Player variables
@@ -138,6 +147,47 @@ playervar ControlledRef #P
 playervar MovementGroundCursor #P
 playervar Ready
 playervar Hidden
+playervar TilesTouched 
+
+
+
+globalvar Iter
+#!define forGlobal(index,startval,max)/**/\
+Iter[(index)] = startval\
+while(Iter[(index)]<(max))
+#!define forEndG(index) Iter[(index)]+=1
+#Iter[forG]
+enum forG:
+    PLAYERNAME_SETUP,
+    GRID_RENDERER,
+    MINION_WAVEITER_TEAM,
+    MINION_WAVEITER_TYPE,
+    TEAMSETUP,
+    MINIONSMOVE,
+    MINIONSMOVEFLOOR,
+    MINIONSINIT_TEAM,
+    MINIONSINIT_TYPE,
+    MINIONSINIT_SLOT,
+    MINIONS_PRINTPOOL,
+
+playervar Iter
+#!define forPlayer(index,player,startval,max)/**/\
+(player).Iter[(index)] = startval\
+while((player).Iter[(index)]<(max))
+#!define forEndP(index,player) (player).Iter[(index)]+=1\
+
+#wait(0.016)
+#eventPlayer.Iter[forP]
+enum forP:
+    EACHABILITYSTAGEUI,
+    EACHABILITYSTAGEUIEFFECT,
+    TARGET_ITER,
+    COOLDOWNS,
+    DBINDEX,
+
+# PStat structure:
+# [HEALTH,RESOURCE,ARMOR,DEALMULT,MOVESPEED,BASIC_RANGE,BASIC_DAMAGE,ATTACKSPEED,[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil]]
+playervar showStats #[true/false, ref]
 playervar PlayerStats
 enum PStat:
     NULL,
@@ -159,26 +209,25 @@ enum PStatAbil:
     DAMAGE,
     DAMAGERATE,
     DURATION,
-    ABILSPECIFICVAR  
-# PStat structure:
-# [HEALTH,RESOURCE,ARMOR,DEALMULT,MOVESPEED,BASIC_RANGE,BASIC_DAMAGE,ATTACKSPEED,[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil]]
-playervar showStats #[true/false, ref]
+    ABILSPECIFICVAR 
+
+
+
 playervar dbIndex
+
 playervar cursorAngles
 playervar cursor
 playervar UIContainer #P
 playervar UIIstanceHandler #P
 playervar UICursorStyles #P
-playervar CD_i
-playervar Target_i
 playervar DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
 playervar HealingModifiers #[healing mult]
 playervar HealthQueue #list of health changes that are applied in chronological order, [health_change,source/id,is source?]
 playervar Actions
 playervar ControlledSlot
 playervar Level
-playervar Health #current,max,[regen/dots,duration,rate], [damager,healer]
-playervar Resource #current,max
+playervar Health #current,[regen/dots,duration,rate], [damager,healer]
+playervar Resource #current, charges
 playervar CPos
 playervar MovetoPos
 playervar AttackMove #value that dictates whether to use overriding movement or attacking moving attacking moving movement, true if it has a value, false if its zero
@@ -194,7 +243,6 @@ playervar Team #1 or 2
 playervar Target #[vect(id,posx,posz),ref,[engage,pursue]]
 playervar AbilityVerify #[waiting for ability verify, cancelled, button, abilitynum]
 playervar Hero_Ability #casts ability from the perspective of the hero. e.g: ability1 is called with eventPlayer.ControlledRef as the event player with Ability Verify. It is then cast to the specific hero based on this variable
-playervar HA_temp
 playervar Ability_UI
 playervar TargetHandling
 playervar Temp_DistanceSort
@@ -202,7 +250,6 @@ playervar ClearAllUI
 playervar UltCD
 playervar DamageHandler
 playervar TimerHandler
-playervar Temp
 playervar Disabled #[m1,m2,abilities[0]]
 playervar Settings
 enum PlayerSettings:
@@ -240,3 +287,194 @@ subroutine StopThrottle
 subroutine CalcDealt
 subroutine Minion_setNullStats
 subroutine Target_Func
+subroutine ReleaseToProjPool
+
+enum AbilID:
+    ABIL1=3,
+    ABIL2,
+    ABIL3,
+    ABIL4
+
+enum ResourceType:
+    NONE,
+    MANA,
+    ENERGY
+enum CastMethod:
+    NULL,
+    CONFIRM,
+    QUICK,
+    RELEASE
+enum CastMode:
+    SELF,
+    DIRECTION,
+    GROUND,
+    CURSOR,
+    TARGET
+enum TargetState:
+    NONE,
+    SELF,
+    ALLY,
+    ENEMY,
+enum UseType:
+    NORMAL,
+    CHANNEL,
+    CANCELABLE 
+enum DamageType:
+    UNKNOWN,
+    PHYSICAL,
+    MAGICAL 
+enum AbilityStage:
+    NONE,
+    PREP,
+    MOVETO,
+    PRECAST,
+    CAST,
+    CANCELLED,
+    COMPLETE,
+enum Activation:
+    NONE,
+    M1 #TODO: good way to handle activation
+
+    
+
+enum HeroStat:
+    BASE,
+    LEVELRATE,
+    BASIC,
+    ABIL1,
+    ABIL2,
+    ABIL3,
+    ABIL4
+
+enum Base:
+    HEALTH,
+    RESOURCE,
+    DMGMOD,
+
+enum Base_Resource:
+    TYPE,
+    STARTING_AMT
+
+enum Base_Dmgmod:
+    ARMOR,
+    TAKENMULT,
+    DEALTMULT
+
+enum Basic:
+    RANGE,
+    DAMAGE,
+    SHOTSPERSEC,
+    AUTOTARGET #Y/N
+
+enum Abil:
+    CAST,
+    COST,
+    USE,
+    DMG
+
+enum Abil_Cast:
+    METHOD,
+    MODE,
+    TARGET,
+    RANGE
+
+enum Abil_Cost:
+    COOLDOWN,
+    RESOURCE,
+    CHARGES,
+    
+enum Abil_Use:
+    TYPE,
+    DURATION,
+    DELAY
+
+enum Abil_Damage:
+    AMOUNT,
+    RATE
+    
+
+rule "Heroes_Init":                                            
+        /*
+        Ability Description:
+        Cast: 
+            Cast Mode dictates how and when the ability is cast, whether immediately after pressing the button, when releasing, or after an additional input to confirm
+            Cast Type dictates either where the ability will be cast (towards the cursor, at the cursor, or on the ground) or who the ability can be cast on. Who is only used for abilities with targets
+            These targets are defined by Target State
+        Cost: 
+            When using this ability, this value is checked in relation to the hero's given cost requirements. So far, this only means mana
+        Use:
+            This dictates how the ability acts, whether it is channeled, or if something else occurs, such as a delay before activating. Channel specifically means that it can be interrupted
+        Damage:
+            This shows how much damage the ability does with an optional rate per tick
+        */
+
+                        #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
+                        #[base hp,base mana,damage type, [basDamagee armor,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[cooldown,charges,mana] use[abilityType, duration, delay] damage[damage, rate]]
+    HeroSpecs=[        #0                               1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
+    /*Reaper*/         [[250,[],DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMethod.QUICK,CastMode.SELF],[3,3],[UseType.CANCELABLE] ],[ [CastMethod.CONFIRM,CastMode.GROUND,TargetState.NONE,10] ],[null],[  [CastMethod.RELEASE,CastMode.SELF],[null],[UseType.CHANNEL,3], [34,0.2]  ]], #
+    /*Tracer*/         [[150,[],DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMethod.QUICK,CastMode.DIRECTION] ],[ [CastMethod.QUICK,CastMode.SELF] ],[null],[ [CastMethod.RELEASE,CastMode.DIRECTION],[null],[UseType.NORMAL], [350,1] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
+    /*Mercy*/          [],/*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
+    /*Hanzo*/          [],
+    /*Torbjörn*/       [],
+    /*Reinhardt*/      [],
+    /*Pharah*/         [[200,[ResourceType.ENERGY,1],0,[0,1,1]],[],[6,40,1],[ [CastMethod.QUICK,CastMode.SELF],  ],/*projectile*/],
+    /*Winston*/        [],
+    /*Widowmaker*/     [],
+    /*Bastion*/        [],
+    /*Symmetra*/       [],
+    /*Zenyatta*/       [],
+    /*Genji*/          [],
+    /*Roadhog*/        [],
+    /*Cassidy*/        [],
+    /*Junkrat*/        [],
+    /*Zarya*/          [],
+    /*Soldier: 76*/    [],
+    /*Lúcio*/          [],
+    /*D.Va*/           [],
+    /*Mei*/            [],
+    /*Sombra*/         [],
+    /*Doomfist*/       [],
+    /*Ana*/            [],
+    /*Orisa*/          [],
+    /*Brigitte*/       [],
+    /*Moira*/          [],
+    /*Wrecking Ball*/  [],
+    /*Ashe*/           [],
+    /*Echo*/           [],
+    /*Baptiste*/       [],
+    /*Sigma*/          [],
+    ]
+enum Heroes:
+    REAPER,        
+    TRACER,        
+    MERCY,         
+    HANZO,         
+    TORBJORN,      
+    REINHARDT,     
+    PHARAH,        
+    WINSTON,       
+    WIDOWMAKER,    
+    BASTION,       
+    SYMMETRA,      
+    ZENYATTA,      
+    GENJI,         
+    ROADHOG,       
+    CASSIDY,       
+    JUNKRAT,       
+    ZARYA,         
+    SOLDIER76,   
+    LUCIO,         
+    DVA,          
+    MEI,           
+    SOMBRA,        
+    DOOMFIST,      
+    ANA,           
+    ORISA,         
+    BRIGITTE,      
+    MOIRA,         
+    WRECKING BALL, 
+    ASHE,          
+    ECHO,          
+    BAPTISTE,      
+    SIGMA
+    

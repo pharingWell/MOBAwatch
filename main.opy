@@ -21,7 +21,7 @@ settings {
         },
         "tdm": {
             "enabledMaps": [
-                "workshopExpanseNight"
+                "workshopExpanse"
             ],
             "gameLengthInMn": 15,
             "enableMercyRezKillCancel": false,
@@ -50,6 +50,8 @@ settings {
 #!extension beamEffects
 #!include "variables.opy"
 #!include "ui.opy"
+
+##!include "projectiles.opy"
 #!include "minions.opy"
 #!include "heroes/generic.opy"
 #!include "controlled.opy"
@@ -98,13 +100,14 @@ rule "InitiateGame":
     wait()*/
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
-    for i in range(TeamSize):
-        if(i==0):
+    forGlobal(forG.TEAMSETUP,0,TeamSize):
+        if(Iter[forG.TEAMSETUP]==0):
             Players[0]=["null"] 
             Players[1]=["null"]
         else:
             Players[0].append(["null"])
             Players[1].append(["null"])
+        forEndG(forG.TEAMSETUP)
     Minions_Init()
     async(HealthHandle(),AsyncBehavior.NOOP)
     setMatchTime(0) #change to 15 later
@@ -119,11 +122,12 @@ rule "InitiateGame":
         disableGamemodeCompletion()
     
 def Ready():
-    for(i in range(0,TeamSize)):
-        hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),CPlayers[0][evalOnce(i)].Health[0],null,HudPosition.LEFT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
-        hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
-        hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[1][evalOnce(i)].getCurrentHero()),Players[1][evalOnce(i)]),CPlayers[1][evalOnce(i)].Health[0],null,HudPosition.LEFT,i-TeamSize,Players[1][evalOnce(i)].UIContainer[0],Players[1][evalOnce(i)].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
-        hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[0][evalOnce(i)].getCurrentHero()),Players[0][evalOnce(i)]),null,null,HudPosition.RIGHT,i-TeamSize,Players[0][evalOnce(i)].UIContainer[0],Players[0][evalOnce(i)].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+    forGlobal(forG.PLAYERNAME_SETUP,0,TeamSize):
+        hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),CPlayers[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].Health[0],null,HudPosition.LEFT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+        hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),null,null,HudPosition.RIGHT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+        hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),CPlayers[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].Health[0],null,HudPosition.LEFT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+        hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),null,null,HudPosition.RIGHT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
+        forEndG(forG.PLAYERNAME_SETUP) 
     Ready=true
 
 rule "Inspector":
@@ -149,7 +153,7 @@ rule "Minions Tick":
 rule "start dot":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
-    eventPlayer.ControlledRef.Health[2]=[-250,5]
+    eventPlayer.ControlledRef.Health[2] = [-250,5]
 /*rule "left":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
@@ -188,7 +192,8 @@ rule "On Player Left":
 rule "POV":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-    eventPlayer.ControlledRef.Actions=0
+    eventPlayer.ControlledRef.setUltCharge(100)
+    #eventPlayer.ControlledRef.Actions=0
     #Minions_Wave()
     
 
@@ -212,12 +217,12 @@ rule "PRS check on Join":
 rule "set db index":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    for eventPlayer.Temp in range(len(dbKeys)):
-        if(dbKeys[eventPlayer.Temp]=="{}".format(eventPlayer)):
-            eventPlayer.dbIndex = eventPlayer.Temp
-            eventPlayer.Temp = 0
+    forPlayer(forP.DBINDEX,eventPlayer,0,len(dbKeys)):
+        if(dbKeys[eventPlayer.Iter[forP.DBINDEX]]=="{}".format(eventPlayer)):
+            eventPlayer.dbIndex = eventPlayer.Iter[forP.DBINDEX]
+            eventPlayer.Iter[forP.DBINDEX] = 0
             return
-    eventPlayer.Temp = 0
+        forEndP(forP.DBINDEX,eventPlayer)
     eventPlayer.dbIndex = len(dbKeys)
     dbKeys[eventPlayer.dbIndex] = "{}".format(eventPlayer)
     dbPRS[eventPlayer.dbIndex] = 1500

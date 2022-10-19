@@ -5,7 +5,7 @@ eventPlayer.stopFacing()\
 eventPlayer.LookAtDir = dir\
 eventPlayer.setFacing(eventPlayer.LookAtDir,Relativity.TO_WORLD)\
 wait()\
-eventPlayer.startFacing(eventPlayer.LookAtDir,600,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
+eventPlayer.startFacing(eventPlayer.LookAtDir,500,Relativity.TO_WORLD,FacingReeval.DIRECTION_AND_TURN_RATE)
 rule "On Controller Detach":
     @Event eachPlayer
     @Condition eventPlayer.isDummy()
@@ -15,10 +15,10 @@ rule "On Controlled Join - Ignores respawn":
     @Event playerJoined
     @Condition eventPlayer.isDummy()
     createInWorldText(null if not eventPlayer.isAlive() else localPlayer if not eventPlayer.Hidden else getPlayers(eventPlayer.getTeam()),"{}\n|{}|{}|{}|{}|\n{}".format("            <•>" if not eventPlayer.Hidden else " ", 
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>0)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1]))),5)),
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.25))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.5 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.25)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.25)),5)),
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.5))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<0.75 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.5), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.5)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.5)),5)),
-    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.Health[1])*100%5),(eventPlayer.Health[0]/eventPlayer.Health[1])<1 and (eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.Health[1])>=0.75)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.Health[1])-0.75)),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])*100%5),(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])<0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>0)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH]))),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.25))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])*100%5),(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])<0.5 and (eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.25)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.25)),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.5))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])*100%5),(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])<0.75 and (eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.5), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.5)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.5)),5)),
+    "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.75))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])*100%5),(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])<1 and (eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.75), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.75)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.75)),5)),
     "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if eventPlayer.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
     eventPlayer.Level=1
     createEffect(localPlayer if not eventPlayer.Hidden and eventPlayer.isAlive() else getPlayers(eventPlayer.getTeam()),Effect.RING,Color.TEAM_1 if eventPlayer.Team==0 else Color.TEAM_2, updateEveryTick(eventPlayer.getPosition()*vect(1,0,1)),0.7,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -39,7 +39,7 @@ rule "On Controlled Join - Pre-spawn":
     #eventPlayer.Resource=[HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT],HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT],1]
     #eventPlayer.Health=[HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH],HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH],1]
     #eventPlayer.DamageModifiers=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.DMGMOD]
-    #print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.Health[1],eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][2]))
+    #print("{},{},[{},{},{}]".format(eventPlayer.Health[0],eventPlayer.PlayerStats[PStat.HEALTH],eventPlayer.Health[1][0],eventPlayer.Health[1][1],eventPlayer.Health[1][2]))
     #hudHeader(localPlayer,localPlayer.Team,HudPosition.TOP,0,Color.AQUA,HudReeval.VISIBILITY_SORT_ORDER_STRING_AND_COLOR,SpecVisibility.ALWAYS)
     eventPlayer.PlayerStats=[0,/*index 0 is left blank*/
     /*health,resource,armor*/HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.HEALTH], HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.RESOURCE][Base_Resource.STARTING_AMT], HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASE][Base.DMGMOD][Base_Dmgmod.ARMOR],
@@ -66,18 +66,18 @@ rule "Bot - Hero Connection":
     goto RULE_START
 
 def ProcessHealthQueue(): #Called by deal, processes health queue
-    print("[{},{},{},{}]".format(eventPlayer.HealthQueue[0][0],eventPlayer.HealthQueue[0][1],eventPlayer.HealthQueue[0][2],eventPlayer.HealthQueue[0][3]))
+    print(evalOnce("[{},{},{},{}]".format(eventPlayer.HealthQueue[0][0],eventPlayer.HealthQueue[0][1],eventPlayer.HealthQueue[0][2],eventPlayer.HealthQueue[0][3])))
     if(eventPlayer.HealthQueue[0][0].Health):#checks if target is a player
         if(eventPlayer.HealthQueue[0][0].isAlive()):
             if(eventPlayer.HealthQueue[0][1]>0): #damage
                 eventPlayer.HealthQueue[0][0].Health[0]-=(eventPlayer.HealthQueue[0][1])*(1-eventPlayer.DamageModifiers[0]/100) * (eventPlayer.DamageModifiers[1] if eventPlayer.DamageModifiers[1]>0 else 1)  * (eventPlayer.HealthQueue[0][0].DamageModifiers[2])
-                eventPlayer.HealthQueue[0][0].Health[3]=[eventPlayer,eventPlayer.HealthQueue[0][0].Health[3][1]]
+                eventPlayer.HealthQueue[0][0].Health[2]=[eventPlayer,eventPlayer.HealthQueue[0][0].Health[2][1]]
                 if(eventPlayer.HealthQueue[0][0].Health[0]<=0):
                     if(eventPlayer.Target==eventPlayer.HealthQueue[0][0]):
                         goto freetarget
             elif(eventPlayer.HealthQueue[0][1]<0): #healing
                 eventPlayer.HealthQueue[0][0].Health[0]+=(abs(eventPlayer.HealthQueue[0][1])*eventPlayer.HealingModifiers[0])
-                eventPlayer.HealthQueue[0][0].Health[3]=[eventPlayer.HealthQueue[0][0].Health[3][0],eventPlayer]
+                eventPlayer.HealthQueue[0][0].Health[2]=[eventPlayer.HealthQueue[0][0].Health[2][0],eventPlayer]
             else:
                 print("{} tried to deal 0 damage to {}".format(eventPlayer,eventPlayer.HealthQueue[0][0]))
         else:
@@ -99,7 +99,7 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
 AbilityTrigger()\
     eventPlayer.AbilityUse=[]
 def AbilityTrigger(): /*use ability is run as the ref, and can be used while automating eventPlayer.AbilityUsfacine[0]=button,eventPlayer.AbilityUse[1]=abilitynum*/    
-    if((eventPlayer.getAbilityCooldown(eventPlayer.AbilityUse[0])<=0.1 and eventPlayer.getAbilityCharge(eventPlayer.AbilityUse[0])>0) or (eventPlayer.getUltCharge()>99.5 and (eventPlayer.AbilityUse[0])==Button.ULTIMATE)):
+    if((eventPlayer.getAbilityCooldown(eventPlayer.AbilityUse[0])<=0 and (eventPlayer.PlayerStats[PStat.ABIL+eventPlayer.AbilityUse[1]-1][PStatAbil.MAXCHARGES]==0 or eventPlayer.getAbilityCharge(eventPlayer.AbilityUse[0])>0)) or (eventPlayer.getUltCharge()>99.5 and (eventPlayer.AbilityUse[0])==Button.ULTIMATE)):
         if(eventPlayer.Resource[0]>=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE] or not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]): # mana
             if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]>0 and distance(eventPlayer.CPos,eventPlayer.getPosition())>HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):#if abil has range and cast point is out if range
                 eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer)*(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]+1)/*starts at cpos and moves player to closest point within range*/
@@ -162,16 +162,18 @@ def AbilityUse():
 
 def Target_Func():
     eventPlayer.Temp_DistanceSort=[]
-    for eventPlayer.Target_i in range(0,len(CPlayers[2-eventPlayer.Team])):
-        eventPlayer.Temp_DistanceSort[eventPlayer.Target_i]=(vect(3-eventPlayer.Team+eventPlayer.Target_i/100,CPlayers[2-eventPlayer.Team][eventPlayer.Target_i].getPosition().x,CPlayers[2-eventPlayer.Team][eventPlayer.Target_i].getPosition().z))
+    forPlayer(forP.TARGET_ITER,eventPlayer,0,len(CPlayers[2-eventPlayer.Team])):
+        eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]]=(vect(3-eventPlayer.Team+eventPlayer.Iter[forP.TARGET_ITER]/100,CPlayers[2-eventPlayer.Team][eventPlayer.Iter[forP.TARGET_ITER]].getPosition().x,CPlayers[2-eventPlayer.Team][eventPlayer.Iter[forP.TARGET_ITER]].getPosition().z))
+        forEndP(forP.TARGET_ITER,eventPlayer)
     eventPlayer.Temp_DistanceSort=sorted(eventPlayer.Temp_DistanceSort.concat(random.shuffle(Minions_Loc.slice((2-eventPlayer.Team)*30,30))), lambda i: (abs(eventPlayer.TargetHandling[0].x-i.y))**2 + (abs(eventPlayer.TargetHandling[0].z-i.z))**2)
-    for eventPlayer.Target_i in range(0,3):
-        if((getHealthByID(eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].x))<=0):
+    forPlayer(forP.TARGET_ITER,eventPlayer,0,3):
+        if((getHealthByID(eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].x))<=0):
+            forEndP(forP.TARGET_ITER,eventPlayer)
             continue
-        if((abs(eventPlayer.TargetHandling[0].x-eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].y))**2 + (abs(eventPlayer.TargetHandling[0].z-eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].z))**2<abs(eventPlayer.TargetHandling[1])**2):
-            eventPlayer.Target[0]=eventPlayer.Temp_DistanceSort[eventPlayer.Target_i]
-            if(eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].x<10):
-                eventPlayer.Target[1] = PlayerFromID(eventPlayer.Temp_DistanceSort[eventPlayer.Target_i].x)
+        if((abs(eventPlayer.TargetHandling[0].x-eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].y))**2 + (abs(eventPlayer.TargetHandling[0].z-eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].z))**2<abs(eventPlayer.TargetHandling[1])**2):
+            eventPlayer.Target[0]=eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]]
+            if(eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].x<10):
+                eventPlayer.Target[1] = PlayerFromID(eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].x)
             else:
                 eventPlayer.Target[1]= eventPlayer.Target[0].x
             return
@@ -180,6 +182,7 @@ def Target_Func():
                 return
             else:
                 goto attackMove
+        forEndP(forP.TARGET_ITER,eventPlayer)
     return
     attackMove:
     if(eventPlayer.TargetHandling[1]<0):
@@ -375,21 +378,21 @@ rule "dmg/heal OT on":
     @Event eachPlayer
     @Condition Ready == true
     @Condition eventPlayer.isDummy()
-    @Condition  eventPlayer.Health[2][1]>0
+    @Condition  eventPlayer.Health[1][1]>0
     wait(0.2)
-    if(not eventPlayer.Health[2][2]):
-        eventPlayer.Health[2]=[eventPlayer.Health[2][0],eventPlayer.Health[2][1],eventPlayer.Health[2][0]/eventPlayer.Health[2][1]]
-    eventPlayer.Health[2]=[eventPlayer.Health[2][2]*(eventPlayer.Health[2][1]-0.2),eventPlayer.Health[2][1]-0.2,eventPlayer.Health[2][2]]
-    if(eventPlayer.Health[0]+eventPlayer.Health[2][2]/5<eventPlayer.Health[1]):
-        eventPlayer.Health[0]+=(eventPlayer.Health[2][2]/5)
+    if(not eventPlayer.Health[1][2]):
+        eventPlayer.Health[1]=[eventPlayer.Health[1][0],eventPlayer.Health[1][1],eventPlayer.Health[1][0]/eventPlayer.Health[1][1]]
+    eventPlayer.Health[1]=[eventPlayer.Health[1][2]*(eventPlayer.Health[1][1]-0.2),eventPlayer.Health[1][1]-0.2,eventPlayer.Health[1][2]]
+    if(eventPlayer.Health[0]+eventPlayer.Health[1][2]/5<eventPlayer.PlayerStats[PStat.HEALTH]):
+        eventPlayer.Health[0]+=(eventPlayer.Health[1][2]/5)
     loopt
 
 rule "dmg/heal OT off":
     @Event eachPlayer
     @Condition Ready == true
     @Condition eventPlayer.isDummy()
-    @Condition  eventPlayer.Health[2][1]<=0
-    eventPlayer.Health[2]=null
+    @Condition  eventPlayer.Health[1][1]<=0
+    eventPlayer.Health[1]=null
 
 rule "(Re)spawn":
     @Event eachPlayer
@@ -397,13 +400,7 @@ rule "(Re)spawn":
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned()
     @Condition eventPlayer.isAlive()
-    eventPlayer.Health[0]=max(10,eventPlayer.Health[1])
-
-
-
-
-    eventPlayer.Health[1]=max(100,eventPlayer.Health[1])
-    eventPlayer.Health[4]=[null,null]
+    eventPlayer.Health[0]=max(10,eventPlayer.PlayerStats[PStat.HEALTH])
     setFacingDir(vect(0,0,1))
     chase(eventPlayer.CamLoc,toCamLoc,duration=0.2,ChaseReeval.DESTINATION_AND_DURATION)
     
@@ -421,7 +418,7 @@ rule "Is Dead":
     eventPlayer.stopFacing()
     eventPlayer.setRespawnTime(eventPlayer.Level*2+4)
     eventPlayer.setDamageReceived(1)
-    kill(eventPlayer,eventPlayer.Health[3][0].Owner)
+    kill(eventPlayer,eventPlayer.Health[2][0].Owner)
     eventPlayer.setDamageReceived(0)
 
        

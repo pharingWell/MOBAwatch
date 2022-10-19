@@ -11,7 +11,7 @@ rule "Mode":
 
     
 def UI_Setup():
-
+    print(eventPlayer.Iter[forP.COOLDOWNS])
     eventPlayer.setMaxAmmo(0,0)
     eventPlayer.setMaxAmmo(1,0)
     eventPlayer.setAmmo(0,0)
@@ -44,25 +44,23 @@ def UI_Process():
     elif(eventPlayer.ControlledRef):
         wait(1)
         eventPlayer.setHealth(999)
-    for eventPlayer.CD_i in range(len(CD_Buttons)):
-        if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.CD_i]):
-            updateCooldown(CD_Buttons[eventPlayer.CD_i])
+    forPlayer(forP.COOLDOWNS,eventPlayer,0,len(CD_Buttons)):
+        if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]]):
+            updateCooldown(CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]])
             eventPlayer.setUltCharge(eventPlayer.ControlledRef.getUltCharge())
         else:
             if(eventPlayer.getAbilityCooldown(eventPlayer.AbilityVerify[2])<=1.1 and not eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
-                eventPlayer.setAbilityCooldown(CD_Buttons[eventPlayer.CD_i],1)
+                eventPlayer.setAbilityCooldown(CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]],1)
             elif(eventPlayer.getUltCharge()>98.5 and eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
                 eventPlayer.setUltCharge(99.9)
-    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][0][1]>1):
+        forEndP(forP.COOLDOWNS,eventPlayer)
+    if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASE][Base.HEALTH]>1):
         eventPlayer.setMaxAmmo(0,eventPlayer.ControlledRef.Resource[1])
         eventPlayer.setAmmo(0,eventPlayer.ControlledRef.Resource[0])
     wait(0.1)
     top
 
 rule "UI Definitions - Global Cursor":
-
-
-
     waitUntil(Ready==true,100)
     #>=(zpos-0.1)*0.016 and getTotalTimeElapsed()%(0.032*highestZpos)<=(zpos)*0.016
     #!define zPos(draw,zpos) null if zpos<getNumberOfTextIds() else (draw)
@@ -70,17 +68,17 @@ rule "UI Definitions - Global Cursor":
     #!define EYE(player) updateEveryTick((player).CamLoc+vect(0,10,0) if mousetoggle else (player).ControlledRef.getEyePosition()*vect(1,0,1)+0.5*(player).ControlledRef.getVelocity()/magnitude((player).ControlledRef.getVelocity()))+CamPos+vect(((player).getEyePosition().y-(player).getPosition().y)/2,0,0)
     #!define CURSORX updateEveryTick(localPlayer.getHorizontalFacingAngle())
     #(localPlayer.cursorAngles[0].x)
-    #!define CURSORZ updateEveryTick(localPlayer.getVerticalFacingAngle()+3.14)
+    #!define CURSORZ updateEveryTick(localPlayer.getVerticalFacingAngle())
     #(localPlayer.cursorAngles[0].z+3)
     #!define vFOR vect(0.45,-0.89,0) /*Direction between camera EYE(localPlayer) and camera look point or look at direction*/
-    #!define vLEFT vect(0,0,-1) /*normalize(crossProduct(Vector.UP, vFOR))*/
+    #!define vLEFT vect(0,0,-1) /*angleToDirection(horizontalAngleOfDirection(vFOR)-90,verticalAngleOfDirection(vFOR))*/
     #!define vDOWN vect(-0.89,-0.45,0) /*crossProduct(vLEFT,vFOR)*/
-    #!define textPos(pos) updateEveryTick((pos) + vDOWN * (dotProduct(vFOR, (pos) - EYE(localPlayer)) / 18)) /*text is anchored to its correct position*/
     #!define SCALE 50 /*used for UI, defines screen size. Lowering this value changes your Y upper and lower limit and the wraparound distance for the X*/
     #!define uiPos(xpos,ypos) updateEveryTick(EYE(localPlayer)+SCALE*vFOR+(xpos)*vLEFT+ (ypos)*vDOWN) /*takes a position on the 2D screen, thus only x and y*/
     #!define textPos(pos) updateEveryTick((pos) + vDOWN * (dotProduct(vFOR, (pos) - EYE(localPlayer)) / 18)) /*text is anchored to its correct position*/
     #!define SCALE 50 /*used for UI, defines screen size. Lowering this value changes your Y upper and lower limit and the wraparound distance for the X*/
     #!define uiPos(xpos,ypos) updateEveryTick(EYE(localPlayer)+SCALE*vFOR+(xpos)*vLEFT+ (ypos)*vDOWN)
+    createInWorldText(localPlayer, "•",uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.WHITE, SpecVisibility.NEVER)
     ScreenLimits = [1.25,0.68]
     #!define text(vis,text,pos,color) createInWorldText((vis), (text), textPos(pos) , (size), Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, (color), SpecVisibility.DEFAULT)
     #!define Vect(pos1,vect1) createBeam(localPlayer,Beam.GOOD,(pos1),(pos1)+(vect1),Color.AQUA,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -101,6 +99,21 @@ rule "UI Definitions - Global Cursor":
     #!define getPStats(player) ("Stats:\n{} HP, {} Resource, {} Armor, {}x Damage Mult\n{}% Move Speed, Basic Atk Range: {},\nBasic Atk Damage: {}, {}% Atk Speed"\
         .format((player).PlayerStats[PStat.HEALTH],(player).PlayerStats[PStat.RESOURCE],(player).PlayerStats[PStat.ARMOR]*100,(player).PlayerStats[PStat.DEALMULT],(player).PlayerStats[PStat.MOVESPEED]*100,(player).PlayerStats[PStat.BASIC_RANGE],(player).PlayerStats[PStat.BASIC_DAMAGE],(player).PlayerStats[PStat.ATTACKSPEED]*100))
     hudHeader(localPlayer if localPlayer.showStats[0] else null,"{}\n{}\n{}\n{}\n{}".format(getPStats(localPlayer.showStats[1]),getPStatAbil(localPlayer.showStats[1],1),getPStatAbil(localPlayer.showStats[1],2),getPStatAbil(localPlayer.showStats[1],3),getPStatAbil(localPlayer.showStats[1],4)),HudPosition.RIGHT,99,Color.BLUE,HudReeval.VISIBILITY_SORT_ORDER_AND_STRING,SpecVisibility.DEFAULT)
+    print(distance(localPlayer.getPosition()*vect(1,0,1),vect(2,0,1))/5)
+    print(tickCt)
+    print("A:{},{},{},{}".format(ProjectileActive[0],ProjectileActive[1],ProjectileActive[2],ProjectileActive[3]))
+    print("P:{},{},{},{}".format(Projectile_Position[0],Projectile_Position[1],Projectile_Position[2],Projectile_Position[3]))
+rule "UI Debug - Grid":
+    @Condition SHOW_GRID
+    Grid = [0,1,2,3,4,5,6,7,8] 
+    forGlobal(forG.GRID_RENDERER,0,len(Grid)):
+        #!define tileCorner vect(floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH)*TILE_H,0.05,Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH*TILE_W)+GRID_ORIGIN
+        createInWorldText(localPlayer,"{},{}:{}".format(Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH,floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH),Iter[forG.GRID_RENDERER]),tileCorner,1,Clip.NONE,WorldTextReeval.VISIBILITY,Color.WHITE,SpecVisibility.DEFAULT)
+        createBeam(localPlayer,Beam.BAD,tileCorner,tileCorner+vect(TILE_H,0,0),Color.WHITE,EffectReeval.VISIBILITY)
+        createBeam(localPlayer,Beam.BAD,tileCorner,tileCorner+vect(0,0,TILE_W),Color.WHITE,EffectReeval.VISIBILITY)
+        #createBeam(localPlayer,Beam.BAD,tileCorner+vect(0,0,TILE_H),tileCorner+vect(TILE_W,0,TILE_H),Color.WHITE,EffectReeval.VISIBILITY)
+        #createBeam(localPlayer,Beam.BAD,tileCorner+vect(TILE_W,0,0),tileCorner+vect(TILE_W,0,TILE_H),Color.WHITE,EffectReeval.VISIBILITY)
+        forEndG(forG.GRID_RENDERER)
 
 rule "Start Camera":  
     @Event eachPlayer
@@ -175,9 +188,6 @@ rule "Camera Bounds":
     wait(0.032)
     top
 rule "Prevent Cursor Wrapping":
-
-
-    
     @Event eachPlayer
     @Condition eventPlayer.Ready
     @Condition not eventPlayer.isDummy()

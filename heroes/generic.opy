@@ -2,196 +2,6 @@
 
 #This file is used for things regarding any hero and the player's input
 
-
-enum AbilID:
-    ABIL1=3,
-    ABIL2,
-    ABIL3,
-    ABIL4
-
-enum ResourceType:
-    NONE,
-    MANA,
-    ENERGY
-enum CastMethod:
-    NULL,
-    CONFIRM,
-    QUICK,
-    RELEASE
-enum CastMode:
-    SELF,
-    DIRECTION,
-    GROUND,
-    CURSOR,
-    TARGET
-enum TargetState:
-    NONE,
-    SELF,
-    ALLY,
-    ENEMY,
-enum UseType:
-    NORMAL,
-    CHANNEL,
-    CANCELABLE 
-enum DamageType:
-    UNKNOWN,
-    PHYSICAL,
-    MAGICAL 
-enum AbilityStage:
-    NONE,
-    PREP,
-    MOVETO,
-    PRECAST,
-    CAST,
-    CANCELLED,
-    COMPLETE,
-enum Activation:
-    NONE,
-    M1 #TODO: good way to handle activation
-
-    
-
-enum HeroStat:
-    BASE,
-    LEVELRATE,
-    BASIC,
-    ABIL1,
-    ABIL2,
-    ABIL3,
-    ABIL4
-
-enum Base:
-    HEALTH,
-    RESOURCE,
-    DMGMOD,
-
-enum Base_Resource:
-    TYPE,
-    STARTING_AMT
-
-enum Base_Dmgmod:
-    ARMOR,
-    TAKENMULT,
-    DEALTMULT
-
-enum Basic:
-    RANGE,
-    DAMAGE,
-    SHOTSPERSEC,
-    AUTOTARGET #Y/N
-
-enum Abil:
-    CAST,
-    COST,
-    USE,
-    DMG
-
-enum Abil_Cast:
-    METHOD,
-    MODE,
-    TARGET,
-    RANGE
-
-enum Abil_Cost:
-    COOLDOWN,
-    CHARGES,
-    RESOURCE
-
-enum Abil_Use:
-    TYPE,
-    DURATION,
-    DELAY
-
-enum Abil_Damage:
-    AMOUNT,
-    RATE
-    
-
-rule "Heroes_Init":                                            
-        /*
-        Ability Description:
-        Cast: 
-            Cast Mode dictates how and when the ability is cast, whether immediately after pressing the button, when releasing, or after an additional input to confirm
-            Cast Type dictates either where the ability will be cast (towards the cursor, at the cursor, or on the ground) or who the ability can be cast on. Who is only used for abilities with targets
-            These targets are defined by Target State
-        Cost: 
-            When using this ability, this value is checked in relation to the hero's given cost requirements. So far, this only means mana
-        Use:
-            This dictates how the ability acts, whether it is channeled, or if something else occurs, such as a delay before activating. Channel specifically means that it can be interrupted
-        Damage:
-            This shows how much damage the ability does with an optional rate per tick
-        */
-
-                        #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
-                        #[base hp,base mana,damage type, [base armor,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[cooldown,charges,mana] use[abilityType, duration, delay] damage[damage, rate]]
-    HeroSpecs=[        #0                               1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,[],DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMethod.QUICK,CastMode.SELF],[3,3],[UseType.CANCELABLE] ],[ [CastMethod.CONFIRM,CastMode.GROUND,TargetState.NONE,10] ],[null],[  [CastMethod.RELEASE,CastMode.SELF],[null],[UseType.CHANNEL,3], [34,0.2]  ]], #
-    /*Tracer*/         [[150,[],DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMethod.QUICK,CastMode.DIRECTION] ],[ [CastMethod.QUICK,CastMode.SELF] ],[null],[ [CastMethod.RELEASE,CastMode.DIRECTION],[null],[UseType.NORMAL] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
-    /*Mercy*/          [],/*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
-    /*Hanzo*/          [],
-    /*Torbjörn*/       [],
-    /*Reinhardt*/      [],
-    /*Pharah*/         [[200,[ResourceType.ENERGY,1],0,[0,1,1]],[],[6,40,1],[ [CastMethod.QUICK,CastMode.SELF],  ],/*projectile*/],
-    /*Winston*/        [],
-    /*Widowmaker*/     [],
-    /*Bastion*/        [],
-    /*Symmetra*/       [],
-    /*Zenyatta*/       [],
-    /*Genji*/          [],
-    /*Roadhog*/        [],
-    /*Cassidy*/        [],
-    /*Junkrat*/        [],
-    /*Zarya*/          [],
-    /*Soldier: 76*/    [],
-    /*Lúcio*/          [],
-    /*D.Va*/           [],
-    /*Mei*/            [],
-    /*Sombra*/         [],
-    /*Doomfist*/       [],
-    /*Ana*/            [],
-    /*Orisa*/          [],
-    /*Brigitte*/       [],
-    /*Moira*/          [],
-    /*Wrecking Ball*/  [],
-    /*Ashe*/           [],
-    /*Echo*/           [],
-    /*Baptiste*/       [],
-    /*Sigma*/          [],
-    ]
-enum Heroes:
-    REAPER,        
-    TRACER,        
-    MERCY,         
-    HANZO,         
-    TORBJORN,      
-    REINHARDT,     
-    PHARAH,        
-    WINSTON,       
-    WIDOWMAKER,    
-    BASTION,       
-    SYMMETRA,      
-    ZENYATTA,      
-    GENJI,         
-    ROADHOG,       
-    CASSIDY,       
-    JUNKRAT,       
-    ZARYA,         
-    SOLDIER76,   
-    LUCIO,         
-    DVA,          
-    MEI,           
-    SOMBRA,        
-    DOOMFIST,      
-    ANA,           
-    ORISA,         
-    BRIGITTE,      
-    MOIRA,         
-    WRECKING BALL, 
-    ASHE,          
-    ECHO,          
-    BAPTISTE,      
-    SIGMA
-    
 #!define attachControlled \
     createDummy(eventPlayer.CHero, eventPlayer.getTeam(), TeamSize+eventPlayer.Slot, vect(0,0,0),vect(0,0,0))\
     CPlayers[eventPlayer.Team-1]=insert(getLastCreatedEntity(),eventPlayer.Slot,CPlayers[eventPlayer.Team-1])\
@@ -205,7 +15,7 @@ enum Heroes:
     eventPlayer.ControlledRef.setDamageDealt(0)\
     eventPlayer.ControlledRef.setDamageReceived(0)\
     eventPlayer.setDamageReceived(0)\
-    eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+eventPlayer.Slot/100/*sets player id*/\
+    eventPlayer.ControlledRef.Slot=(eventPlayer.Team)+eventPlayer.Slot/100 /*sets player id*/\
     
 rule "On Game Enter":
     @Event eachPlayer
@@ -234,7 +44,6 @@ def OnSpawn():
     attachControlled
     eventPlayer.startForcingHero(eventPlayer.ControlledRef.CHero)
     wait()
-    CameraSetup()
     OnHero()
     wait()
     UI_Setup()
@@ -250,6 +59,13 @@ def OnSpawn():
         createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.AQUA,getLocation(eventPlayer.ControlledRef.Target[1]),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
+
+rule "Camera Update":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition not eventPlayer.isDummy()
+    @Condition getTotalTimeElapsed()%1==0
+
 
 def OnHero():
     #Replace their UI with in-game progress bar
@@ -393,13 +209,16 @@ def defaultEffectUI():
 def clearEffectUI():
     if(eventPlayer.ClearAllUI):
         eventPlayer.ClearAllUI=false
-        for eventPlayer.ArrivedAtM2P in range(len(eventPlayer.Ability_UI)):
-            for eventPlayer.HA_temp in range(len(eventPlayer.Ability_UI[eventPlayer.ArrivedAtM2P])):
-                destroyEffect(eventPlayer.Ability_UI[eventPlayer.ArrivedAtM2P][eventPlayer.HA_temp])
+        forPlayer(forP.EACHABILITYSTAGEUI,eventPlayer,0,len(eventPlayer.Ability_UI)):
+            forPlayer(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer,0,len(eventPlayer.Ability_UI[eventPlayer.Iter[forP.EACHABILITYSTAGEUI]])):
+                destroyEffect(eventPlayer.Ability_UI[eventPlayer.Iter[forP.EACHABILITYSTAGEUI]][forP.EACHABILITYSTAGEUIEFFECT])
+                forEndP(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer)
+            forEndP(forP.EACHABILITYSTAGEUI,eventPlayer)
         eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])]=[]
     else:
-        for eventPlayer.HA_temp in range(len(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])])):
-            destroyEffect(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])][eventPlayer.HA_temp])
+        forPlayer(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer,0,len(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])])):
+            destroyEffect(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])][eventPlayer.Iter[forP.EACHABILITYSTAGEUI]])
+            forEndP(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer)
         eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])]=[] 
 
 

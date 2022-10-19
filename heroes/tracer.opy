@@ -2,12 +2,13 @@
 #you can declare hero specific variables here. Do not make them global
 #!define TracerRecall HeroSpecificVar1 /*[health,anything else]*/
 #!define PreviousThrottle HeroSpecificVar2
-
 rule "Tracer - Init ":
     @Event eachPlayer
     @Hero tracer
     @Condition eventPlayer.isDummy()
-    eventPlayer.TracerRecall=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #array with length 30, each for a 0.1s time interval
+    
+    
+    eventPlayer.TracerRecall=[HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH],HeroSpecs[Heroes.TRACER][Base.HEALTH]] #array with length 30, each for a 0.1s time interval
 
 rule "Tracer - Recall ":
     @Event eachPlayer
@@ -90,6 +91,7 @@ rule "Tracer - Cast":
             break
         case AbilID.ABIL4:
             Ability(Button.ULTIMATE)
+            damageInRadius(5,eventPlayer.getPosition(),HeroSpecs[Heroes.TRACER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.AMOUNT],280)
             break
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
 
