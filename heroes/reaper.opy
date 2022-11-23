@@ -76,7 +76,8 @@ rule "Reaper - Complete":
     @Event eachPlayer
     @Hero reaper
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
+    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE
+    eventPlayer.ClearAllUI = true
     clearEffectUI()
     wait()
     eventPlayer.Hero_Ability[0]=AbilityStage.NONE

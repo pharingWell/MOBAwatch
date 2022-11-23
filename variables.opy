@@ -52,6 +52,8 @@ smallMessage(localPlayer,"event {} trigged".format(a))
         eventPlayer.Actions=0\
     #print("Stopped")
 
+#!define arrToString10(arr) ("{},{},{},{},{},{},{},{},{},{}".format((arr)[0],(arr)[1],(arr)[2],(arr)[3],(arr)[4],(arr)[5],(arr)[6],(arr)[7],(arr)[8],(arr)[9],(arr)[0])).replace(",0",",_")
+
 # team = floor()%10, k = ()%1*100
 #floor(id/10)
 #floor(id) % 10
@@ -66,19 +68,18 @@ globalvar ScreenLimits
 globalvar Characters
 #...
 globalvar Grid #Stores ids and locations for cheaper access of arrays (grid of squares)
+globalvar GridStatic
 globalvar GridTemp
-#!define GRID_ROW_LENGTH 3
-#!define GRID_ORIGIN vect(0,0,0)
-#!define TILE_W 35
-#!define TILE_H 20
-#!define SHOW_GRID true
 #database
 globalvar dbKeys
 globalvar dbPRS
 globalvar dbRPT
 #...
 #Structures
-globalvar Structures #id, health, blank
+globalvar Structures_IDs
+globalvar Structures_Active
+globalvar Structures_Health
+globalvar Structures_Loc
 globalvar StructuresMP #midpoint of structure (id,x,z)
 globalvar StructuresWH #width and height (id,w,h)
 #Temp
@@ -101,7 +102,7 @@ globalvar FunctionToggle #used for debugging for optimization
 #!define TICK_LENGTH 1
 #Minion Array
 globalvar MinionPool #Pool of initialized minions 
-globalvar MinionsActive
+globalvar Minions_Active
 globalvar Minions_IDs #Key array for minions. Holds id at the given slot
 globalvar Minions_Target #Stores target id
 globalvar Minions_HP #health
@@ -109,7 +110,6 @@ globalvar Minions_Visibility #is set to the minion's team number per tick and th
 globalvar Minions_Distances #tbd
 globalvar Minions_Info #Minion class [team (1-2),class,wave,count]
 globalvar Minions_DLoc #location change. vect3(MinionID, x change, z change)
-globalvar Minions_Render #[text id, entity id]
 globalvar HealthChange #(id, health change amt (+ = dmg, - = healing), damage dealer id)
 globalvar Minions_Loc #(x,id,z) minions are registered as 1[team].[2 digit id], structures are 2[team].[2 digit id] (e.g. 12.34, 21.24)
 #!define MinionClass_Names ["ι","Minion","ί","Mage","ϊ","Seige","ΐ","Brute"]
@@ -122,7 +122,7 @@ globalvar MinionCounts #[team 1 minions, team 2 minions]
 #Projectiles
 globalvar ProjectilePool
 #!define PROJECTILE_POOLSIZE 48
-globalvar ProjectileActive
+globalvar Projectile_Active
 globalvar ProjectileTemp
 globalvar ProjectileTempID
 globalvar Projectile_IDs
@@ -138,16 +138,6 @@ globalvar Setting_Mode
 globalvar tickCt
 
 
-#Player variables
-
-playervar Slot #Controlled slot holds ID
-playervar CamLoc #P
-playervar CamAttach #P
-playervar ControlledRef #P
-playervar MovementGroundCursor #P
-playervar Ready
-playervar Hidden
-playervar TilesTouched 
 
 
 
@@ -184,6 +174,59 @@ enum forP:
     TARGET_ITER,
     COOLDOWNS,
     DBINDEX,
+    RENDERUPDATE_TILES,
+    RENDERUPDATE_ELEMENT,
+    RENDERUPDATE_ARRAY,
+    RENDERUPDATE_OBJECT,
+    TILEADD_GRABFROMARRAY,
+    TILEADD_TOADD,
+    TILEADD_GRIDDARRAY_OBJ,
+    TILEADD_RENDERRANGE_BOTTOM,
+    TILEREMOVE,
+    GRIDAUTO_UNINQUEADD,
+    TILEAUTO
+
+
+playervar Temp
+#!define pTemp(enumvalue) eventPlayer.Temp[tempP.enumvalue] 
+enum tempP:
+    TILEOPERATION_ADD,
+    TILEOPERATION_REMOVE,
+    TILEOPERATION_OBJECT,
+    RENDEROPERATION_OBJECTSWAP,
+    TILEAUTO_QUEUE,
+    TILEAUTO_ITER,
+    FUCKITWEBALL,
+
+
+#Player variables
+
+playervar Slot #Controlled slot holds ID
+playervar CamLoc #P
+playervar CamAttach #P
+playervar ControlledRef #P
+playervar MovementGroundCursor #P
+playervar Ready
+playervar Hidden
+playervar TilesTouched 
+playervar TilesTouched_RenderRanges
+
+#Personal Grid
+playervar playerGrid
+playervar updateCamera #boolean
+#Render slots
+playervar RenderIDs
+playervar Render_Minions
+#!define RENDERSIZE_MINIONS 48
+playervar Render_Map
+#!define RENDERSIZE_MAP RENDERSIZE_MINIONS+0
+playervar Render_StaticTexts #includes position of text, as it doesnt need to be updated frquently
+#!define RENDERSIZE_STEXTS RENDERSIZE_STEXTS+0
+playervar Render_StaticEffects #includes position of effects, as they dont need to be updated [includes all walls]
+#!define RENDERSIZE_SEFFECTS RENDERSIZE_STEXTS+0
+playervar Render_CustProjectiles 
+#!define RENDERSIZE_CUSTPROJ RENDERSIZE_SEFFECTS+0
+
 
 # PStat structure:
 # [HEALTH,RESOURCE,ARMOR,DEALMULT,MOVESPEED,BASIC_RANGE,BASIC_DAMAGE,ATTACKSPEED,[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil],[PStatAbil]]
@@ -258,36 +301,6 @@ enum PlayerSettings:
 
 playervar HeroSpecificVar1
 playervar HeroSpecificVar2
-
-#Subroutine names
-subroutine CameraSetup 
-subroutine UI_Process 
-subroutine UI_Setup 
-subroutine moveCameraWithPlayer
-subroutine teleportCamera
-subroutine chaseCursorValues
-subroutine CastConfirm
-subroutine CancelCurrent
-subroutine OnSpawn
-subroutine OnHero 
-subroutine Minions_Main
-subroutine Minions_Init
-subroutine Minions_Wave 
-subroutine Minions_Move 
-subroutine HealthHandle
-subroutine Ready
-subroutine PrintMinions
-subroutine Left
-subroutine ProcessHealthQueue
-subroutine defaultEffectUI
-subroutine clearEffectUI
-subroutine AbilityTrigger
-subroutine AbilityUse
-subroutine StopThrottle
-subroutine CalcDealt
-subroutine Minion_setNullStats
-subroutine Target_Func
-subroutine ReleaseToProjPool
 
 enum AbilID:
     ABIL1=3,
@@ -411,7 +424,7 @@ rule "Heroes_Init":
                         #range to end of ability, look off ground?, target needed (-1: nothing, 0: Player, 1:Minion, 2: Structure)
                         #[base hp,base mana,damage type, [basDamagee armor,damagedealtmult]],levelrate[hp,mana],basic atk[range,damage,shots per second,autotarget?],ability[ cast[cast mode, cast type, target, range] cost[cooldown,charges,mana] use[abilityType, duration, delay] damage[damage, rate]]
     HeroSpecs=[        #0                               1  2        3  0                               4  0                                                       5    6  0                                1    2                         3
-    /*Reaper*/         [[250,[],DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMethod.QUICK,CastMode.SELF],[3,3],[UseType.CANCELABLE] ],[ [CastMethod.CONFIRM,CastMode.GROUND,TargetState.NONE,10] ],[null],[  [CastMethod.RELEASE,CastMode.SELF],[null],[UseType.CHANNEL,3], [34,0.2]  ]], #
+    /*Reaper*/         [[250,[],DamageType.PHYSICAL,[0,1,1]],[],[2,30,2],[ [CastMethod.QUICK,CastMode.SELF],[3],[UseType.CANCELABLE] ],[ [CastMethod.CONFIRM,CastMode.GROUND,TargetState.NONE,10] ],[null],[  [CastMethod.RELEASE,CastMode.SELF],[null],[UseType.CHANNEL,3], [34,0.2]  ]], #
     /*Tracer*/         [[150,[],DamageType.PHYSICAL,[0,1,1]],[],[5,3,20,true],[ [CastMethod.QUICK,CastMode.DIRECTION] ],[ [CastMethod.QUICK,CastMode.SELF] ],[null],[ [CastMethod.RELEASE,CastMode.DIRECTION],[null],[UseType.NORMAL], [350,1] ] ], #tracer's ult is thrown where she is looking, so ground is the closest target
     /*Mercy*/          [],/*[[200,100,DType.MAGICAL,[0,1,1]],[],[10,12,5],[[]],[[]],[[]],[["By PharingWell"]]],/*
     /*Hanzo*/          [],
@@ -477,4 +490,39 @@ enum Heroes:
     ECHO,          
     BAPTISTE,      
     SIGMA
-    
+
+#Subroutine names
+subroutine TileReset 
+subroutine UI_Process 
+subroutine UI_Setup 
+subroutine moveCameraWithPlayer
+subroutine teleportCamera
+subroutine chaseCursorValues
+subroutine CastConfirm
+subroutine CancelCurrent
+subroutine OnSpawn
+subroutine OnHero 
+subroutine Minions_Main
+subroutine Minions_Init
+subroutine Minions_Wave 
+subroutine Minions_Move 
+subroutine HealthHandle
+subroutine Ready
+subroutine PrintMinions
+subroutine Left
+subroutine ProcessHealthQueue
+subroutine defaultEffectUI
+subroutine clearEffectUI
+subroutine AbilityTrigger
+subroutine AbilityUse
+subroutine StopThrottle
+subroutine CalcDealt
+subroutine Minion_setNullStats
+subroutine Target_Func
+subroutine ReleaseToProjPool
+subroutine AddTile
+subroutine RemoveTile
+subroutine MoveToRender
+subroutine AddToRender
+subroutine RemoveFromRender
+

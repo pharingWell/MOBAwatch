@@ -50,6 +50,7 @@ settings {
 #!extension beamEffects
 #!include "variables.opy"
 #!include "ui.opy"
+#!include "grid.opy"
 
 ##!include "projectiles.opy"
 #!include "minions.opy"
@@ -83,6 +84,7 @@ rule "InitiateGame":
         returnToLobby()
     Players=[-1]
     MinionPool=-1
+    
     
     createDummy(Hero.REAPER,Team.2,6,vect(2,0,2),vect(0,0,0))
     CPlayers[1]=[getLastCreatedEntity()]

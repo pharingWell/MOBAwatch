@@ -51,6 +51,7 @@ def UI_Process():
         else:
             if(eventPlayer.getAbilityCooldown(eventPlayer.AbilityVerify[2])<=1.1 and not eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
                 eventPlayer.setAbilityCooldown(CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]],1)
+                smallMessage(eventPlayer,eventPlayer.getAbilityCooldown(CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]]))
             elif(eventPlayer.getUltCharge()>98.5 and eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
                 eventPlayer.setUltCharge(99.9)
         forEndP(forP.COOLDOWNS,eventPlayer)
@@ -101,19 +102,8 @@ rule "UI Definitions - Global Cursor":
     hudHeader(localPlayer if localPlayer.showStats[0] else null,"{}\n{}\n{}\n{}\n{}".format(getPStats(localPlayer.showStats[1]),getPStatAbil(localPlayer.showStats[1],1),getPStatAbil(localPlayer.showStats[1],2),getPStatAbil(localPlayer.showStats[1],3),getPStatAbil(localPlayer.showStats[1],4)),HudPosition.RIGHT,99,Color.BLUE,HudReeval.VISIBILITY_SORT_ORDER_AND_STRING,SpecVisibility.DEFAULT)
     print(distance(localPlayer.getPosition()*vect(1,0,1),vect(2,0,1))/5)
     print(tickCt)
-    print("A:{},{},{},{}".format(ProjectileActive[0],ProjectileActive[1],ProjectileActive[2],ProjectileActive[3]))
+    print("A:{},{},{},{}".format(Projectile_Active[0],Projectile_Active[1],Projectile_Active[2],Projectile_Active[3]))
     print("P:{},{},{},{}".format(Projectile_Position[0],Projectile_Position[1],Projectile_Position[2],Projectile_Position[3]))
-rule "UI Debug - Grid":
-    @Condition SHOW_GRID
-    Grid = [0,1,2,3,4,5,6,7,8] 
-    forGlobal(forG.GRID_RENDERER,0,len(Grid)):
-        #!define tileCorner vect(floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH)*TILE_H,0.05,Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH*TILE_W)+GRID_ORIGIN
-        createInWorldText(localPlayer,"{},{}:{}".format(Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH,floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH),Iter[forG.GRID_RENDERER]),tileCorner,1,Clip.NONE,WorldTextReeval.VISIBILITY,Color.WHITE,SpecVisibility.DEFAULT)
-        createBeam(localPlayer,Beam.BAD,tileCorner,tileCorner+vect(TILE_H,0,0),Color.WHITE,EffectReeval.VISIBILITY)
-        createBeam(localPlayer,Beam.BAD,tileCorner,tileCorner+vect(0,0,TILE_W),Color.WHITE,EffectReeval.VISIBILITY)
-        #createBeam(localPlayer,Beam.BAD,tileCorner+vect(0,0,TILE_H),tileCorner+vect(TILE_W,0,TILE_H),Color.WHITE,EffectReeval.VISIBILITY)
-        #createBeam(localPlayer,Beam.BAD,tileCorner+vect(TILE_W,0,0),tileCorner+vect(TILE_W,0,TILE_H),Color.WHITE,EffectReeval.VISIBILITY)
-        forEndG(forG.GRID_RENDERER)
 
 rule "Start Camera":  
     @Event eachPlayer
@@ -128,12 +118,7 @@ rule "Start Camera":
     eventPlayer.startForcingPosition(updateEveryTick(vect(eventPlayer.CamLoc.x,-10,eventPlayer.CamLoc.z)),true)
     eventPlayer.ControlledRef.MovetoPos=vect(0,0,0)
     eventPlayer.CamAttach=true
-rule "Print":
-    @Event eachPlayer
-    @Condition not eventPlayer.isDummy()
-    @Condition eventPlayer.isCommunicating(Comms.HELLO)
-    mousetoggle = not mousetoggle
-
+    
 rule "Toggle CamAttach":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()

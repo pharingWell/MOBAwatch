@@ -60,17 +60,9 @@ def OnSpawn():
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
 
-rule "Camera Update":
-    @Event eachPlayer
-    @Condition Ready==true
-    @Condition not eventPlayer.isDummy()
-    @Condition getTotalTimeElapsed()%1==0
-
-
 def OnHero():
     #Replace their UI with in-game progress bar
     eventPlayer.disallowButton(Button.ULTIMATE)
-
 rule "Controlled Died":
     @Event eachPlayer
     @Condition Ready==true
@@ -105,6 +97,7 @@ rule "Move To":
     eventPlayer.ControlledRef.AttackMove=0
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
     eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
+    eventPlayer.updateCamera = true
     startAction(0,eventPlayer.ControlledRef)
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
@@ -159,6 +152,7 @@ rule "Set Target to Cursor/Ability Verify":
             startAction(abilitynum,eventPlayer.ControlledRef)\
         elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.CONFIRM):\
             eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,(button)]\
+            eventPlayer.AbilityVerify[2]=button\
             async(CastConfirm,AsyncBehavior.NOOP)\
         else:\
             print("Cast called with no mode")\
@@ -222,4 +216,3 @@ def clearEffectUI():
         eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])]=[] 
 
 
-        
