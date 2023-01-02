@@ -68,7 +68,6 @@ rule "Pharah - Complete":
     @Condition eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE 
     clearEffectUI()
     eventPlayer.Hero_Ability[0]=AbilityStage.NONE
-    endAbilityAction(eventPlayer.Hero_Ability[1])
     switch eventPlayer.Hero_Ability[1]:
         default:
             break

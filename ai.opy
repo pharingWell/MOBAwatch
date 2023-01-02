@@ -23,7 +23,7 @@ rule "Idle Basic Attack":
         StopThrottle()
         eventPlayer.Target[2]=[false,false]
         wait(0.3)
-        startAction(2,eventPlayer)
+        #startAction(2,eventPlayer)
         waitUntil(not eventPlayer.Target,99)
     if(eventPlayer.AttackMove):
         eventPlayer.MovetoPos=eventPlayer.AttackMove
@@ -49,3 +49,17 @@ rule "Idle Basic Attack":
 #         eventPlayer.Target=null
 
 
+rule "Run Action Queue":
+    #this processes the first item in the action queue, replacing the index with false afterwards
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
+    @Condition len(eventPlayer.ActionQueue[ActionQueueVal.I0])>0
+    startAction(eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER],eventPlayer)
+    waitUntil_verify(eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE)
+    del eventPlayer.ActionQueue[ActionQueueVal.I0]
+    
+    wait()
+    if(RULE_CONDITION):
+        goto RULE_START

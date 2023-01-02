@@ -22,6 +22,7 @@ rule "On Controlled Join - Ignores respawn":
     "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if eventPlayer.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
     eventPlayer.Level=1
     createEffect(localPlayer if not eventPlayer.Hidden and eventPlayer.isAlive() else getPlayers(eventPlayer.getTeam()),Effect.RING,Color.TEAM_1 if eventPlayer.Team==0 else Color.TEAM_2, updateEveryTick(eventPlayer.getPosition()*vect(1,0,1)),0.7,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    print("{}: {}".format(len(eventPlayer.ActionQueue),arrToString10(eventPlayer.ActionQueue[ActionQueueVal.I0])))
 
 rule "On Controlled Join - Pre-spawn":
     @Event eachPlayer
@@ -96,21 +97,21 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
 
 
 #!define Ability_Used(button,abilitynum) eventPlayer.AbilityUse=[(button),(abilitynum)]\
-AbilityTrigger()\
-    eventPlayer.AbilityUse=[]
+        AbilityTrigger()\
+        eventPlayer.AbilityUse=[]
 def AbilityTrigger(): /*use ability is run as the ref, and can be used while automating eventPlayer.AbilityUsfacine[0]=button,eventPlayer.AbilityUse[1]=abilitynum*/    
     if((eventPlayer.getAbilityCooldown(eventPlayer.AbilityUse[0])<=0 and (eventPlayer.PlayerStats[PStat.ABIL+eventPlayer.AbilityUse[1]-1][PStatAbil.MAXCHARGES]==0 or eventPlayer.getAbilityCharge(eventPlayer.AbilityUse[0])>0)) or (eventPlayer.getUltCharge()>99.5 and (eventPlayer.AbilityUse[0])==Button.ULTIMATE)):
         if(eventPlayer.Resource[0]>=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE] or not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]): # mana
             if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]>0 and distance(eventPlayer.CPos,eventPlayer.getPosition())>HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):#if abil has range and cast point is out if range
                 eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer)*(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]+1)/*starts at cpos and moves player to closest point within range*/
                 eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
-                if(eventPlayer.Actions==eventPlayer.Hero_Ability[1]+0.15):
-                    eventPlayer.Actions=0.15 #sets action to movement and as actions is set, prohibits interaction except by cancelling 
+                if(eventPlayer.Actions==eventPlayer.Hero_Ability[1]):
+                    startAction(1,eventPlayer) #sets action to movement and as actions is set, prohibits interaction except by cancelling 
                 else:
                     goto cancelled
-                waitUntil(eventPlayer.Actions!=0.15 or evalOnce(eventPlayer.MovetoPos)!=eventPlayer.MovetoPos,100) #move to pos changing hopefully overwrites any repositioning. This should also have a waituntil_verify, but it cannot because of how evalonce works
+                waitUntil(eventPlayer.Actions!=1 or evalOnce(eventPlayer.MovetoPos)!=eventPlayer.MovetoPos,100) #move to pos changing hopefully overwrites any repositioning. This should also have a waituntil_verify, but it cannot because of how evalonce works
                 if(not eventPlayer.Actions):
-                    eventPlayer.Actions=eventPlayer.Hero_Ability[1]+0.15 #resumes ability use
+                    eventPlayer.Actions=eventPlayer.Hero_Ability[1] #resumes ability use
                 else: #if the actions gets overridden/movement is redirrected
                     goto cancelled
                 if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):
@@ -142,12 +143,12 @@ def AbilityTrigger(): /*use ability is run as the ref, and can be used while aut
             goto cancelled
     return
     cancelled:
-        eventPlayer.Actions=0
         eventPlayer.Owner.AbilityVerify=[true,true]
         eventPlayer.Hero_Ability=[]
         eventPlayer.ClearAllUI=true
         clearEffectUI()
         eventPlayer.Owner.AbilityVerify=[false,false]
+
 
 #!define Ability(button) eventPlayer.AbilityUse[0]=button\
     AbilityUse()
@@ -214,22 +215,48 @@ def StopThrottle():
         eventPlayer.Owner.MovementGroundCursor = false
     eventPlayer.MovetoPos = eventPlayer.getPosition()
     eventPlayer.stopThrottleInDirection()
-    endAbilityAction(0)
+
+### -1 ###
+rule "Cancel Action Rule":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.isDummy()
+    @Condition eventPlayer.clearQueue
+    eventPlayer.clearQueue = false
+    CancelAction()
+
+def CancelAction():
+    #This waits until the action's minimum ability time has elapsed while also throwing an error if it fails
+    #assumes that no ability is supposed to wait longer than 5 seconds
+    waitUntil_verifyCustom(getTotalTimeElapsed()>eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME]+eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.ABILMINTIME],5,"{} {} {} {}".format("Cancel Action Failed with action",eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER],"for Controlled",eventPlayer))
+    eventPlayer.ActionQueue = eventPlayer.ActionQueue.slice(0,ActionQueueVal.I0)
+    StopThrottle()
+
 
 ### 0 ###
-rule "MoveToCPos":
+
+rule "Zero":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(0)
+    print("ERROR")
+
+
+
+### 1 ###
+rule "MoveToCPos":
+    @Event eachPlayer
+    @Condition Ready==true
+    @Condition eventPlayer.isDummy()
+    ifAction(1)
     if(not HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
         eventPlayer.Target=null
     if(eventPlayer.Owner != "null" and eventPlayer.Owner != 0):
         async(moveCameraWithPlayer,AsyncBehavior.RESTART)
     if(distance(eventPlayer.getPosition(),eventPlayer.MovetoPos)>1):
         eventPlayer.startThrottleInDirection(vectorTowards(eventPlayer.getPosition(), eventPlayer.MovetoPos), 1, Relativity.TO_WORLD, Throttle.REPLACE_EXISTING, ThrottleReeval.DIRECTION_AND_MAGNITUDE)
-    else:
-        endAbilityAction(0)
+
 
 rule "Look While Moving":
     @Event eachPlayer
@@ -247,28 +274,20 @@ rule "Look While Moving":
     if(RULE_CONDITION):
         goto RULE_START
 
-### 1 ###
-rule "Cancel Current Ability":
-    @Event eachPlayer
-    @Condition Ready == true
-    @Condition eventPlayer.isDummy()
-    ifAction(1)
-    CancelCurrent()
-    endAbilityAction(1)
-
-def CancelCurrent():
-    eventPlayer.AbilityUse[0]=AbilityStage.CANCELLED
-    waitUntil_verify(eventPlayer.AbilityUse[0]==AbilityStage.NONE)
-    
 
 ### 2 ###
 #!define BasicAttackExceptions []
-/*
 rule "Use Basic Attack":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(2)
+    wait()
+    eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
+    wait(0.032)
+    eventPlayer.Hero_Ability[0]=AbilityStage.NONE
+/*
+
     eventPlayer.setAmmo(0,2000)
     while(eventPlayer.Target[0].x>0):
         if(eventPlayer.Target[2][0] or eventPlayer.Target[2][1]):
@@ -284,7 +303,6 @@ rule "Use Basic Attack":
                     print("Entity has broken ref or id. Id of >10 missing entity ref")
                     return #for some reason, the dummy bot was deleted and we have a broken ref
                 eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer.getPosition())*(HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE]-1)//starts at cpos and moves player to closest point within range
-                startAction(0,eventPlayer)
                 wait(0.03)
             if(not eventPlayer.Target[0].x>0):
                 eventPlayer.Target=null
@@ -316,7 +334,6 @@ rule "Use Basic Attack":
         else:
             wait(0.03)
             continue
-    endAbilityAction(2)
 
 */
     ### 3 ###
@@ -371,7 +388,6 @@ rule "Controller Left":
         if(Players[floor(eventPlayer.Slot)-1][(eventPlayer.Slot)%1*100]==eventPlayer.Owner):
             Players[floor(eventPlayer.Slot)-1]=arreplace(null,(eventPlayer.Slot)%1*100,Players[floor(eventPlayer.Slot)-1])
     eventPlayer.Owner=null
-    endAbilityAction(8)
     
 
 rule "dmg/heal OT on":
@@ -414,7 +430,6 @@ rule "Is Dead":
     #eventPlayer.Hidden=true
     eventPlayer.Target=null
     StopThrottle()
-    eventPlayer.Actions=0
     eventPlayer.stopFacing()
     eventPlayer.setRespawnTime(eventPlayer.Level*2+4)
     eventPlayer.setDamageReceived(1)

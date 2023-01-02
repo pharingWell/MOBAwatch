@@ -6,6 +6,8 @@
 /*player*/
 #GridPlayer
 
+#Grid and GridStatic are arrays which contain arrays of object ids. The object ids correspond to 
+#tile is the name for the given grid element
 #!define GRID_ROW_LENGTH 2
 #!define GRID_ORIGIN vect(0,0,0)
 #!define TILE_W 35
@@ -18,7 +20,8 @@ rule "UI Debug - Grid":
     Grid = [[1001],[1002],[1003],[1004]]
     print(updateEveryTick(arrToString10(localPlayer.playerGrid)))
     print(updateEveryTick(arrToString10(localPlayer.Temp[tempP.TILEAUTO_QUEUE]).replace("_","-")))
-    print(arrToString10(localPlayer.Render_StaticEffects))
+    #print(arrToString10(localPlayer.Render_StaticEffects))
+    print((localPlayer.getPosition().x-(TILE_H/2)-GRID_ORIGIN.x)/TILE_W)
     forGlobal(forG.GRID_RENDERER,0,len(Grid)):
         #!define tileCorner vect(floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH)*TILE_H,0.05,Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH*TILE_W)+GRID_ORIGIN
         createInWorldText(localPlayer,"{},{}:{}".format(Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH,floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH),Iter[forG.GRID_RENDERER]),tileCorner,1,Clip.NONE,WorldTextReeval.VISIBILITY,Color.WHITE,SpecVisibility.DEFAULT)
@@ -39,19 +42,22 @@ rule "Grid Auto Add/Remove":
     @Condition eventPlayer.updateCamera or getTotalTimeElapsed()%0.512<0.016
     eventPlayer.updateCamera = false
     #rounds the given location to the nearest tile
-    #!define getTileByPos(pos) Tile(round(((pos).x-GRID_ORIGIN.x)/TILE_W),round(((pos).z-GRID_ORIGIN.z)/2/TILE_H))
+    #!define getTileByPos(pos) /*Tile(round(*/((pos).x-(TILE_W/2)-GRID_ORIGIN.x)/TILE_W,/*),round(*/((pos).z-(TILE_H/2)-GRID_ORIGIN.z)/TILE_H/*))*/
     #add all four possible tiles to a temporary variable
-    #!define TILEVISION_H (TILE_H/2)
-    #!define TILEVISION_W (TILE_W/2)
-    pTemp(TILEAUTO_QUEUE) = [getTileByPos(eventPlayer.getPosition()+vect(TILEVISION_W,0,0)),getTileByPos(eventPlayer.getPosition()-vect(TILEVISION_W,0,0)),getTileByPos(eventPlayer.getPosition()+vect(0,0,TILEVISION_H)),getTileByPos(eventPlayer.getPosition()-vect(0,0,TILEVISION_H))]
+    #!define TILEVISION_H TILE_H
+    #!define TILEVISION_W TILE_W
+    pTemp(TILEAUTO_QUEUE) = [getTileByPos(eventPlayer.getPosition()),getTileByPos(eventPlayer.getPosition()+vect(TILEVISION_W,0,0)),getTileByPos(eventPlayer.getPosition()-vect(TILEVISION_W,0,0)),getTileByPos(eventPlayer.getPosition()+vect(0,0,TILEVISION_H)),getTileByPos(eventPlayer.getPosition()-vect(0,0,TILEVISION_H))]
     #for each tile in the queue, add run the add tile function if it is not already added
     forPlayer(forP.TILEAUTO,eventPlayer,0,len(pTemp(TILEAUTO_QUEUE))):
         pTemp(TILEAUTO_ITER) = pTemp(TILEAUTO_QUEUE)[eventPlayer.Iter[forP.TILEAUTO]]
         if(not pTemp(TILEAUTO_ITER) in eventPlayer.playerGrid):
-            if(pTemp(TILEAUTO_ITER) >= 0 and pTemp(TILEAUTO_ITER) <= len(Grid)):
+            if(pTemp(TILEAUTO_ITER) > 0 and pTemp(TILEAUTO_ITER) < len(Grid)):
                 pTemp(TILEOPERATION_ADD) = pTemp(TILEAUTO_QUEUE)[eventPlayer.Iter[forP.TILEAUTO]]
-                AddTile()
+                smallMessage(eventPlayer,"addingtile")
+                eventPlayer.playerGrid.append(pTemp(TILEOPERATION_ADD))
+                #AddTile()
         forEndP(forP.TILEAUTO,eventPlayer)
+        
     #for each tile not in the queue, remove it from the current tile set, as its not in vision
     forPlayer(forP.TILEAUTO,eventPlayer,0,len(eventPlayer.playerGrid)):
         pTemp(TILEAUTO_ITER) = eventPlayer.playerGrid[eventPlayer.Iter[forP.TILEAUTO]]
@@ -65,6 +71,9 @@ rule "Grid Debug":
     @Condition SHOW_GRID 
     @Condition eventPlayer == hostPlayer
     print(pTemp(TILEOPERATION_ADD))
+
+
+
 playervar TileAdd_GridArray
 playervar TileAdd_RangeCounts
 #input: pTemp(TILEOPERATION_ADD) [tile ids]
@@ -72,20 +81,19 @@ def AddTile():
     if(pTemp(TILEOPERATION_ADD)==-100): #if TILEOPERATION_ADD hasn't been updated but was called, return
         smallMessage(eventPlayer,"add tile needlessly called")
         return
-    smallMessage(eventPlayer,"added tile {}".format(evalOnce(pTemp(TILEOPERATION_ADD))))
     /* -- grid static -- */
     eventPlayer.TileAdd_GridArray = GridStatic[pTemp(TILEOPERATION_ADD)]
     eventPlayer.Iter[forP.TILEADD_RENDERRANGE_BOTTOM] = [len(eventPlayer.Render_Minions)-1,len(eventPlayer.Render_StaticTexts)-1,len(eventPlayer.Render_StaticEffects)-1,len(eventPlayer.Render_CustProjectiles)-1]
     forPlayer(forP.TILEADD_TOADD,eventPlayer,0,len(eventPlayer.TileAdd_GridArray)): #for each tile being added
-        eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ] = eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
-        if(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ][0]): #this means that the object is a map wall
+        pTemp(TILEADD_GRIDDARRAY_OBJ) = eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
+        if(pTemp(TILEADD_GRIDDARRAY_OBJ)[0]): #this means that the object is a map wall
     /*TODO: ADD WALL EFFECT CODE*/                    
         else: #this means the object is a structure or something else that has an id
-            switch(floor(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ]/1000)):
+            switch(floor(pTemp(TILEADD_GRIDDARRAY_OBJ)/1000)):
                 case 2:
-                    if(Structures_Active[Structures_IDs.index(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ])]):
-                        eventPlayer.Render_StaticEffects.append(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ])
-                        eventPlayer.Render_StaticTexts.append(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ])
+                    if(Structures_Active[Structures_IDs.index(pTemp(TILEADD_GRIDDARRAY_OBJ))]):
+                        eventPlayer.Render_StaticEffects.append(pTemp(TILEADD_GRIDDARRAY_OBJ))
+                        eventPlayer.Render_StaticTexts.append(pTemp(TILEADD_GRIDDARRAY_OBJ))
                         eventPlayer.TileAdd_RangeCounts[1] += 1
                         eventPlayer.TileAdd_RangeCounts[2] += 1
                     else:
@@ -102,18 +110,22 @@ def AddTile():
     eventPlayer.TilesTouched.append(eventPlayer.Iter[forP.TILEADD_TOADD])
     GridStatic[pTemp(TILEOPERATION_ADD)] = eventPlayer.TileAdd_GridArray
     /* -- grid -- */
+    #stores the contents of grid so that any objects that are no longer valid can be removed from the grid
     eventPlayer.TileAdd_GridArray = Grid[pTemp(TILEOPERATION_ADD)]
     forPlayer(forP.TILEADD_TOADD,eventPlayer,0,len(eventPlayer.TileAdd_GridArray)): #for each tile being added
-        eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ] = eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
-        switch (floor(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ]/1000)):
+        pTemp(TILEADD_GRIDDARRAY_OBJ) = eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
+        switch (floor(pTemp(TILEADD_GRIDDARRAY_OBJ)/1000)):
             case 1:
-                if(Minions_Active[Minions_IDs.index(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ])]):
-                    eventPlayer.Render_Minions.append(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ])
+                if(not pTemp(TILEADD_GRIDDARRAY_OBJ) in Minions_IDs):
+                    goto continueDLoop
+                if(Minions_HP[Minions_IDs.index(pTemp(TILEADD_GRIDDARRAY_OBJ))]>0):
+                    if(not Minions_Active[Minions_IDs.index(pTemp(TILEADD_GRIDDARRAY_OBJ))]):
+                        /*TODO: Activate wave minion is in*/
+                    eventPlayer.Render_Minions.append(pTemp(TILEADD_GRIDDARRAY_OBJ))
                     eventPlayer.TileAdd_RangeCounts[0] += 1
-                elif(Minions_HP[Minions_IDs.index(eventPlayer.Iter[forP.TILEADD_GRIDDARRAY_OBJ])]>0):
-    /*TODO: Activate wave minion is in*/
                 else:
                     goto removeDynamic
+                
             default:
                 goto removeDynamic
         goto continueDLoop
@@ -122,13 +134,17 @@ def AddTile():
             eventPlayer.Iter[forP.TILEADD_TOADD] -= 1 #remove by index moves the whole array down rather than leaving a gap
         continueDLoop:
         forEndP(forP.TILEADD_TOADD,eventPlayer)
-    #!define newRenderRange(i) eventPlayer.Iter[forP.TILEADD_RENDERRANGE_BOTTOM][i],eventPlayer.Iter[forP.TILEADD_RENDERRANGE_BOTTOM][i]+eventPlayer.TileAdd_RangeCounts[i]
-    eventPlayer.TilesTouched_RenderRanges.append([pTemp(TILEOPERATION_ADD)[eventPlayer.Iter[forP.TILEADD_GRABFROMARRAY]],
-    newRenderRange(0), /*Minions*/
-    newRenderRange(1), /*StaticText*/
-    newRenderRange(2), /*StaticEffects*/
-    newRenderRange(3) /*Projectiles*/
-    ])
+    #replaces the contents of the grid index with the stored information
+    #if all objects are still valid, nothing changes
+    #otherwise, this removes inactive/dead minions, projectiles, etc from the given tile
+    Grid[pTemp(TILEOPERATION_ADD)] = eventPlayer.TileAdd_GridArray
+    # #!define newRenderRange(i) eventPlayer.Iter[forP.TILEADD_RENDERRANGE_BOTTOM][i],eventPlayer.Iter[forP.TILEADD_RENDERRANGE_BOTTOM][i]+eventPlayer.TileAdd_RangeCounts[i]
+    # eventPlayer.TilesTouched_RenderRanges.append([pTemp(TILEOPERATION_ADD)[eventPlayer.Iter[forP.TILEADD_GRABFROMARRAY]],
+    # newRenderRange(0), /*Minions*/
+    # newRenderRange(1), /*StaticText*/
+    # newRenderRange(2), /*StaticEffects*/
+    # newRenderRange(3) /*Projectiles*/
+    # ])
     eventPlayer.playerGrid.append(pTemp(TILEOPERATION_ADD))
     pTemp(TILEOPERATION_ADD) = -100 #it is impossible for this to be inputted by the intended addtile in auto
 

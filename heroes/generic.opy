@@ -98,13 +98,12 @@ rule "Move To":
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
     eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
     eventPlayer.updateCamera = true
-    startAction(0,eventPlayer.ControlledRef)
+    eventPlayer.ControlledRef.clearQueue = true
+    startAction(1,eventPlayer.ControlledRef)
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
     while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
         eventPlayer.ControlledRef.MovetoPos = eventPlayer.cursor
-        if(eventPlayer.ControlledRef.Actions==0):
-            startAction(0,eventPlayer.ControlledRef)
         waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), 0.25)    
 
 rule "Set Target to Cursor/Ability Verify":
@@ -134,28 +133,29 @@ rule "Set Target to Cursor/Ability Verify":
             eventPlayer.ControlledRef.AttackMove=eventPlayer.AttackMove #Convert target return data to controlled ref data
             eventPlayer.AttackMove=0 #clear self data
             eventPlayer.ControlledRef.MovetoPos=eventPlayer.ControlledRef.AttackMove
-            startAction(0,eventPlayer.ControlledRef)
+            startAction(1,eventPlayer.ControlledRef)
 
 #!define cast(abilitynum,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
     eventPlayer.ControlledRef.Hero_Ability[1]=abilitynum\
     eventPlayer.ControlledRef.Hero_Ability[2]=(button)\
-    eventPlayer.ControlledRef.Hero_Ability[2]=abilitynum-2\
+    eventPlayer.ControlledRef.Hero_Ability[3]=abilitynum-2\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum]):/*if exists*/\
-        if(eventPlayer.ControlledRef.Hero_Ability[0]==AbilityStage.CAST and HeroSpecs[eventPlayer.ControlledRef.CHero_Index][eventPlayer.ControlledRef.Hero_Ability[1]][Abil.USE][Abil_Use.TYPE]==UseType.CANCELABLE):\
-            startAction(1,eventPlayer.ControlledRef)\
-        eventPlayer.ControlledRef.CPos=eventPlayer.cursor\
-        if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.QUICK):\
-            startAction(abilitynum,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.RELEASE):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,0]\
-            waitUntil_verify(not eventPlayer.isHoldingButton(button))\
-            startAction(abilitynum,eventPlayer.ControlledRef)\
-        elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.CONFIRM):\
-            eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,(button)]\
-            eventPlayer.AbilityVerify[2]=button\
-            async(CastConfirm,AsyncBehavior.NOOP)\
-        else:\
-            print("Cast called with no mode")\
+        if(len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 or eventPlayer.isHoldingButton(Button.CROUCH)):\
+            if(eventPlayer.ControlledRef.Hero_Ability[0]==AbilityStage.CAST and HeroSpecs[eventPlayer.ControlledRef.CHero_Index][eventPlayer.ControlledRef.Hero_Ability[1]][Abil.USE][Abil_Use.TYPE]==UseType.CANCELABLE):\
+                startAction(1,eventPlayer.ControlledRef)\
+            eventPlayer.ControlledRef.CPos=eventPlayer.cursor\
+            if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.QUICK):\
+                startAction(abilitynum,eventPlayer.ControlledRef)\
+            elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.RELEASE):\
+                eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,0]\
+                waitUntil_verify(not eventPlayer.isHoldingButton(button))\
+                startAction(abilitynum,eventPlayer.ControlledRef)\
+            elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.CONFIRM):\
+                eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,(button)]\
+                eventPlayer.AbilityVerify[2]=button\
+                async(CastConfirm,AsyncBehavior.NOOP)\
+            else:\
+                print("Cast called with no mode")\
 
 
 rule "Use Ability":
@@ -185,7 +185,7 @@ def CastConfirm():
         eventPlayer.AbilityVerify=[]
     else:
         eventPlayer.AbilityVerify=[]
-        eventPlayer.ControlledRef.Actions = 0
+        eventPlayer.ControlledRef.Actions = 1
         return /*ability cast cancelled*/
 
 /*GENERIC UI, Run as controlled*/

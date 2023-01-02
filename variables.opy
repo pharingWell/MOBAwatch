@@ -19,6 +19,11 @@ waitUntil((condition)==true,100)\
 if(not (condition)):\
     printLog("waitUntil_TimedOut")\
     return
+#!define waitUntil_verifyCustom(condition,time,error) /**/\
+waitUntil((condition)==true,time)\
+if(not (condition)):\
+    printLog("{}{}".format("waitUntil_TimedOut: ",(error)))\
+    return
 #!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(Minions_Loc[MinionsLoc(eventPlayer.Target[0])].y,0.5,Minions_Loc[MinionsLoc(eventPlayer.Target[0])].z))
 #!define getLocation(a) /*type: id or playerref*/ a.getPosition() if(entityExists(a)) else Minions_Loc[Minions_IDs.index(a)]
 #!define deal(target,rawdamage) eventPlayer.HealthQueue = eventPlayer.HealthQueue.concat([[(target),(rawdamage)]]) /*input is target or id. if the input is an id, it is added to heath queue by the player dealing the damage*/\
@@ -40,17 +45,13 @@ ProcessHealthQueue()
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
 #!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
 
-#!define startAction(a,ref) (ref).Actions=(a)+0.15 if eventPlayer.Hero_Ability[0]!=AbilityStage.CAST else (ref).Actions
-#!define ifAction(a) @Condition eventPlayer.Actions==((a)+0.15) /*0.15 is used to differentiate 0 from null*/\
-waitUntil_verify(eventPlayer.Actions==(a)+0.15 )\
+#!define startAction(a,ref) (ref).ActionQueue.append([[a,false,0.1]]) 
+#if eventPlayer.Hero_Ability[0]!=AbilityStage.CAST else (ref).Actions
+#!define ifAction(a) @Condition eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER]==(a)\
 smallMessage(localPlayer,"event {} trigged".format(a))
 
 
-#!define endAbilityAction(a) /**/\
-    if(eventPlayer.Actions==(a)+0.15):\
-        waitUntil_verify(eventPlayer.Hero_Ability[0]!=AbilityStage.CAST)\
-        eventPlayer.Actions=0\
-    #print("Stopped")
+
 
 #!define arrToString10(arr) ("{},{},{},{},{},{},{},{},{},{}".format((arr)[0],(arr)[1],(arr)[2],(arr)[3],(arr)[4],(arr)[5],(arr)[6],(arr)[7],(arr)[8],(arr)[9],(arr)[0])).replace(",0",",_")
 
@@ -196,7 +197,7 @@ enum tempP:
     RENDEROPERATION_OBJECTSWAP,
     TILEAUTO_QUEUE,
     TILEAUTO_ITER,
-    FUCKITWEBALL,
+    TILEADD_GRIDDARRAY_OBJ
 
 
 #Player variables
@@ -302,6 +303,27 @@ enum PlayerSettings:
 playervar HeroSpecificVar1
 playervar HeroSpecificVar2
 
+playervar clearQueue
+playervar ActionQueue
+
+
+enum ActionInfo:
+    #such as 0 for move, 3 for abil1
+    NUMBER,
+    #If this is a channel, anything being added with trigger ability interrupt
+    ISCHANNEL, 
+    #Ability minimum time (the ability will not cancel until it has gone on for this duration)
+    ABILMINTIME,
+
+
+#The action queue is structured as such:
+#0: Last Ability Time. This is updated with the current time when an action goes to slot 0. 
+#                      It is used for AbilMinTime, the value here + the AbilMinTime is used for the wait
+
+enum ActionQueueVal:
+    LASTABILTIME,
+    I0 #index 0
+
 enum AbilID:
     ABIL1=3,
     ABIL2,
@@ -338,6 +360,7 @@ enum DamageType:
     MAGICAL 
 enum AbilityStage:
     NONE,
+    RUN, #used by run action queue in ai.opy
     PREP,
     MOVETO,
     PRECAST,
@@ -525,4 +548,5 @@ subroutine RemoveTile
 subroutine MoveToRender
 subroutine AddToRender
 subroutine RemoveFromRender
+subroutine CancelAction
 
