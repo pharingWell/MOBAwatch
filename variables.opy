@@ -45,10 +45,13 @@ ProcessHealthQueue()
 #!define PlayerFromID(id) CPlayers[floor(id)-1][(id)%1*100]
 #!define getHealthByID(id) PlayerFromID((id)).Health[0] if (id)<10 else Minions_HP[MinionSlotFromID(id)]
 
-#!define startAction(a,ref) (ref).ActionQueue.append([[a,false,0.1]]) 
+##!define getIDNearPos(pos,team) 0 /*gets the nearest enemy or ally to the cursor. Will involve grid TODO*/
+
+#!define queueAction(a,ref,location, castmode) (ref).ActionQueue.append([[a,false,0.1,location,castmode]]) \
+smallMessage((ref),"___")
 #if eventPlayer.Hero_Ability[0]!=AbilityStage.CAST else (ref).Actions
-#!define ifAction(a) @Condition eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER]==(a)\
-smallMessage(localPlayer,"event {} trigged".format(a))
+#!define ifAction(a) @Condition eventPlayer.Action == (a)\
+smallMessage(eventPlayer.Owner,"event {} trigged".format(a))
 
 
 
@@ -197,8 +200,8 @@ enum tempP:
     RENDEROPERATION_OBJECTSWAP,
     TILEAUTO_QUEUE,
     TILEAUTO_ITER,
-    TILEADD_GRIDDARRAY_OBJ
-
+    TILEADD_GRIDDARRAY_OBJ,
+    GENERIC_CAST_LOC
 
 #Player variables
 
@@ -267,7 +270,7 @@ playervar UICursorStyles #P
 playervar DamageModifiers #defender armor[],defender dmgtakenmult[], attacker debuffs[], attacker buffs[]
 playervar HealingModifiers #[healing mult]
 playervar HealthQueue #list of health changes that are applied in chronological order, [health_change,source/id,is source?]
-playervar Actions
+playervar Action
 playervar ControlledSlot
 playervar Level
 playervar Health #current,[regen/dots,duration,rate], [damager,healer]
@@ -360,7 +363,6 @@ enum DamageType:
     MAGICAL 
 enum AbilityStage:
     NONE,
-    RUN, #used by run action queue in ai.opy
     PREP,
     MOVETO,
     PRECAST,
@@ -549,4 +551,4 @@ subroutine MoveToRender
 subroutine AddToRender
 subroutine RemoveFromRender
 subroutine CancelAction
-
+subroutine ChaseTarget

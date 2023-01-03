@@ -99,23 +99,17 @@ def ProcessHealthQueue(): #Called by deal, processes health queue
 #!define Ability_Used(button,abilitynum) eventPlayer.AbilityUse=[(button),(abilitynum)]\
         AbilityTrigger()\
         eventPlayer.AbilityUse=[]
-def AbilityTrigger(): /*use ability is run as the ref, and can be used while automating eventPlayer.AbilityUsfacine[0]=button,eventPlayer.AbilityUse[1]=abilitynum*/    
+def AbilityTrigger(): /*use ability is run as the ref, and can be used while automating eventPlayer.AbilityUsfacine[0]=button,eventPlayer.AbilityUse[1]=abilitynum*/
     if((eventPlayer.getAbilityCooldown(eventPlayer.AbilityUse[0])<=0 and (eventPlayer.PlayerStats[PStat.ABIL+eventPlayer.AbilityUse[1]-1][PStatAbil.MAXCHARGES]==0 or eventPlayer.getAbilityCharge(eventPlayer.AbilityUse[0])>0)) or (eventPlayer.getUltCharge()>99.5 and (eventPlayer.AbilityUse[0])==Button.ULTIMATE)):
         if(eventPlayer.Resource[0]>=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE] or not HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.COST][Abil_Cost.RESOURCE]): # mana
-            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]>0 and distance(eventPlayer.CPos,eventPlayer.getPosition())>HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):#if abil has range and cast point is out if range
-                eventPlayer.MovetoPos=eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer)*(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]+1)/*starts at cpos and moves player to closest point within range*/
-                eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
-                if(eventPlayer.Actions==eventPlayer.Hero_Ability[1]):
-                    startAction(1,eventPlayer) #sets action to movement and as actions is set, prohibits interaction except by cancelling 
-                else:
-                    goto cancelled
-                waitUntil(eventPlayer.Actions!=1 or evalOnce(eventPlayer.MovetoPos)!=eventPlayer.MovetoPos,100) #move to pos changing hopefully overwrites any repositioning. This should also have a waituntil_verify, but it cannot because of how evalonce works
-                if(not eventPlayer.Actions):
-                    eventPlayer.Actions=eventPlayer.Hero_Ability[1] #resumes ability use
-                else: #if the actions gets overridden/movement is redirrected
-                    goto cancelled
-                if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):
-                    goto cancelled
+            if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]>0): #if the ability doesn't have range, there's no need to chase target
+                if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.MODE] == CastMode.GROUND): #This is a defined position: Add a move action to be in range of that location and queue ability there
+                    if(distance(eventPlayer.CPos,eventPlayer.getPosition())>HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):
+                        #!define moveToGroundCast eventPlayer.CPos+directionTowards(eventPlayer.CPos,eventPlayer)*(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]+1)/*starts at cpos and moves player to closest point within range*/
+                        #
+                        #TODO
+                        #
+
             eventPlayer.Hero_Ability[0]=AbilityStage.PRECAST
             eventPlayer.MovetoPos=eventPlayer.getPosition()
             if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.MODE]==CastMode.GROUND): /*is ability looking at ground*/
@@ -127,7 +121,7 @@ def AbilityTrigger(): /*use ability is run as the ref, and can be used while aut
             elif(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]!=TargetState.NONE): /*is targeted*/ 
                 /*if(HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][0][2]=TargetState.ENEMY)*/
                 if(floor(eventPlayer.Target[0].x/10)==HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.TARGET] and distance(vect(eventPlayer.x,0,eventPlayer.z),vect(eventPlayer.Target[0].y,0,eventPlayer.Target[0].z))<=HeroSpecs[eventPlayer.CHero_Index][eventPlayer.AbilityUse[1]][Abil.CAST][Abil_Cast.RANGE]):
-                    smallMessage(eventPlayer,"Targeted Ability{0} Activated".format(eventPlayer.AbilityUse[1]))
+                    smallMessage(eventPlayer,"Targeted Ability {0} Activated".format(eventPlayer.AbilityUse[1]))
             if(eventPlayer.Hero_Ability[0]!=AbilityStage.MOVETO):/*ensures any onmove ui removal still takes place*/
                 eventPlayer.Hero_Ability[0]=AbilityStage.MOVETO
                 clearEffectUI()
@@ -173,7 +167,7 @@ def Target_Func():
             continue
         if((abs(eventPlayer.TargetHandling[0].x-eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].y))**2 + (abs(eventPlayer.TargetHandling[0].z-eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].z))**2<abs(eventPlayer.TargetHandling[1])**2):
             eventPlayer.Target[0]=eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]]
-            if(eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].x<10):
+            if(eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].x<30): #assuming 10-15, 20-25 for player ids. Minions should be 1000+
                 eventPlayer.Target[1] = PlayerFromID(eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].x)
             else:
                 eventPlayer.Target[1]= eventPlayer.Target[0].x
@@ -207,8 +201,14 @@ rule "Arrived":
     @Condition eventPlayer.isDummy()
     @Condition distance(eventPlayer.MovetoPos,eventPlayer)<0.6
     async(StopThrottle,AsyncBehavior.NOOP)
-    if(RULE_CONDITION):
-        goto RULE_START
+    if(eventPlayer.Hero_Ability[1] == 1):
+        eventPlayer.Hero_Ability[0] = AbilityStage.COMPLETE
+        wait(0.532)
+        eventPlayer.Hero_Ability[0] = AbilityStage.NONE
+    smallMessage(eventPlayer.Owner,"Arrived.")
+    # wait()
+    # if(RULE_CONDITION):
+    #     goto RULE_START
 
 def StopThrottle():
     if(eventPlayer.Owner):
@@ -235,14 +235,13 @@ def CancelAction():
 
 ### 0 ###
 
-rule "Zero":
-    @Event eachPlayer
-    @Condition Ready==true
-    @Condition eventPlayer.isDummy()
-    ifAction(0)
-    print("ERROR")
+#no action is being executed
 
 
+def ChaseTarget():
+    #subroutine that moves player towards target until sucessful completetion of action
+    #For example, chasing a player to get an auto attack, or getting an ability off
+    #Repeats until action is 0
 
 ### 1 ###
 rule "MoveToCPos":
@@ -250,6 +249,7 @@ rule "MoveToCPos":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(1)
+    eventPlayer.Hero_Ability = [AbilityStage.MOVETO,1,Button.SECONDARY_FIRE]
     if(not HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
         eventPlayer.Target=null
     if(eventPlayer.Owner != "null" and eventPlayer.Owner != 0):
@@ -262,7 +262,7 @@ rule "Look While Moving":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[0]==AbilityStage.NONE
+    @Condition eventPlayer.Hero_Ability[1]==1
     @Condition distance(eventPlayer.MovetoPos,eventPlayer.getPosition())>0.5
     #@Condition false
     if(HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET] and (distanceToTarget)<=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE] and eventPlayer.Target):
@@ -282,9 +282,11 @@ rule "Use Basic Attack":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(2)
+    print("2 triggered")
+    return
     wait()
     eventPlayer.Hero_Ability[0]=AbilityStage.COMPLETE
-    wait(0.032)
+    wait(0.132)
     eventPlayer.Hero_Ability[0]=AbilityStage.NONE
 /*
 
@@ -368,7 +370,6 @@ rule "Use Ult":
     ifAction(6)
     if(eventPlayer.CHero not in [Hero.MOIRA,Hero.BRIGITTE,Hero.WIDOWMAKER,Hero.TORBJORN]):
         Ability_Used(Button.ULTIMATE,6)
-
 
 ### 8 ### 
 rule "Controller Left":

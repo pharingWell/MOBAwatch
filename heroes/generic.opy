@@ -34,7 +34,7 @@ def OnSpawn():
     eventPlayer.disableScoreboard()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
     if(eventPlayer.Team!=0): #catches team switch as team should be zero right now
-        startAction(8,eventPlayer.ControlledRef)
+        eventPlayer.ControlledRef.Action = 8 #forces Left action
     if(eventPlayer.getTeam()==Team.1):
         eventPlayer.Team=1
     else:
@@ -88,6 +88,15 @@ rule "Controlled Spawned":
     wait(0.5)
     moveCameraWithPlayer()
     
+
+
+rule "Cancel":
+    @Event eachPlayer
+    @Condition Ready == true
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition not eventPlayer.isDummy()
+    eventPlayer.ControlledRef.clearQueue = true
+
 rule "Move To":
     @Event eachPlayer
     @Condition Ready == true
@@ -95,67 +104,77 @@ rule "Move To":
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
     eventPlayer.ControlledRef.AttackMove=0
-    eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
-    eventPlayer.ControlledRef.MovetoPos =  eventPlayer.cursor
+    eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD) 
     eventPlayer.updateCamera = true
-    eventPlayer.ControlledRef.clearQueue = true
-    startAction(1,eventPlayer.ControlledRef)
+    queueAction(1,eventPlayer.ControlledRef,eventPlayer.cursor,CastMode.GROUND)
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
-    while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)):
+    while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.ControlledRef.Action == 1):
         eventPlayer.ControlledRef.MovetoPos = eventPlayer.cursor
         waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), 0.25)    
 
-rule "Set Target to Cursor/Ability Verify":
-    @Event eachPlayer
-    @Condition Ready==true
-    @Condition not eventPlayer.isDummy()
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) #**2 **2
-    eventPlayer.ControlledRef.AttackMove=null
-    eventPlayer.CPos = eventPlayer.cursor
-    if(eventPlayer.AbilityVerify[0]):
-        eventPlayer.AbilityVerify=[false,false,null]
-    else:
-        eventPlayer.Target=null
-        eventPlayer.TargetHandling=[eventPlayer.cursor,-1.25] #negative value indicates that we move player to the position selected first
-        Target_Func()
-        if(eventPlayer.Target[0]):
-            eventPlayer.ControlledRef.Target=eventPlayer.Target
-            eventPlayer.UICursorStyles[0]=Color.RED
-            wait(0.1)
-            eventPlayer.UICursorStyles[0]=Color.WHITE
-            eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]]
-            startAction(2,eventPlayer.ControlledRef)
-        elif(eventPlayer.AttackMove):
-            eventPlayer.UICursorStyles[0]=rgb(238,148,148)
-            wait(0.1)
-            eventPlayer.UICursorStyles[0]=Color.WHITE
-            eventPlayer.ControlledRef.AttackMove=eventPlayer.AttackMove #Convert target return data to controlled ref data
-            eventPlayer.AttackMove=0 #clear self data
-            eventPlayer.ControlledRef.MovetoPos=eventPlayer.ControlledRef.AttackMove
-            startAction(1,eventPlayer.ControlledRef)
+# rule "Set Target to Cursor/Ability Verify":
+#     @Event eachPlayer
+#     @Condition Ready==true
+#     @Condition not eventPlayer.isDummy()
+#     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) #**2 **2
+#     eventPlayer.ControlledRef.AttackMove=null
+#     eventPlayer.CPos = eventPlayer.cursor
+#     if(eventPlayer.AbilityVerify[0]):
+#         eventPlayer.AbilityVerify=[false,false,null]
+#     else:
+#         eventPlayer.Target=null
+#         eventPlayer.TargetHandling=[eventPlayer.cursor,-1.25] #negative value indicates that we move player to the position selected first
+#         Target_Func()
+#         if(eventPlayer.Target[0]):
+#             eventPlayer.ControlledRef.Target=eventPlayer.Target
+#             eventPlayer.UICursorStyles[0]=Color.RED
+#             wait(0.1)
+#             eventPlayer.UICursorStyles[0]=Color.WHITE
+#             eventPlayer.ControlledRef.Target[2]=[true,not HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]]
+#             startAction(2,eventPlayer.ControlledRef)
+#         elif(eventPlayer.AttackMove):
+#             eventPlayer.UICursorStyles[0]=rgb(238,148,148)
+#             wait(0.1)
+#             eventPlayer.UICursorStyles[0]=Color.WHITE
+#             eventPlayer.ControlledRef.AttackMove=eventPlayer.AttackMove #Convert target return data to controlled ref data
+#             eventPlayer.AttackMove=0 #clear self data
+#             eventPlayer.ControlledRef.MovetoPos=eventPlayer.ControlledRef.AttackMove
+#             startAction(1,eventPlayer.ControlledRef)
 
 #!define cast(abilitynum,button) /*as owner, this is used to handle inputs that we dont want the ai to have to deal with while automating*/\
     eventPlayer.ControlledRef.Hero_Ability[1]=abilitynum\
     eventPlayer.ControlledRef.Hero_Ability[2]=(button)\
-    eventPlayer.ControlledRef.Hero_Ability[3]=abilitynum-2\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum]):/*if exists*/\
         if(len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 or eventPlayer.isHoldingButton(Button.CROUCH)):\
             if(eventPlayer.ControlledRef.Hero_Ability[0]==AbilityStage.CAST and HeroSpecs[eventPlayer.ControlledRef.CHero_Index][eventPlayer.ControlledRef.Hero_Ability[1]][Abil.USE][Abil_Use.TYPE]==UseType.CANCELABLE):\
-                startAction(1,eventPlayer.ControlledRef)\
-            eventPlayer.ControlledRef.CPos=eventPlayer.cursor\
+                eventPlayer.ControlledRef.Action = -1 /*cancel ability*/\
+                return\
             if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.QUICK):\
-                startAction(abilitynum,eventPlayer.ControlledRef)\
+                goto queue\
             elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.RELEASE):\
                 eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,0]\
                 waitUntil_verify(not eventPlayer.isHoldingButton(button))\
-                startAction(abilitynum,eventPlayer.ControlledRef)\
+                goto queue\
             elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.CONFIRM):\
                 eventPlayer.ControlledRef.Hero_Ability=[AbilityStage.PREP,abilitynum,(button)]\
                 eventPlayer.AbilityVerify[2]=button\
                 async(CastConfirm,AsyncBehavior.NOOP)\
             else:\
                 print("Cast called with no mode")\
+            return\
+            queue:\
+                if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.MODE]==CastMode.DIRECTION):\
+                    pTemp(GENERIC_CAST_LOC) = directionTowards(eventPlayer.getPosition(),eventPlayer.cursor)\
+                /*ground or cursor both are placed at the cursor position*/\
+                elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.MODE]==CastMode.GROUND or HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.MODE]==CastMode.CURSOR):\
+                    pTemp(GENERIC_CAST_LOC) = eventPlayer.cursor\
+                elif(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.MODE]==CastMode.TARGET):\
+                    eventPlayer.TargetHandling=[eventPlayer.getPosition(),(HeroSpecs[eventPlayer.CHero_Index][2][0])]\
+                    Target_Func()\
+                else:/*if cast target is self or null*/\
+                    pTemp(GENERIC_CAST_LOC) = 0\
+                queueAction(abilitynum,eventPlayer.ControlledRef,pTemp(GENERIC_CAST_LOC),HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.MODE])
 
 
 rule "Use Ability":
@@ -181,11 +200,11 @@ def CastConfirm():
     clearEffectUI()
     if(not eventPlayer.AbilityVerify[1]):
         eventPlayer.ControlledRef.CPos=eventPlayer.cursor
-        startAction(eventPlayer.ControlledRef.Hero_Ability[1],eventPlayer.ControlledRef)
+        #startAction(eventPlayer.ControlledRef.Hero_Ability[1],eventPlayer.ControlledRef)
         eventPlayer.AbilityVerify=[]
     else:
         eventPlayer.AbilityVerify=[]
-        eventPlayer.ControlledRef.Actions = 1
+        #eventPlayer.ControlledRef.Actions = 1
         return /*ability cast cancelled*/
 
 /*GENERIC UI, Run as controlled*/

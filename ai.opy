@@ -18,19 +18,19 @@ rule "Idle Basic Attack":
     @Condition (not eventPlayer.Target) or (distanceToTarget>HeroSpecs[eventPlayer.CHero_Index][2][0])
     @Condition eventPlayer.getSpeed()==0 or eventPlayer.AttackMove
     eventPlayer.TargetHandling=[eventPlayer.getPosition(),(HeroSpecs[eventPlayer.CHero_Index][2][0])]
-    Target_Func()
-    if(eventPlayer.Target[0]):
-        StopThrottle()
-        eventPlayer.Target[2]=[false,false]
-        wait(0.3)
-        #startAction(2,eventPlayer)
-        waitUntil(not eventPlayer.Target,99)
-    if(eventPlayer.AttackMove):
-        eventPlayer.MovetoPos=eventPlayer.AttackMove
-        startAction(0,eventPlayer)
-    wait()
-    if(RULE_CONDITION):
-        goto RULE_START
+    # Target_Func()
+    # if(eventPlayer.Target[0]):
+    #     StopThrottle()
+    #     eventPlayer.Target[2]=[false,false]
+    #     wait(0.3)
+    #     #startAction(2,eventPlayer)
+    #     waitUntil(not eventPlayer.Target,99)
+    # if(eventPlayer.AttackMove):
+    #     eventPlayer.MovetoPos=eventPlayer.AttackMove
+    #     startAction(0,eventPlayer)
+    # wait()
+    # if(RULE_CONDITION):
+    #     goto RULE_START
         /*
         else:
         for(eventPlayer.Target_i in range(len(0,CPlayers[2-eventPlayer.Team]))):
@@ -55,11 +55,18 @@ rule "Run Action Queue":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
-    @Condition len(eventPlayer.ActionQueue[ActionQueueVal.I0])>0
-    startAction(eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER],eventPlayer)
-    waitUntil_verify(eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE)
-    del eventPlayer.ActionQueue[ActionQueueVal.I0]
-    
+    @Condition eventPlayer.Action == 0
+    @Condition len(eventPlayer.ActionQueue[ActionQueueVal.I0])>ActionQueueVal.I0
+    eventPlayer.Action = eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER]
+    eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME] = getTotalTimeElapsed()
+    waitUntil(eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE or eventPlayer.clearQueue,100)
+    waitUntil(eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.ABILMINTIME]+eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME] < getTotalTimeElapsed(),100)
+    #waits min time elapsed
+    if(eventPlayer.clearQueue):
+        smallMessage(hostPlayer,"Cancelled")
+    else:
+        del eventPlayer.ActionQueue[ActionQueueVal.I0]
+    eventPlayer.Action = 0
     wait()
     if(RULE_CONDITION):
         goto RULE_START

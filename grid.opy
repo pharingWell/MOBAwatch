@@ -39,6 +39,15 @@ rule "Grid Auto Add/Remove":
     The already loaded tiles, or the cached tiles, are compared to the current tiles, 
     with the add tile function being called on all that are new and the remove tile function on all that are no longer active*/
     @Event eachPlayer
+    #
+    #
+    #
+
+    @Condition false 
+
+    #
+    #
+    #
     @Condition eventPlayer.updateCamera or getTotalTimeElapsed()%0.512<0.016
     eventPlayer.updateCamera = false
     #rounds the given location to the nearest tile
