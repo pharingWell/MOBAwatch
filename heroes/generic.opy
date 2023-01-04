@@ -34,7 +34,7 @@ def OnSpawn():
     eventPlayer.disableScoreboard()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
     if(eventPlayer.Team!=0): #catches team switch as team should be zero right now
-        eventPlayer.ControlledRef.Action = 8 #forces Left action
+        eventPlayer.ControlledRef.Action[ActionInfo.NUMBER] = 8 #forces Left action
     if(eventPlayer.getTeam()==Team.1):
         eventPlayer.Team=1
     else:
@@ -103,16 +103,17 @@ rule "Move To":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
-    eventPlayer.ControlledRef.AttackMove=0
+    if(not len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 and not eventPlayer.isHoldingButton(Button.CROUCH)):
+        return
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD) 
     eventPlayer.updateCamera = true
     queueAction(1,eventPlayer.ControlledRef,eventPlayer.cursor,CastMode.GROUND)
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
     waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
-    while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.ControlledRef.Action == 1):
+    while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.ControlledRef.Action[ActionInfo.NUMBER] == 1):
         eventPlayer.ControlledRef.MovetoPos = eventPlayer.cursor
-        waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), 0.25)    
-
+        waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), 0.25)
+    
 # rule "Set Target to Cursor/Ability Verify":
 #     @Event eachPlayer
 #     @Condition Ready==true
@@ -148,7 +149,7 @@ rule "Move To":
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum]):/*if exists*/\
         if(len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 or eventPlayer.isHoldingButton(Button.CROUCH)):\
             if(eventPlayer.ControlledRef.Hero_Ability[0]==AbilityStage.CAST and HeroSpecs[eventPlayer.ControlledRef.CHero_Index][eventPlayer.ControlledRef.Hero_Ability[1]][Abil.USE][Abil_Use.TYPE]==UseType.CANCELABLE):\
-                eventPlayer.ControlledRef.Action = -1 /*cancel ability*/\
+                eventPlayer.ControlledRef.Action[ActionInfo.NUMBER] = -1 /*cancel ability*/\
                 return\
             if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.METHOD]==CastMethod.QUICK):\
                 goto queue\

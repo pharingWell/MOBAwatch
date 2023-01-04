@@ -22,7 +22,7 @@ if(not (condition)):\
 #!define waitUntil_verifyCustom(condition,time,error) /**/\
 waitUntil((condition)==true,time)\
 if(not (condition)):\
-    printLog("{}{}".format("waitUntil_TimedOut: ",(error)))\
+    print("{}{}".format("waitUntil_TimedOut: ",(error)))\
     return
 #!define distanceToTarget distance(eventPlayer.getPosition(), eventPlayer.Target[1].getPosition() if eventPlayer.Target[1] else vect(Minions_Loc[MinionsLoc(eventPlayer.Target[0])].y,0.5,Minions_Loc[MinionsLoc(eventPlayer.Target[0])].z))
 #!define getLocation(a) /*type: id or playerref*/ a.getPosition() if(entityExists(a)) else Minions_Loc[Minions_IDs.index(a)]
@@ -47,11 +47,6 @@ ProcessHealthQueue()
 
 ##!define getIDNearPos(pos,team) 0 /*gets the nearest enemy or ally to the cursor. Will involve grid TODO*/
 
-#!define queueAction(a,ref,location, castmode) (ref).ActionQueue.append([[a,false,0.1,location,castmode]]) \
-smallMessage((ref),"___")
-#if eventPlayer.Hero_Ability[0]!=AbilityStage.CAST else (ref).Actions
-#!define ifAction(a) @Condition eventPlayer.Action == (a)\
-smallMessage(eventPlayer.Owner,"event {} trigged".format(a))
 
 
 
@@ -201,7 +196,8 @@ enum tempP:
     TILEAUTO_QUEUE,
     TILEAUTO_ITER,
     TILEADD_GRIDDARRAY_OBJ,
-    GENERIC_CAST_LOC
+    GENERIC_CAST_LOC,
+    RUNACTION_ENSURE_TARGET,
 
 #Player variables
 
@@ -310,20 +306,39 @@ playervar clearQueue
 playervar ActionQueue
 
 
+
+
+#!define ifAction(a) @Condition eventPlayer.Action[ActionInfo.NUMBER] == (a)\
+smallMessage(eventPlayer.Owner,"event {} trigged".format(a))
 enum ActionInfo:
-    #such as 0 for move, 3 for abil1
+    #When an action is queued, the information needed to replicate it is stored
+    #This enum is for the location in the ref.Action array
+    #The data stored in each slot should be sufficient to trigger an replicate an ability
+    #And adapt to the current state/location of the player
+    NULL,
     NUMBER,
+    MODE,
+    TARGET
+
+#!define queueAction(a,ref,location, castmode) (ref).ActionQueue.append([[null,a,false,0.1,location,castmode]]) \
+smallMessage((ref),"___")
+enum ActionQueueInfo:
+    NULL,
+    #such as 0 for move, 3 for abil1
+    NUMBER, 
     #If this is a channel, anything being added with trigger ability interrupt
     ISCHANNEL, 
     #Ability minimum time (the ability will not cancel until it has gone on for this duration)
     ABILMINTIME,
+    TARGET,
+    MODE
 
 
 #The action queue is structured as such:
 #0: Last Ability Time. This is updated with the current time when an action goes to slot 0. 
 #                      It is used for AbilMinTime, the value here + the AbilMinTime is used for the wait
 
-enum ActionQueueVal:
+enum ActionQueueVal: #make sure to update the action queue initalizer in (Re)spawn of controlled.opy
     LASTABILTIME,
     I0 #index 0
 

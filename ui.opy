@@ -100,8 +100,8 @@ rule "UI Definitions - Global Cursor":
         .format((player).PlayerStats[PStat.HEALTH],(player).PlayerStats[PStat.RESOURCE],(player).PlayerStats[PStat.ARMOR]*100,(player).PlayerStats[PStat.DEALMULT],(player).PlayerStats[PStat.MOVESPEED]*100,(player).PlayerStats[PStat.BASIC_RANGE],(player).PlayerStats[PStat.BASIC_DAMAGE],(player).PlayerStats[PStat.ATTACKSPEED]*100))
     hudHeader(localPlayer if localPlayer.showStats[0] else null,"{}\n{}\n{}\n{}\n{}".format(getPStats(localPlayer.showStats[1]),getPStatAbil(localPlayer.showStats[1],1),getPStatAbil(localPlayer.showStats[1],2),getPStatAbil(localPlayer.showStats[1],3),getPStatAbil(localPlayer.showStats[1],4)),HudPosition.RIGHT,99,Color.BLUE,HudReeval.VISIBILITY_SORT_ORDER_AND_STRING,SpecVisibility.DEFAULT)
     print(distance(localPlayer.getPosition()*vect(1,0,1),vect(2,0,1))/5)
-    hudHeader(localPlayer if localPlayer.showStats[0] else null,"{}\n{}\n{}\n{}".format(arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0]),arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0+01]),arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0+02]),arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0+03])),HudPosition.TOP,0,Color.GRAY,HudReeval.VISIBILITY_AND_STRING,SpecVisibility.ALWAYS)
-    print(tickCt)
+    hudHeader(localPlayer if localPlayer.showStats[0] else null,"{}\n{}\n{}\n{}".format(arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0+1]),arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0+2]),arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0+3]),arrToString10(localPlayer.ControlledRef.ActionQueue[ActionQueueVal.I0+4])),HudPosition.TOP,0,Color.GRAY,HudReeval.VISIBILITY_AND_STRING,SpecVisibility.ALWAYS)
+    print(arrToString10(localPlayer.ControlledRef.Action))
     print("A:{},{},{},{}".format(Projectile_Active[0],Projectile_Active[1],Projectile_Active[2],Projectile_Active[3]))
     print("P:{},{},{},{}".format(Projectile_Position[0],Projectile_Position[1],Projectile_Position[2],Projectile_Position[3]))
 

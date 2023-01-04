@@ -211,7 +211,7 @@ rule "PRS check on Join":
     @Event playerJoined
     @Condition not eventPlayer.isDummy()
     if(Setting_Mode==1 and prsChange[eventPlayer.getSlot()]): #if opened in standalone mode and the player slot they are going to be added to already has info, 
-                                                              #print the name and the rank score of the previous player
+         #print the name and the rank score of the previous player
         println("PRS~{}:{}".format(prsChangeName[eventPlayer.getSlot()],prsChange[eventPlayer.getSlot()]))
     prsChangeName[eventPlayer.getSlot()] = "{}".format(eventPlayer)
     prsChange[eventPlayer.getSlot()] = 1

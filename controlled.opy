@@ -203,8 +203,6 @@ rule "Arrived":
     async(StopThrottle,AsyncBehavior.NOOP)
     if(eventPlayer.Hero_Ability[1] == 1):
         eventPlayer.Hero_Ability[0] = AbilityStage.COMPLETE
-        wait(0.532)
-        eventPlayer.Hero_Ability[0] = AbilityStage.NONE
     smallMessage(eventPlayer.Owner,"Arrived.")
     # wait()
     # if(RULE_CONDITION):
@@ -228,7 +226,7 @@ rule "Cancel Action Rule":
 def CancelAction():
     #This waits until the action's minimum ability time has elapsed while also throwing an error if it fails
     #assumes that no ability is supposed to wait longer than 5 seconds
-    waitUntil_verifyCustom(getTotalTimeElapsed()>eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME]+eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.ABILMINTIME],5,"{} {} {} {}".format("Cancel Action Failed with action",eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER],"for Controlled",eventPlayer))
+    waitUntil_verifyCustom(getTotalTimeElapsed()>eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME]+eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.ABILMINTIME],5,"{} {} {} {}".format("Cancel Action Failed with action",eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.NUMBER],"for Controlled",eventPlayer))
     eventPlayer.ActionQueue = eventPlayer.ActionQueue.slice(0,ActionQueueVal.I0)
     StopThrottle()
 
@@ -249,6 +247,7 @@ rule "MoveToCPos":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     ifAction(1)
+    smallMessage(hostPlayer,"--")
     eventPlayer.Hero_Ability = [AbilityStage.MOVETO,1,Button.SECONDARY_FIRE]
     if(not HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET]):
         eventPlayer.Target=null
@@ -262,7 +261,7 @@ rule "Look While Moving":
     @Event eachPlayer
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
-    @Condition eventPlayer.Hero_Ability[1]==1
+    @Condition eventPlayer.Action[ActionInfo.NUMBER] == 1
     @Condition distance(eventPlayer.MovetoPos,eventPlayer.getPosition())>0.5
     #@Condition false
     if(HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.AUTOTARGET] and (distanceToTarget)<=HeroSpecs[eventPlayer.CHero_Index][HeroStat.BASIC][Basic.RANGE] and eventPlayer.Target):
@@ -418,6 +417,8 @@ rule "(Re)spawn":
     @Condition eventPlayer.hasSpawned()
     @Condition eventPlayer.isAlive()
     eventPlayer.Health[0]=max(10,eventPlayer.PlayerStats[PStat.HEALTH])
+    eventPlayer.Action = []
+    eventPlayer.ActionQueue = [getTotalTimeElapsed()] 
     setFacingDir(vect(0,0,1))
     chase(eventPlayer.CamLoc,toCamLoc,duration=0.2,ChaseReeval.DESTINATION_AND_DURATION)
     

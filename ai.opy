@@ -55,18 +55,27 @@ rule "Run Action Queue":
     @Condition Ready==true
     @Condition eventPlayer.isDummy()
     @Condition eventPlayer.hasSpawned() and eventPlayer.isAlive()
-    @Condition eventPlayer.Action == 0
-    @Condition len(eventPlayer.ActionQueue[ActionQueueVal.I0])>ActionQueueVal.I0
-    eventPlayer.Action = eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.NUMBER]
+    @Condition eventPlayer.Action == [] #if the action is finished
+    @Condition len(eventPlayer.ActionQueue)>ActionQueueVal.I0
     eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME] = getTotalTimeElapsed()
+    switch(eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.NUMBER]):
+        case 1:
+            eventPlayer.MovetoPos = eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.TARGET] 
+            break
+        default:
+            break
+    smallMessage(hostPlayer,getTotalTimeElapsed())
+    eventPlayer.Action[ActionInfo.NUMBER] = eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.NUMBER]
     waitUntil(eventPlayer.Hero_Ability[0]==AbilityStage.COMPLETE or eventPlayer.clearQueue,100)
-    waitUntil(eventPlayer.ActionQueue[ActionQueueVal.I0][ActionInfo.ABILMINTIME]+eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME] < getTotalTimeElapsed(),100)
+    waitUntil_verifyCustom(eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.ABILMINTIME]+eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME] < getTotalTimeElapsed(),3,"timer fucked up")
     #waits min time elapsed
+    eventPlayer.Hero_Ability = []
     if(eventPlayer.clearQueue):
         smallMessage(hostPlayer,"Cancelled")
     else:
         del eventPlayer.ActionQueue[ActionQueueVal.I0]
-    eventPlayer.Action = 0
-    wait()
-    if(RULE_CONDITION):
-        goto RULE_START
+    eventPlayer.Action = []
+    return
+    # wait()
+    # if(RULE_CONDITION):
+    #     goto RULE_START
