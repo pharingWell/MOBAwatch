@@ -76,6 +76,3 @@ rule "Run Action Queue":
         del eventPlayer.ActionQueue[ActionQueueVal.I0]
     eventPlayer.Action = []
     return
-    # wait()
-    # if(RULE_CONDITION):
-    #     goto RULE_START

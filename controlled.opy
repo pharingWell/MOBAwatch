@@ -22,7 +22,7 @@ rule "On Controlled Join - Ignores respawn":
     "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if eventPlayer.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
     eventPlayer.Level=1
     createEffect(localPlayer if not eventPlayer.Hidden and eventPlayer.isAlive() else getPlayers(eventPlayer.getTeam()),Effect.RING,Color.TEAM_1 if eventPlayer.Team==0 else Color.TEAM_2, updateEveryTick(eventPlayer.getPosition()*vect(1,0,1)),0.7,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    print("{}: {}".format(len(eventPlayer.ActionQueue),arrToString10(eventPlayer.ActionQueue[ActionQueueVal.I0])))
+    print("{}: {}".format(len(eventPlayer.ActionQueue),arrToString7(eventPlayer.ActionQueue[ActionQueueVal.I0])))
 
 rule "On Controlled Join - Pre-spawn":
     @Event eachPlayer
@@ -228,6 +228,7 @@ def CancelAction():
     #assumes that no ability is supposed to wait longer than 5 seconds
     waitUntil_verifyCustom(getTotalTimeElapsed()>eventPlayer.ActionQueue[ActionQueueVal.LASTABILTIME]+eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.ABILMINTIME],5,"{} {} {} {}".format("Cancel Action Failed with action",eventPlayer.ActionQueue[ActionQueueVal.I0][ActionQueueInfo.NUMBER],"for Controlled",eventPlayer))
     eventPlayer.ActionQueue = eventPlayer.ActionQueue.slice(0,ActionQueueVal.I0)
+    eventPlayer.Action = []
     StopThrottle()
 
 

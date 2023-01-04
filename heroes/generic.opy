@@ -31,6 +31,7 @@ rule "Check Hero Change":
     OnSpawn()
 
 def OnSpawn():
+    eventPlayer.setGravity(0)
     eventPlayer.disableScoreboard()
     eventPlayer.CHero = eventPlayer.getCurrentHero()
     if(eventPlayer.Team!=0): #catches team switch as team should be zero right now
@@ -59,6 +60,7 @@ def OnSpawn():
         createEffect(eventPlayer if eventPlayer.ControlledRef.Target else null,Effect.RING,Color.AQUA,getLocation(eventPlayer.ControlledRef.Target[1]),eventPlayer.ControlledRef.Target[1]*0.5+1.2,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     eventPlayer.stopFacing()
     eventPlayer.Ready=true
+    print("{} Q:{} W:{} E:{} R:{}\nM1:{} M2:{} Item1:{} Item2:{}\n Queue:{} Talents:{} Settings:{}".format(eventPlayer,Abil1_Bind,Abil2_Bind,Abil3_Bind,Abil4_Bind,Attack_Bind,Move_Bind,Item1_Bind,Item2_Bind,Queue_Bind,Talents_Bind,Settings_Bind).replace("False","_").replace("True","O"))
 
 def OnHero():
     #Replace their UI with in-game progress bar
@@ -87,32 +89,33 @@ rule "Controlled Spawned":
         eventPlayer().UIContainer=[Color.TEAM_2,Color.TEAM_2]
     wait(0.5)
     moveCameraWithPlayer()
-    
-
 
 rule "Cancel":
     @Event eachPlayer
     @Condition Ready == true
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
     @Condition not eventPlayer.isDummy()
+    @Condition Attack_Bind
     eventPlayer.ControlledRef.clearQueue = true
+
 
 rule "Move To":
     @Event eachPlayer
     @Condition Ready == true
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+    @Condition Move_Bind
     @Condition not eventPlayer.isDummy()
     @Condition distance(vect(eventPlayer.ControlledRef.getPosition().x,0,eventPlayer.ControlledRef.getPosition().z),eventPlayer.cursor)>1
-    if(not len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 and not eventPlayer.isHoldingButton(Button.CROUCH)):
+    if(not len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 and not Queue_Bind):
         return
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD) 
     eventPlayer.updateCamera = true
     queueAction(1,eventPlayer.ControlledRef,eventPlayer.cursor,CastMode.GROUND)
+    if(Queue_Bind):
+        return
     eventPlayer.ControlledRef.setFacing(eventPlayer.ControlledRef.LookAtDir,Relativity.TO_WORLD)
-    waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE),0.5)
-    while(eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.ControlledRef.Action[ActionInfo.NUMBER] == 1):
+    waitUntil(not Move_Bind,0.5)
+    while(Move_Bind and eventPlayer.ControlledRef.Action[ActionInfo.NUMBER] == 1):
         eventPlayer.ControlledRef.MovetoPos = eventPlayer.cursor
-        waitUntil(not eventPlayer.isHoldingButton(Button.SECONDARY_FIRE), 0.25)
+        waitUntil(not Move_Bind, 0.25)
     
 # rule "Set Target to Cursor/Ability Verify":
 #     @Event eachPlayer
@@ -147,7 +150,7 @@ rule "Move To":
     eventPlayer.ControlledRef.Hero_Ability[1]=abilitynum\
     eventPlayer.ControlledRef.Hero_Ability[2]=(button)\
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum]):/*if exists*/\
-        if(len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 or eventPlayer.isHoldingButton(Button.CROUCH)):\
+        if(len(eventPlayer.ControlledRef.ActionQueue)==ActionQueueVal.I0 or Queue_Bind):\
             if(eventPlayer.ControlledRef.Hero_Ability[0]==AbilityStage.CAST and HeroSpecs[eventPlayer.ControlledRef.CHero_Index][eventPlayer.ControlledRef.Hero_Ability[1]][Abil.USE][Abil_Use.TYPE]==UseType.CANCELABLE):\
                 eventPlayer.ControlledRef.Action[ActionInfo.NUMBER] = -1 /*cancel ability*/\
                 return\
@@ -178,19 +181,23 @@ rule "Move To":
                 queueAction(abilitynum,eventPlayer.ControlledRef,pTemp(GENERIC_CAST_LOC),HeroSpecs[eventPlayer.ControlledRef.CHero_Index][abilitynum][Abil.CAST][Abil_Cast.MODE])
 
 
+#If using console, none of these keybinds make sense. 
+#TODO: add console support
+/* Space + Ability = Self-cast*/
+
 rule "Use Ability":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) or eventPlayer.isHoldingButton(Button.ABILITY_2) or eventPlayer.isHoldingButton(Button.RELOAD) or eventPlayer.isHoldingButton(Button.ULTIMATE)
+    @Condition Abil1_Bind or Abil2_Bind or Abil3_Bind or Abil4_Bind
     if(eventPlayer.AbilityVerify[0]):
         eventPlayer.AbilityVerify=[false,true,null]
-    if(eventPlayer.isHoldingButton(Button.ABILITY_1)):
+    if(Abil1_Bind):
         cast(3,Button.ABILITY_1)
-    elif(eventPlayer.isHoldingButton(Button.ABILITY_2)):
+    elif(Abil2_Bind):
         cast(4,Button.ABILITY_2)
-    elif(eventPlayer.isHoldingButton(Button.RELOAD)):
+    elif(Abil3_Bind):
         cast(5,Button.RELOAD)
-    elif(eventPlayer.isHoldingButton(Button.ULTIMATE)):
+    elif(Abil4_Bind):
         cast(6,Button.ULTIMATE)
 
 def CastConfirm():

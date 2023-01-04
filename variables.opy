@@ -51,13 +51,31 @@ ProcessHealthQueue()
 
 
 
-#!define arrToString10(arr) ("{},{},{},{},{},{},{},{},{},{}".format((arr)[0],(arr)[1],(arr)[2],(arr)[3],(arr)[4],(arr)[5],(arr)[6],(arr)[7],(arr)[8],(arr)[9],(arr)[0])).replace(",0",",_")
+#!define arrToString7(arr) ("{},{},{},{},{},{}".format((arr)[0],(arr)[1],(arr)[2],(arr)[3],(arr)[4],(arr)[5],(arr)[6])).replace(",0",",_")
 
 # team = floor()%10, k = ()%1*100
 #floor(id/10)
 #floor(id) % 10
 #id % floor(id)
 
+#!define Abil1_Bind eventPlayer.isHoldingButton(Button.ULTIMATE) /*Q*/
+#!define Abil2_Bind eventPlayer.getThrottle().z>0.1 /*W*/
+#!define Abil3_Bind eventPlayer.isHoldingButton(Button.ABILITY_2) /*E*/
+#!define Abil4_Bind eventPlayer.isHoldingButton(Button.RELOAD) /*R*/
+
+#!define Attack_Bind eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+#!define Move_Bind eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+
+#!define Attack_Bind eventPlayer.getThrottle().x<-0.1 /*A*/
+#!define Stop_Bind eventPlayer.getThrottle().z<-0.1 /*S*/
+#!define Item1_Bind eventPlayer.getThrottle().x>0.1 /*D*/
+#!define Item2_Bind eventPlayer.isHoldingButton(Button.INTERACT) /*F*/
+
+#!define Queue_Bind eventPlayer.isHoldingButton(Button.ABILITY_1) /*L Shift*/
+#!define Talents_Bind eventPlayer.isHoldingButton(Button.CROUCH) /*Ctrl*/
+#!define Camera_Bind eventPlayer.isHoldingButton(Button.JUMP) /*Space*/
+#!define Mount_Bind eventPlayer.isHoldingButton(Button.MELEE) /*V*/ /*when channeled, causes you to hearth*/
+#!define Settings_Bind (eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.ABILITY_1)) /*Ctrl+F*/
 
 
 globalvar CPlayers
@@ -318,10 +336,11 @@ enum ActionInfo:
     NULL,
     NUMBER,
     MODE,
-    TARGET
+    TARGET,
 
 #!define queueAction(a,ref,location, castmode) (ref).ActionQueue.append([[null,a,false,0.1,location,castmode]]) \
-smallMessage((ref),"___")
+    smallMessage((ref),"___")
+
 enum ActionQueueInfo:
     NULL,
     #such as 0 for move, 3 for abil1
@@ -331,7 +350,7 @@ enum ActionQueueInfo:
     #Ability minimum time (the ability will not cancel until it has gone on for this duration)
     ABILMINTIME,
     TARGET,
-    MODE
+    MODE,
 
 
 #The action queue is structured as such:

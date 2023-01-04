@@ -39,7 +39,7 @@ rule "Projectiles Make":
 rule "Make proj":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
+    @Condition Mount_Bind
     enableInspector()
     PInfo[PInfoEnum.TYPE] = Projectile.PULSEBOMB
     wait(PInfo[PInfoEnum.TYPE][PConst_Enum.CAST_TIME])
@@ -52,17 +52,17 @@ rule "Make proj":
     disableInspector()
     eventPlayer.setUltCharge(100)
 
-rule "switch":
-    @Event eachPlayer
-    @Condition not eventPlayer.isDummy()
-    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-    waitUntil(PInfo[PInfoEnum.THREADACTIVE]==false,0.5)
-    if(PInfo[PInfoEnum.THREADACTIVE]):
-        return
-    PInfo[PInfoEnum.THREADACTIVE] = true
-    for(PTempThread in range(len(ProjectileActive))):
-        Projectile_Velocity[ProjectileActive[PTempThread]] *= -1
-    PInfo[PInfoEnum.THREADACTIVE] = false
+# rule "switch":
+#     @Event eachPlayer
+#     @Condition not eventPlayer.isDummy()
+#     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+#     waitUntil(PInfo[PInfoEnum.THREADACTIVE]==false,0.5)
+#     if(PInfo[PInfoEnum.THREADACTIVE]):
+#         return
+#     PInfo[PInfoEnum.THREADACTIVE] = true
+#     for(PTempThread in range(len(ProjectileActive))):
+#         Projectile_Velocity[ProjectileActive[PTempThread]] *= -1
+#     PInfo[PInfoEnum.THREADACTIVE] = false
 
 def ReleaseToProjPool():
     Projectile_Position[PInfo[PInfoEnum.ID]] = vect(0,-10,0)

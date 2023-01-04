@@ -154,7 +154,7 @@ rule "Minions Tick":
 
 rule "start dot":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+    @Condition Item1_Bind
     eventPlayer.ControlledRef.Health[2] = [-250,5]
 /*rule "left":
     @Event eachPlayer
@@ -193,7 +193,7 @@ rule "On Player Left":
 
 rule "POV":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+    @Condition Item2_Bind
     eventPlayer.ControlledRef.setUltCharge(100)
     #eventPlayer.ControlledRef.Actions=0
     #Minions_Wave()
@@ -201,9 +201,9 @@ rule "POV":
 
 rule "POV":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition Settings_Bind
     eventPlayer.showStats=[true,eventPlayer.ControlledRef]
-    waitUntil_verify(eventPlayer.isHoldingButton(Button.INTERACT)==false)
+    waitUntil_verify(Settings_Bind==false)
     eventPlayer.showStats=[]
     
 /*

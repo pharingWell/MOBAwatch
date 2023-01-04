@@ -18,9 +18,9 @@
 rule "UI Debug - Grid":
     @Condition SHOW_GRID
     Grid = [[1001],[1002],[1003],[1004]]
-    print(updateEveryTick(arrToString10(localPlayer.playerGrid)))
-    print(updateEveryTick(arrToString10(localPlayer.Temp[tempP.TILEAUTO_QUEUE]).replace("_","-")))
-    #print(arrToString10(localPlayer.Render_StaticEffects))
+    print(updateEveryTick(arrToString7(localPlayer.playerGrid)))
+    print(updateEveryTick(arrToString7(localPlayer.Temp[tempP.TILEAUTO_QUEUE]).replace("_","-")))
+    #print(arrToString7(localPlayer.Render_StaticEffects))
     print((localPlayer.getPosition().x-(TILE_H/2)-GRID_ORIGIN.x)/TILE_W)
     forGlobal(forG.GRID_RENDERER,0,len(Grid)):
         #!define tileCorner vect(floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH)*TILE_H,0.05,Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH*TILE_W)+GRID_ORIGIN
