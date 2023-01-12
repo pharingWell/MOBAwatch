@@ -66,9 +66,9 @@ ProcessHealthQueue()
 #!define Attack_Bind eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
 #!define Move_Bind eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
 
-#!define Attack_Bind eventPlayer.getThrottle().x<-0.1 /*A*/
+#!define Attack_Bind eventPlayer.getThrottle().x>0.1 /*A*/
 #!define Stop_Bind eventPlayer.getThrottle().z<-0.1 /*S*/
-#!define Item1_Bind eventPlayer.getThrottle().x>0.1 /*D*/
+#!define Item1_Bind eventPlayer.getThrottle().x<-0.1 /*D*/
 #!define Item2_Bind eventPlayer.isHoldingButton(Button.INTERACT) /*F*/
 
 #!define Queue_Bind eventPlayer.isHoldingButton(Button.ABILITY_1) /*L Shift*/
@@ -183,7 +183,6 @@ playervar Iter
 while((player).Iter[(index)]<(max))
 #!define forEndP(index,player) (player).Iter[(index)]+=1\
 
-#wait(0.016)
 #eventPlayer.Iter[forP]
 enum forP:
     EACHABILITYSTAGEUI,

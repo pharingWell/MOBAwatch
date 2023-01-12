@@ -66,7 +66,8 @@ rule "UI Definitions - Global Cursor":
     #>=(zpos-0.1)*0.016 and getTotalTimeElapsed()%(0.032*highestZpos)<=(zpos)*0.016
     #!define zPos(draw,zpos) null if zpos<getNumberOfTextIds() else (draw)
     #!define CamPos vect(-5,10,0)
-    #!define EYE(player) updateEveryTick((player).CamLoc+vect(0,10,0) if mousetoggle else (player).ControlledRef.getEyePosition()*vect(1,0,1)+0.5*(player).ControlledRef.getVelocity()/magnitude((player).ControlledRef.getVelocity()))+CamPos+vect(((player).getEyePosition().y-(player).getPosition().y)/2,0,0)
+    #!define EYE(player) updateEveryTick((player).CamLoc+vect(0,10,0)) 
+    # if mousetoggle else (player).ControlledRef.getEyePosition()*vect(1,0,1)+0.5*(player).ControlledRef.getVelocity()/magnitude((player).ControlledRef.getVelocity()))+CamPos+vect(((player).getEyePosition().y-(player).getPosition().y)/2,0,0)
     #!define CURSORX updateEveryTick(localPlayer.getHorizontalFacingAngle())
     #(localPlayer.cursorAngles[0].x)
     #!define CURSORZ updateEveryTick(localPlayer.getVerticalFacingAngle())
@@ -77,9 +78,7 @@ rule "UI Definitions - Global Cursor":
     #!define SCALE 50 /*used for UI, defines screen size. Lowering this value changes your Y upper and lower limit and the wraparound distance for the X*/
     #!define uiPos(xpos,ypos) updateEveryTick(EYE(localPlayer)+SCALE*vFOR+(xpos)*vLEFT+ (ypos)*vDOWN) /*takes a position on the 2D screen, thus only x and y*/
     #!define textPos(pos) updateEveryTick((pos) + vDOWN * (dotProduct(vFOR, (pos) - EYE(localPlayer)) / 18)) /*text is anchored to its correct position*/
-    #!define SCALE 50 /*used for UI, defines screen size. Lowering this value changes your Y upper and lower limit and the wraparound distance for the X*/
-    #!define uiPos(xpos,ypos) updateEveryTick(EYE(localPlayer)+SCALE*vFOR+(xpos)*vLEFT+ (ypos)*vDOWN)
-    createInWorldText(localPlayer, "•",uiPos(CURSORX,CURSORZ), 2.5, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.WHITE, SpecVisibility.NEVER)
+    
     ScreenLimits = [1.25,0.68]
     #!define text(vis,text,pos,color) createInWorldText((vis), (text), textPos(pos) , (size), Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, (color), SpecVisibility.DEFAULT)
     #!define Vect(pos1,vect1) createBeam(localPlayer,Beam.GOOD,(pos1),(pos1)+(vect1),Color.AQUA,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -106,6 +105,10 @@ rule "UI Definitions - Global Cursor":
     print("P:{},{},{},{}".format(Projectile_Position[0],Projectile_Position[1],Projectile_Position[2],Projectile_Position[3]))
     print(updateEveryTick(localPlayer.getThrottle()))
     
+
+rule "testingtesting":
+    B = uiPos(A,C)
+
 rule "Start Camera":  
     @Event eachPlayer
     @Condition Ready == true
