@@ -77,8 +77,7 @@ rule "UI Definitions - Global Cursor":
     #!define vDOWN vect(-0.89,-0.45,0) /*crossProduct(vLEFT,vFOR)*/
     #!define SCALE 50 /*used for UI, defines screen size. Lowering this value changes your Y upper and lower limit and the wraparound distance for the X*/
     #!define uiPos(xpos,ypos) updateEveryTick(EYE(localPlayer)+SCALE*vFOR+(xpos)*vLEFT+ (ypos)*vDOWN) /*takes a position on the 2D screen, thus only x and y*/
-    #!define textPos(pos) updateEveryTick((pos) + vDOWN * (dotProduct(vFOR, (pos) - EYE(localPlayer)) / 18)) /*text is anchored to its correct position*/
-    
+    #!define textPos(pos) updateEveryTick((pos) + vDOWN * (dotProduct(vFOR, (pos) - EYE(localPlayer)) / 18)) /*text is anchored to its cor\ createEffect(localPlayer,Effect.SPHERE,Color.AQUA,localPlayer.cursor,0.,EffectReeval)
     ScreenLimits = [1.25,0.68]
     #!define text(vis,text,pos,color) createInWorldText((vis), (text), textPos(pos) , (size), Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, (color), SpecVisibility.DEFAULT)
     #!define Vect(pos1,vect1) createBeam(localPlayer,Beam.GOOD,(pos1),(pos1)+(vect1),Color.AQUA,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
