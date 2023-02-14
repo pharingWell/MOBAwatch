@@ -159,11 +159,12 @@ globalvar tickCt
 
 
 globalvar Iter
-#!define forGlobal(index,startval,max)/**/\
-Iter[(index)] = startval\
-while(Iter[(index)]<(max))
-#!define forEndG(index) Iter[(index)]+=1
+#!define forGlobal(enum,startval,max)/**/\
+Iter[(forG.enum)] = startval\
+while(Iter[(forG.enum)]<(max))
+#!define forEndG(enum) Iter[(forG.enum)]+=1
 #Iter[forG]
+
 enum forG:
     PLAYERNAME_SETUP,
     GRID_RENDERER,
@@ -178,12 +179,12 @@ enum forG:
     MINIONS_PRINTPOOL,
 
 playervar Iter
-#!define forPlayer(index,player,startval,max)/**/\
-(player).Iter[(index)] = startval\
-while((player).Iter[(index)]<(max))
-#!define forEndP(index,player) (player).Iter[(index)]+=1\
-
+#!define forPlayer(enum,startval,max)/**/\
+eventPlayer.Iter[forP.enum] = startval\
+while(eventPlayer.Iter[forP.enum]<(max))
+#!define forEndP(enum) eventPlayer.Iter[forP.enum]+=1
 #eventPlayer.Iter[forP]
+
 enum forP:
     EACHABILITYSTAGEUI,
     EACHABILITYSTAGEUIEFFECT,

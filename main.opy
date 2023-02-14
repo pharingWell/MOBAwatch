@@ -102,14 +102,14 @@ rule "InitiateGame":
     wait()*/
     ThreadClear=true
     TeamSize = getNumberOfSlots(Team.1)
-    forGlobal(forG.TEAMSETUP,0,TeamSize):
+    forGlobal(TEAMSETUP,0,TeamSize):
         if(Iter[forG.TEAMSETUP]==0):
             Players[0]=["null"] 
             Players[1]=["null"]
         else:
             Players[0].append(["null"])
             Players[1].append(["null"])
-        forEndG(forG.TEAMSETUP)
+        forEndG(TEAMSETUP)
     Minions_Init()
     async(HealthHandle(),AsyncBehavior.NOOP)
     setMatchTime(0) #change to 15 later
@@ -124,12 +124,12 @@ rule "InitiateGame":
         disableGamemodeCompletion()
     
 def Ready():
-    forGlobal(forG.PLAYERNAME_SETUP,0,TeamSize):
+    forGlobal(PLAYERNAME_SETUP,0,TeamSize):
         hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),CPlayers[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].Health[0],null,HudPosition.LEFT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
         hudText(getPlayers(Team.1),"{0}{1}".format(heroIcon(Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),null,null,HudPosition.RIGHT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
         hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),CPlayers[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].Health[0],null,HudPosition.LEFT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[1][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[1],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
         hudText(getPlayers(Team.2),"{0}{1}".format(heroIcon(Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].getCurrentHero()),Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])]),null,null,HudPosition.RIGHT,Iter[forG.PLAYERNAME_SETUP]-TeamSize,Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],Players[0][evalOnce(Iter[forG.PLAYERNAME_SETUP])].UIContainer[0],null,HudReeval.VISIBILITY_STRING_AND_COLOR)
-        forEndG(forG.PLAYERNAME_SETUP) 
+        forEndG(PLAYERNAME_SETUP) 
     Ready=true
 
 rule "Inspector":
@@ -219,12 +219,12 @@ rule "PRS check on Join":
 rule "set db index":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
-    forPlayer(forP.DBINDEX,eventPlayer,0,len(dbKeys)):
+    forPlayer(DBINDEX,0,len(dbKeys)):
         if(dbKeys[eventPlayer.Iter[forP.DBINDEX]]=="{}".format(eventPlayer)):
             eventPlayer.dbIndex = eventPlayer.Iter[forP.DBINDEX]
             eventPlayer.Iter[forP.DBINDEX] = 0
             return
-        forEndP(forP.DBINDEX,eventPlayer)
+        forEndP(DBINDEX)
     eventPlayer.dbIndex = len(dbKeys)
     dbKeys[eventPlayer.dbIndex] = "{}".format(eventPlayer)
     dbPRS[eventPlayer.dbIndex] = 1500

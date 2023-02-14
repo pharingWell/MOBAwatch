@@ -83,10 +83,7 @@ rule "Controlled Spawned":
     if(eventPlayer.CamAttach):
         chase(eventPlayer.CamLoc,vect(eventPlayer.ControlledRef.getEyePosition().x,eventPlayer.CamLoc.y,eventPlayer.ControlledRef.getEyePosition().z),duration=1,ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.enableHeroHud()
-    if(eventPlayer.getTeam()==Team.1):
-        eventPlayer().UIContainer=[Color.TEAM_1,Color.TEAM_1]
-    else:
-        eventPlayer().UIContainer=[Color.TEAM_2,Color.TEAM_2]
+    eventPlayer().UIContainer=[eventPlayer.getTeam(),eventPlayer.getTeam()]
     wait(0.5)
     moveCameraWithPlayer()
 
@@ -230,16 +227,16 @@ def defaultEffectUI():
 def clearEffectUI():
     if(eventPlayer.ClearAllUI):
         eventPlayer.ClearAllUI=false
-        forPlayer(forP.EACHABILITYSTAGEUI,eventPlayer,0,len(eventPlayer.Ability_UI)):
-            forPlayer(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer,0,len(eventPlayer.Ability_UI[eventPlayer.Iter[forP.EACHABILITYSTAGEUI]])):
+        forPlayer(EACHABILITYSTAGEUI,0,len(eventPlayer.Ability_UI)):
+            forPlayer(EACHABILITYSTAGEUIEFFECT,0,len(eventPlayer.Ability_UI[eventPlayer.Iter[forP.EACHABILITYSTAGEUI]])):
                 destroyEffect(eventPlayer.Ability_UI[eventPlayer.Iter[forP.EACHABILITYSTAGEUI]][forP.EACHABILITYSTAGEUIEFFECT])
-                forEndP(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer)
-            forEndP(forP.EACHABILITYSTAGEUI,eventPlayer)
+                forEndP(EACHABILITYSTAGEUIEFFECT)
+            forEndP(EACHABILITYSTAGEUI)
         eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])]=[]
     else:
-        forPlayer(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer,0,len(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])])):
+        forPlayer(EACHABILITYSTAGEUIEFFECT,0,len(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])])):
             destroyEffect(eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])][eventPlayer.Iter[forP.EACHABILITYSTAGEUI]])
-            forEndP(forP.EACHABILITYSTAGEUIEFFECT,eventPlayer)
+            forEndP(EACHABILITYSTAGEUIEFFECT)
         eventPlayer.Ability_UI[evalOnce(eventPlayer.Hero_Ability[0])]=[] 
 
 

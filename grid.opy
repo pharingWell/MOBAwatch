@@ -22,14 +22,14 @@ rule "UI Debug - Grid":
     print(updateEveryTick(arrToString7(localPlayer.Temp[tempP.TILEAUTO_QUEUE]).replace("_","-")))
     #print(arrToString7(localPlayer.Render_StaticEffects))
     print((localPlayer.getPosition().x-(TILE_H/2)-GRID_ORIGIN.x)/TILE_W)
-    forGlobal(forG.GRID_RENDERER,0,len(Grid)):
+    forGlobal(GRID_RENDERER,0,len(Grid)):
         #!define tileCorner vect(floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH)*TILE_H,0.05,Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH*TILE_W)+GRID_ORIGIN
         createInWorldText(localPlayer,"{},{}:{}".format(Iter[forG.GRID_RENDERER]%GRID_ROW_LENGTH,floor(Iter[forG.GRID_RENDERER]/GRID_ROW_LENGTH),Iter[forG.GRID_RENDERER]),tileCorner,1,Clip.NONE,WorldTextReeval.VISIBILITY,Color.WHITE,SpecVisibility.DEFAULT)
         createBeam(localPlayer,Beam.BAD,tileCorner,tileCorner+vect(TILE_H,0,0),Color.WHITE,EffectReeval.VISIBILITY)
         createBeam(localPlayer,Beam.BAD,tileCorner,tileCorner+vect(0,0,TILE_W),Color.WHITE,EffectReeval.VISIBILITY)
         #createBeam(localPlayer,Beam.BAD,tileCorner+vect(0,0,TILE_H),tileCorner+vect(TILE_W,0,TILE_H),Color.WHITE,EffectReeval.VISIBILITY)
         #createBeam(localPlayer,Beam.BAD,tileCorner+vect(TILE_W,0,0),tileCorsner+vect(TILE_W,0,TILE_H),Color.WHITE,EffectReeval.VISIBILITY)
-        forEndG(forG.GRID_RENDERER)
+        forEndG(GRID_RENDERER)
     
 rule "Grid Auto Add/Remove":
     /*
@@ -57,7 +57,7 @@ rule "Grid Auto Add/Remove":
     #!define TILEVISION_W TILE_W
     pTemp(TILEAUTO_QUEUE) = [getTileByPos(eventPlayer.getPosition()),getTileByPos(eventPlayer.getPosition()+vect(TILEVISION_W,0,0)),getTileByPos(eventPlayer.getPosition()-vect(TILEVISION_W,0,0)),getTileByPos(eventPlayer.getPosition()+vect(0,0,TILEVISION_H)),getTileByPos(eventPlayer.getPosition()-vect(0,0,TILEVISION_H))]
     #for each tile in the queue, add run the add tile function if it is not already added
-    forPlayer(forP.TILEAUTO,eventPlayer,0,len(pTemp(TILEAUTO_QUEUE))):
+    forPlayer(TILEAUTO,0,len(pTemp(TILEAUTO_QUEUE))):
         pTemp(TILEAUTO_ITER) = pTemp(TILEAUTO_QUEUE)[eventPlayer.Iter[forP.TILEAUTO]]
         if(not pTemp(TILEAUTO_ITER) in eventPlayer.playerGrid):
             if(pTemp(TILEAUTO_ITER) > 0 and pTemp(TILEAUTO_ITER) < len(Grid)):
@@ -65,15 +65,15 @@ rule "Grid Auto Add/Remove":
                 smallMessage(eventPlayer,"addingtile")
                 eventPlayer.playerGrid.append(pTemp(TILEOPERATION_ADD))
                 #AddTile()
-        forEndP(forP.TILEAUTO,eventPlayer)
+        forEndP(TILEAUTO)
         
     #for each tile not in the queue, remove it from the current tile set, as its not in vision
-    forPlayer(forP.TILEAUTO,eventPlayer,0,len(eventPlayer.playerGrid)):
+    forPlayer(TILEAUTO,0,len(eventPlayer.playerGrid)):
         pTemp(TILEAUTO_ITER) = eventPlayer.playerGrid[eventPlayer.Iter[forP.TILEAUTO]]
         if(not pTemp(TILEAUTO_ITER) in pTemp(TILEAUTO_QUEUE)):
             pTemp(TILEOPERATION_REMOVE) = pTemp(TILEAUTO_ITER)
             RemoveTile()
-        forEndP(forP.TILEAUTO,eventPlayer)
+        forEndP(TILEAUTO)
 
 rule "Grid Debug":
     @Event eachPlayer
@@ -93,7 +93,7 @@ def AddTile():
     /* -- grid static -- */
     eventPlayer.TileAdd_GridArray = GridStatic[pTemp(TILEOPERATION_ADD)]
     eventPlayer.Iter[forP.TILEADD_RENDERRANGE_BOTTOM] = [len(eventPlayer.Render_Minions)-1,len(eventPlayer.Render_StaticTexts)-1,len(eventPlayer.Render_StaticEffects)-1,len(eventPlayer.Render_CustProjectiles)-1]
-    forPlayer(forP.TILEADD_TOADD,eventPlayer,0,len(eventPlayer.TileAdd_GridArray)): #for each tile being added
+    forPlayer(TILEADD_TOADD,0,len(eventPlayer.TileAdd_GridArray)): #for each tile being added
         pTemp(TILEADD_GRIDDARRAY_OBJ) = eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
         if(pTemp(TILEADD_GRIDDARRAY_OBJ)[0]): #this means that the object is a map wall
     /*TODO: ADD WALL EFFECT CODE*/                    
@@ -115,13 +115,13 @@ def AddTile():
                 del eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
                 eventPlayer.Iter[forP.TILEADD_TOADD] -= 1
         continueSLoop:
-        forEndP(forP.TILEADD_TOADD,eventPlayer)
+        forEndP(TILEADD_TOADD)
     eventPlayer.TilesTouched.append(eventPlayer.Iter[forP.TILEADD_TOADD])
     GridStatic[pTemp(TILEOPERATION_ADD)] = eventPlayer.TileAdd_GridArray
     /* -- grid -- */
     #stores the contents of grid so that any objects that are no longer valid can be removed from the grid
     eventPlayer.TileAdd_GridArray = Grid[pTemp(TILEOPERATION_ADD)]
-    forPlayer(forP.TILEADD_TOADD,eventPlayer,0,len(eventPlayer.TileAdd_GridArray)): #for each tile being added
+    forPlayer(TILEADD_TOADD,0,len(eventPlayer.TileAdd_GridArray)): #for each tile being added
         pTemp(TILEADD_GRIDDARRAY_OBJ) = eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
         switch (floor(pTemp(TILEADD_GRIDDARRAY_OBJ)/1000)):
             case 1:
@@ -142,7 +142,7 @@ def AddTile():
             del eventPlayer.TileAdd_GridArray[eventPlayer.Iter[forP.TILEADD_TOADD]]
             eventPlayer.Iter[forP.TILEADD_TOADD] -= 1 #remove by index moves the whole array down rather than leaving a gap
         continueDLoop:
-        forEndP(forP.TILEADD_TOADD,eventPlayer)
+        forEndP(TILEADD_TOADD)
     #replaces the contents of the grid index with the stored information
     #if all objects are still valid, nothing changes
     #otherwise, this removes inactive/dead minions, projectiles, etc from the given tile
@@ -198,9 +198,9 @@ def RemoveFromRender():
     #
     eventPlayer.Render_Minions = []
     eventPlayer.Render_CustProjectiles = []
-    forPlayer(forP.RENDERUPDATE_TILES,eventPlayer,0,len(eventPlayer.Iter[forP.TILEOPERATION_UPDATE])):
+    forPlayer(RENDERUPDATE_TILES,0,len(eventPlayer.Iter[forP.TILEOPERATION_UPDATE])):
         eventPlayer.Iter[forP.RENDERUPDATE_ARRAY] = eventPlayer.Iter[forP.TILEOPERATION_UPDATE][eventPlayer.Iter[forP.RENDERUPDATE_TILES]] #stores the individual array from the grid for easier managing (and to prevent update issues)
-        forPlayer(forP.RENDERUPDATE_ELEMENT,eventPlayer,0,len(eventPlayer.Iter[forP.RENDERUPDATE_ARRAY])):
+        forPlayer(RENDERUPDATE_ELEMENT,0,len(eventPlayer.Iter[forP.RENDERUPDATE_ARRAY])):
                 eventPlayer.Iter[forP.RENDERUPDATE_OBJECT] = eventPlayer.Iter[forP.RENDERUPDATE_ARRAY][eventPlayer.Iter[forP.RENDERUPDATE_ELEMENT]]
                 switch(floor(eventPlayer.Iter[forP.RENDERUPDATE_OBJECT]/1000)):
                     case 1: #minions
@@ -213,5 +213,5 @@ def RemoveFromRender():
                         break
                     default:
                         break
-            forEndP(forP.RENDERUPDATE_ELEMENT,eventPlayer)
-        forEndP(forP.RENDERUPDATE_TILES,eventPlayer)*/
+            forEndP(RENDERUPDATE_ELEMENT)
+        forEndP(RENDERUPDATE_TILES)*/

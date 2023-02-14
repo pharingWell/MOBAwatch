@@ -19,9 +19,9 @@ rule "On Controlled Join - Ignores respawn":
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.25))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])*100%5),(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])<0.5 and (eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.25), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.25)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.25)),5)),
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.5))), __substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])*100%5),(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])<0.75 and (eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.5), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.5)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.5)),5)),
     "{0}{1}{2}".format(__substring__("IIIII",0,-0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.75))),__substring__("-..::I",ceil((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])*100%5),(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])<1 and (eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.75), __substring__("-----",((eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])>=0.75)*0.5+min(5,20*max(0,(eventPlayer.Health[0]/eventPlayer.PlayerStats[PStat.HEALTH])-0.75)),5)),
-    "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else Color.TEAM_1 if eventPlayer.Team==1 else Color.TEAM_2,SpecVisibility.NEVER)
+    "{}{}".format("                 \b.|".substring(0, 3 * (max(0, 6.25 - strLen("{0}".format(eventPlayer)) / 2))), "{0}".format(eventPlayer))),updateEveryTick(vect(eventPlayer.getEyePosition().x,eventPlayer.getEyePosition().y+0.0,eventPlayer.getEyePosition().z+0.1)),1,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_STRING_AND_COLOR, Color.GREEN if(localPlayer==eventPlayer.Owner) else eventPlayer.getTeam(),SpecVisibility.NEVER)
     eventPlayer.Level=1
-    createEffect(localPlayer if not eventPlayer.Hidden and eventPlayer.isAlive() else getPlayers(eventPlayer.getTeam()),Effect.RING,Color.TEAM_1 if eventPlayer.Team==0 else Color.TEAM_2, updateEveryTick(eventPlayer.getPosition()*vect(1,0,1)),0.7,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(localPlayer if not eventPlayer.Hidden and eventPlayer.isAlive() else getPlayers(eventPlayer.getTeam()),Effect.RING,eventPlayer.getTeam(), updateEveryTick(eventPlayer.getPosition()*vect(1,0,1)),0.7,EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     print("{}: {}".format(len(eventPlayer.ActionQueue),arrToString7(eventPlayer.ActionQueue[ActionQueueVal.I0])))
 
 rule "On Controlled Join - Pre-spawn":
@@ -157,13 +157,13 @@ def AbilityUse():
 
 def Target_Func():
     eventPlayer.Temp_DistanceSort=[]
-    forPlayer(forP.TARGET_ITER,eventPlayer,0,len(CPlayers[2-eventPlayer.Team])):
+    forPlayer(TARGET_ITER,0,len(CPlayers[2-eventPlayer.Team])):
         eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]]=(vect(3-eventPlayer.Team+eventPlayer.Iter[forP.TARGET_ITER]/100,CPlayers[2-eventPlayer.Team][eventPlayer.Iter[forP.TARGET_ITER]].getPosition().x,CPlayers[2-eventPlayer.Team][eventPlayer.Iter[forP.TARGET_ITER]].getPosition().z))
-        forEndP(forP.TARGET_ITER,eventPlayer)
+        forEndP(TARGET_ITER)
     eventPlayer.Temp_DistanceSort=sorted(eventPlayer.Temp_DistanceSort.concat(random.shuffle(Minions_Loc.slice((2-eventPlayer.Team)*30,30))), lambda i: (abs(eventPlayer.TargetHandling[0].x-i.y))**2 + (abs(eventPlayer.TargetHandling[0].z-i.z))**2)
-    forPlayer(forP.TARGET_ITER,eventPlayer,0,3):
+    forPlayer(TARGET_ITER,0,3):
         if((getHealthByID(eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].x))<=0):
-            forEndP(forP.TARGET_ITER,eventPlayer)
+            forEndP(TARGET_ITER)
             continue
         if((abs(eventPlayer.TargetHandling[0].x-eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].y))**2 + (abs(eventPlayer.TargetHandling[0].z-eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]].z))**2<abs(eventPlayer.TargetHandling[1])**2):
             eventPlayer.Target[0]=eventPlayer.Temp_DistanceSort[eventPlayer.Iter[forP.TARGET_ITER]]
@@ -177,7 +177,7 @@ def Target_Func():
                 return
             else:
                 goto attackMove
-        forEndP(forP.TARGET_ITER,eventPlayer)
+        forEndP(TARGET_ITER)
     return
     attackMove:
     if(eventPlayer.TargetHandling[1]<0):

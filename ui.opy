@@ -44,7 +44,7 @@ def UI_Process():
     elif(eventPlayer.ControlledRef):
         wait(1)
         eventPlayer.setHealth(999)
-    forPlayer(forP.COOLDOWNS,eventPlayer,0,len(CD_Buttons)):
+    forPlayer(COOLDOWNS,0,len(CD_Buttons)):
         if(not eventPlayer.AbilityVerify[2]==CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]]):
             updateCooldown(CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]])
             eventPlayer.setUltCharge(eventPlayer.ControlledRef.getUltCharge())
@@ -54,7 +54,7 @@ def UI_Process():
                 smallMessage(eventPlayer,eventPlayer.getAbilityCooldown(CD_Buttons[eventPlayer.Iter[forP.COOLDOWNS]]))
             elif(eventPlayer.getUltCharge()>98.5 and eventPlayer.AbilityVerify[2]==Button.ULTIMATE):
                 eventPlayer.setUltCharge(99.9)
-        forEndP(forP.COOLDOWNS,eventPlayer)
+        forEndP(COOLDOWNS)
     if(HeroSpecs[eventPlayer.ControlledRef.CHero_Index][HeroStat.BASE][Base.HEALTH]>1):
         eventPlayer.setMaxAmmo(0,eventPlayer.ControlledRef.Resource[1])
         eventPlayer.setAmmo(0,eventPlayer.ControlledRef.Resource[0])
@@ -66,7 +66,7 @@ rule "UI Definitions - Global Cursor":
     #>=(zpos-0.1)*0.016 and getTotalTimeElapsed()%(0.032*highestZpos)<=(zpos)*0.016
     #!define zPos(draw,zpos) null if zpos<getNumberOfTextIds() else (draw)
     #!define CamPos vect(-5,10,0)
-    #!define EYE(player) updateEveryTick((player).CamLoc+vect(0,10,0)) 
+    #!define EYE(player) updateEveryTick((player).CamLoc+vect(0,10,0)+CamPos) 
     # if mousetoggle else (player).ControlledRef.getEyePosition()*vect(1,0,1)+0.5*(player).ControlledRef.getVelocity()/magnitude((player).ControlledRef.getVelocity()))+CamPos+vect(((player).getEyePosition().y-(player).getPosition().y)/2,0,0)
     #!define CURSORX updateEveryTick(localPlayer.getHorizontalFacingAngle())
     #(localPlayer.cursorAngles[0].x)
@@ -106,7 +106,7 @@ rule "UI Definitions - Global Cursor":
     
 
 rule "testingtesting":
-    B = uiPos(A,C)
+    #B = uiPos(A,C)
 
 rule "Start Camera":  
     @Event eachPlayer

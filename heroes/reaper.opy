@@ -64,7 +64,7 @@ rule "Reaper - Cast":
             Ability(Button.ULTIMATE)
             wait()
             if(eventPlayer.isUsingUltimate()):
-                createEffect(getAllPlayers(),Effect.RING,(Color.TEAM_1 if eventPlayer.getTeam()==Team.1 else Color.TEAM_2),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+                createEffect(getAllPlayers(),Effect.RING,eventPlayer.getTeam(),updateEveryTick(vect(eventPlayer.getEyePosition().x,0,eventPlayer.getEyePosition().z)), 8, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
                 addUI(getLastCreatedEntity(),AbilityStage.COMPLETE)
                 while(evalOnce(getTotalTimeElapsed()+HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.USE][Abil_Use.DURATION]) > getTotalTimeElapsed()):
                     wait(HeroSpecs[Heroes.REAPER][HeroStat.ABIL4][Abil.DMG][Abil_Damage.RATE])
