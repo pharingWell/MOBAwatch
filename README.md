@@ -26,6 +26,10 @@ This project accomplishes this by:
  6. Disabling or limiting specific heroes which would be too costly to manage
 
 ---
+### What's the code structure?
+![image](https://user-images.githubusercontent.com/30706897/232511265-335cd23f-5e9e-4d6e-9435-5de5e433b16b.png)
+
+---
 
 ### What's the progress look like?
 
@@ -64,8 +68,7 @@ Either join the [discord server](https://discord.gg/7EmrUhx6gC) or add me on dis
 
 ### How do I run it?
 
-
-Use the code `B71ZP` for version 0.1
+There is currently no stable version.
 
 ---
 
