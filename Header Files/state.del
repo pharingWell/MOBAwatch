@@ -1,0 +1,58 @@
+globalvar EGamePhase gamePhase;
+globalvar Number[] gameState;
+
+enum EGamePhase{
+    LOADING,
+    PREBATTLE,
+    BATTLE,
+    END
+}
+
+define LOADINGSTATE_COUNT: 2;
+enum ELoadingState{
+    ACTIVE,
+    RENDER_SETUP,
+    FINISHED
+}
+
+define PREBATTLESTATE_COUNT: 1;
+enum EPreBattleState{
+    ACTIVE,
+    FINISHED
+}
+
+define BATTLESTATE_COUNT: 1;
+enum EBattleState{
+    ACTIVE,
+    FINISHED
+}
+
+
+void progressState() "progress game state/phase"
+{
+    switch(gamePhase){
+        case EGamePhase.LOADING:
+            if(gameState<LOADINGSTATE_COUNT-1){
+                gameState[EGamePhase.LOADING]++;
+            }else{
+                gamePhase++;
+            }
+            break;
+        case EGamePhase.PREBATTLE:
+            if(gameState<PREBATTLESTATE_COUNT-1){
+                gameState[EGamePhase.PREBATTLE]++;
+            }else{
+                gamePhase++;
+            }
+            break;
+        case EGamePhase.BATTLE:
+            if(gameState<BATTLESTATE_COUNT-1){
+                gameState[EGamePhase.BATTLE]++;
+            }else{
+                gamePhase++;
+            }
+            break;
+        case EGamePhase.END:
+            break;
+    }
+}

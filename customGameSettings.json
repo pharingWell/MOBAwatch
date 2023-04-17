@@ -1,0 +1,34 @@
+{
+    "Mode Name": "MOBAwatch",
+    "Description": "MOBA (WIP)",
+    "Lobby": {
+        "Map Rotation": "Paused",
+        "Max Spectators": 0,
+        "Max Team 1 Players": 5,
+        "Max Team 2 Players": 5,
+        "Return To Lobby": "Never"
+    },
+    "Modes": {
+        "Team Deathmatch": {
+            "Enabled Maps": [
+                "Workshop Expanse (Night)"
+            ],
+            "Game Length In Minutes": 15,
+            "Mercy Resurrect Counteracts Kills": false,
+            "Score To Win": 100,
+            "Self Initiated Respawn": false
+        },
+        "All": {
+            "Game Mode Start": "Immediately",
+            "Skins": false
+        }
+    },
+    "Heroes": {
+        "General": {
+            "General": {
+                "Infinite Ultimate Duration": false,
+                "No Ammunition Requirement": false
+            }
+        }
+    }
+}

@@ -1,0 +1,26 @@
+import "../customGameSettings.json";
+import "../Header Files/main.del";
+import "../Header Files/state.del";
+import "ui.ostw";
+import "minions.ostw";
+
+rule: 'Create Minion For Host'
+Event.OngoingPlayer
+if(EventPlayer() == HostPlayer())
+{   
+    gamePhase = EGamePhase.LOADING;
+    gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
+    EventPlayer().renderCreatures.ModAppend(new Minion(Team.Team2,EMinionType.RANGED));
+    CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+    WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 99);
+    gamePhase = EGamePhase.BATTLE;
+    ForcePlayerHero(EventPlayer(),Hero.Ana);
+    WaitUntil(HasSpawned(HostPlayer())==true,999);
+}
+
+rule: 'Debug Tings'
+{
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
+    Wait(3);
+    SetMatchTime(0);
+}

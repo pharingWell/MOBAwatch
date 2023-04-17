@@ -1,0 +1,4 @@
+class Entity{
+    public Boolean isPlayer;
+    public Number tickOffset;
+}

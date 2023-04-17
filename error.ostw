@@ -1,0 +1,33 @@
+import "Header Files/state.del";
+enum EErrorSeverity{
+    WARNING,
+    ERROR,
+    FATAL
+}
+
+struct Error{
+    public String message;
+    public String source;
+    public EErrorSeverity severity;
+}
+
+void throwError(Error e) "throw Error"
+{
+    switch (e.severity){
+        case EErrorSeverity.WARNING:
+            LogToInspector("Warning! " + e.source + " threw the following warning:\n " + e.message);
+            break;
+        case EErrorSeverity.ERROR:
+            SmallMessage(HostPlayer(), "Error: " + e.message);
+            LogToInspector("!!Error!!" + e.source + " threw the following error:\n " + e.message);
+            break;
+        case EErrorSeverity.FATAL:
+            BigMessage(HostPlayer(),"Fatal Error. Check Log");
+            LogToInspector("FATAL." + e.source + " threw the following error:\n " + e.message);
+            Wait(2);
+            BigMessage(LocalPlayer(), "Fatal Game Error, sending back to lobby");
+            WaitUntil(gamePhase >= EGamePhase.PREBATTLE, 99);
+            ReturnToLobby();
+            break;  
+    }
+}

@@ -1,0 +1,31 @@
+import "../Header Files/ui.del";
+import "../Header Files/state.del";
+import "../Header Files/creature.del";
+
+define RENDER_SIZE: 50;
+playervar Creature[] renderCreatures;
+
+rule: 'Render_Setup' 
+if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
+{
+    for(define i = 0; i < RENDER_SIZE; i++){
+        Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
+        Number tick: (TotalTimeElapsed()-creature.tickOffset)%1;
+        CreateInWorldText(
+            creature.visibility ? LocalPlayer() : null,
+            creature.appearance,
+            creature.position + tick*creature.velocity,
+            3, 
+            Clipping.DoNotClip, 
+            InworldTextRev.VisibleToPositionStringAndColor,
+            creature.color, 
+            Spectators.DefaultVisibility   
+        );
+
+        /*
+             
+        */
+    }
+    progressState();
+    
+}
