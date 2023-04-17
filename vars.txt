@@ -407,6 +407,7 @@ enum Activation:
     NONE,
     M1 #TODO: good way to handle activation
 
+    
 
 enum HeroStat:
     BASE,
