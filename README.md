@@ -74,7 +74,7 @@ There is currently no stable version.
 
 ### How do I edit it?
 
-  First, get [overpy](https://github.com/Zezombye/overpy).
+  First, get [ostw](https://github.com/ItsDeltin/Overwatch-Script-To-Workshop).
 
 Follow the instructions on how to compile, and modify or edit it to your heart's content. [^1]
 
