@@ -1,0 +1,18 @@
+String toString(Any[] arr) "Array to String - DEBUG"
+{
+    String s = $"[{arr[0]}";
+    
+    for(define i = 1; i < CountOf(arr); i++){
+        if(CountOf(arr[i])>0){
+            s = $"{s}, Array[{CountOf(arr[i])}]";
+        }else{
+            s = $"{s}, {arr[i]}";
+        }
+    }
+    return $"{s}]";
+}
+
+define printToScreen(in String s, Location l, Boolean shouldRev){
+    return CreateHudText(LocalPlayer(), shouldRev ? s : EvaluateOnce(s), null, null, l, 1, Color.White, null, null, HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+}
+

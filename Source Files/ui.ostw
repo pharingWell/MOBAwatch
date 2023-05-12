@@ -10,7 +10,7 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 {
     for(define i = 0; i < RENDER_SIZE; i++){
         Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
-        Number tick: (TotalTimeElapsed()-creature.tickOffset)%1;
+        Number tick: (TotalTimeElapsed()-creature.tickOffset);
         CreateInWorldText(
             creature.visibility ? LocalPlayer() : null,
             creature.appearance,
@@ -22,9 +22,6 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
             Spectators.DefaultVisibility   
         );
 
-        /*
-             
-        */
     }
     progressState();
     

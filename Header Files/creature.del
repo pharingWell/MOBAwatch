@@ -1,15 +1,16 @@
 import "entity.del";
 
-define CREATURE_COUNT: 96;
-
-        
+define CREATURE_COUNT: 96; 
+globalvar Creature[] tickOffsetSorted;
 
 class Creature : Entity{
     void creature_constructor(){
-        tickOffset = TotalTimeElapsed()%1;
+        tickOffset = TotalTimeElapsed();
         isPlayer = false;
+        velocity = Vector(0,0,0); //as otherwise it tries to add a vector to the number 0, has a conniption, and goes to 0, aka 0,0,0
     }
-    public Boolean visibility;
+    Number tick: (TotalTimeElapsed()%1-this.tickOffset);
+    public Boolean visibility; //#2
     public Vector position;
     public Vector velocity;
 
@@ -17,6 +18,6 @@ class Creature : Entity{
     public Entity target;
     public Team team;
     public String appearance;
-    public Color color;
+    public Color color; //#9
 
 }

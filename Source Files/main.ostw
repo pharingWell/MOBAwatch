@@ -1,26 +1,38 @@
 import "../customGameSettings.json";
 import "../Header Files/main.del";
-import "../Header Files/state.del";
-import "ui.ostw";
-import "minions.ostw";
 
-rule: 'Create Minion For Host'
-Event.OngoingPlayer
-if(EventPlayer() == HostPlayer())
+import "../error.ostw";
+import "../debug.ostw";
+
+import "state.ostw";
+import "ui.ostw";
+import "creature.ostw"; 
+import "minion.ostw";
+globalvar String debugString;
+rule: 'Setup Phase'
 {   
     gamePhase = EGamePhase.LOADING;
     gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
-    EventPlayer().renderCreatures.ModAppend(new Minion(Team.Team2,EMinionType.RANGED));
-    CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
-    WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 99);
+    WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
     gamePhase = EGamePhase.BATTLE;
-    ForcePlayerHero(EventPlayer(),Hero.Ana);
-    WaitUntil(HasSpawned(HostPlayer())==true,999);
+    printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
 }
 
 rule: 'Debug Tings'
 {
+    CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+    ForcePlayerHero(HostPlayer(),Hero.Ana);
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
     Wait(3);
     SetMatchTime(0);
+}
+rule: 'Create Minion For Host'
+Event.OngoingPlayer
+if(EventPlayer() == HostPlayer())
+if(IsButtonHeld(EventPlayer(),Button.Interact))
+{ 
+    waveConstructor();
+    debugString = toString(tickOffsetSorted);
+    WaitUntil(IsButtonHeld(EventPlayer(),Button.Interact)==false, 10);
 }

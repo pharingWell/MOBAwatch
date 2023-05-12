@@ -11,6 +11,13 @@ struct Error{
     public EErrorSeverity severity;
 }
 
+void waitUntil_Verify(Boolean condition, Number timeout, Error e){
+    WaitUntil(condition,timeout);
+    if(!condition){
+        throwError(e);
+    }
+}
+
 void throwError(Error e) "throw Error"
 {
     switch (e.severity){

@@ -1,0 +1,39 @@
+import "../Header Files/minion.del";
+
+import "../debug.ostw";
+
+import "ui.ostw";
+
+public void waveConstructor(){
+    Number pointerIndex = CountOf(waves); 
+    for(define i  = 0; i < CountOf(EMinionType_toArray); i++){
+        waveMacro_perType(EMinionType_toArray[i], MINION_WAVE_SIZE[i]);
+    }
+    if(CountOf(waves)>0){
+        waves.ModAppend(LastOf(minions));
+    }else{
+        waves[0] = LastOf(minions);
+    }
+    constructorCleanup();
+    //for()
+}
+
+private void waveMacro_perType(in EMinionType type, Number size){
+    for(define i = 0; i < size; i++){
+        waveMacro_perTeam(Team.Team1,type);
+        waveMacro_perTeam(Team.Team2,type);
+        Wait(0.33);
+    }
+}
+
+private void waveMacro_perTeam(Team team, EMinionType type){
+    minions.ModAppend(new Minion(team, type));
+    tickOffsetSorted.ModAppend(LastOf(minions));
+    HostPlayer().renderCreatures.ModAppend(LastOf(minions));
+}
+
+public void constructorCleanup(){
+    tickOffsetSorted = SortedArray(tickOffsetSorted, (<Creature>ArrayElement()).tickOffset);
+    LogToInspector(toString(tickOffsetSorted));
+    LogToInspector(toString(MappedArray(tickOffsetSorted, (<Creature>ArrayElement()).tickOffset)));
+}
