@@ -1,4 +1,7 @@
 globalvar EGamePhase gamePhase;
+
+# Array with each game Phase per state.
+# Call with gameState[EGamePhase]
 globalvar Number[] gameState;
 
 enum EGamePhase{

@@ -1,1 +1,26 @@
 import "../Header Files/entity.del";
+import "../Header Files/state.del";
+import "../error.ostw";
+
+rule: 'Update positions with velocity'
+if(gamePhase == EGamePhase.BATTLE)
+if(CountOf(entities) > 0)
+if(TotalTimeElapsed()%1 <= 0.016)
+{   
+    for(define entityIter = 0; entityIter < CountOf(entities); entityIter++){ 
+        Entity entity: entities[entityIter];
+        Number tick: (TotalTimeElapsed()-entity.tickOffset);
+        entity.position += entity.velocity * tick;
+        if(entity.cell != Grid_cellByPosition(entity.position)){
+            Grid_move(entity, entity.cell, Grid_cellByPosition(entity.position));
+        }
+        entity.tickOffset = TotalTimeElapsed();
+        Wait(0.016);
+    }
+    if(gamePhase!=EGamePhase.BATTLE){
+        
+        Abort();
+    }
+    Wait(0.016);
+    Loop();
+}

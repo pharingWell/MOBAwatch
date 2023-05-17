@@ -1,13 +1,13 @@
 import "../Header Files/ui.del";
 import "../Header Files/state.del";
-import "../Header Files/creature.del";
+import "../debug.ostw";
+import "grid.ostw";
 
-define RENDER_SIZE: 50;
-playervar Creature[] renderCreatures;
 
-rule: 'Render_Setup' 
+rule: 'Global Render Setup' 
 if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 {
+    gridConstructor();
     for(define i = 0; i < RENDER_SIZE; i++){
         Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
         Number tick: (TotalTimeElapsed()-creature.tickOffset);
@@ -21,8 +21,19 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
             creature.color, 
             Spectators.DefaultVisibility   
         );
-
     }
     progressState();
-    
 }
+
+rule: 'Player Render Setup'
+Event.OngoingPlayer
+{
+    handlePlayerCells();
+    Wait(0.25);
+    Loop();
+}
+
+
+
+
+

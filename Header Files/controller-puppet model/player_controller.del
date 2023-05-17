@@ -1,1 +1,7 @@
+import "../grid.del";
+playervar Cell[] viewedCells;
 
+rule: "setup viewed cell"
+{
+
+}

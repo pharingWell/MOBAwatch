@@ -3,6 +3,7 @@ import "../Header Files/main.del";
 
 import "../error.ostw";
 import "../debug.ostw";
+import "../tests.ostw";
 
 import "state.ostw";
 import "ui.ostw";
@@ -15,15 +16,15 @@ rule: 'Setup Phase'
     gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
     WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
     gamePhase = EGamePhase.BATTLE;
-    printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
+    //printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
 }
 
 rule: 'Debug Tings'
 {
     CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
     ForcePlayerHero(HostPlayer(),Hero.Ana);
-    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
-    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
+    //CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
+    //CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
     Wait(3);
     SetMatchTime(0);
 }
@@ -33,6 +34,6 @@ if(EventPlayer() == HostPlayer())
 if(IsButtonHeld(EventPlayer(),Button.Interact))
 { 
     waveConstructor();
-    debugString = toString(tickOffsetSorted);
+    //debugString = toString(tickOffsetSorted);
     WaitUntil(IsButtonHeld(EventPlayer(),Button.Interact)==false, 10);
 }

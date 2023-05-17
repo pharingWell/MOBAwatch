@@ -1,4 +1,6 @@
 import "Header Files/state.del";
+import "debug.ostw";
+
 enum EErrorSeverity{
     WARNING,
     ERROR,
@@ -11,6 +13,8 @@ struct Error{
     public EErrorSeverity severity;
 }
 
+# Uses Error struct:
+#     String message, String source, EErrorSeverity severity;
 void waitUntil_Verify(Boolean condition, Number timeout, Error e){
     WaitUntil(condition,timeout);
     if(!condition){
@@ -18,6 +22,10 @@ void waitUntil_Verify(Boolean condition, Number timeout, Error e){
     }
 }
 
+globalvar Boolean errorThrown! = false;
+
+# Uses Error struct:
+#     String message, String source, EErrorSeverity severity;
 void throwError(Error e) "throw Error"
 {
     switch (e.severity){
@@ -26,14 +34,20 @@ void throwError(Error e) "throw Error"
             break;
         case EErrorSeverity.ERROR:
             SmallMessage(HostPlayer(), "Error: " + e.message);
+            CreateHudText(HostPlayer(), $"!Error!: {e.message}  from {e.source}", null, null, Location.Right, 29, Color.White,Color.White, null, HudTextRev.None,Spectators.VisibleNever);
             LogToInspector("!!Error!!" + e.source + " threw the following error:\n " + e.message);
+            errorThrown = true;
             break;
         case EErrorSeverity.FATAL:
-            BigMessage(HostPlayer(),"Fatal Error. Check Log");
+            errorThrown = true;
+            WaitUntil(IsTrueForAny(AllPlayers(), HasSpawned(ArrayElement())) == true, 15);
+            Wait(1);
+            CreateHudText(HostPlayer(), $"\n\n\n\n\n\nFATAL: {e.message}  from {e.source} \n\n\n\n\n", null, null, Location.Right, 30, Color.White,Color.White, null, HudTextRev.None,Spectators.VisibleNever);
             LogToInspector("FATAL." + e.source + " threw the following error:\n " + e.message);
-            Wait(2);
-            BigMessage(LocalPlayer(), "Fatal Game Error, sending back to lobby");
-            WaitUntil(gamePhase >= EGamePhase.PREBATTLE, 99);
+            BigMessage(LocalPlayer(), "Fatal Game Error, sending back to lobby in 10 seconds");
+            Wait(11);
+            //WaitUntil(gameState[gamePhase] >= EGamePhase.PREBATTLE && gameState == EPreBattleState.FINISHED, 99);
+            //LogToInspector(toString(MappedArray(AllPlayers(), HasSpawned(ArrayElement()))));
             ReturnToLobby();
             break;  
     }

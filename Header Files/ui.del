@@ -1,0 +1,4 @@
+import "../Header Files/creature.del";
+define RENDER_SIZE: 50;
+playervar Creature[] renderCreatures;
+playervar Cell[] playerCells;

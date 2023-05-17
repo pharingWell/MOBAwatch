@@ -1,4 +1,20 @@
+import "grid.del";
+
+//Class for any object that is dynamic
+//Grid works with entities 
+
 class Entity{
-    public Boolean isPlayer;
+    public Boolean visibility;
     public Number tickOffset;
+    public Vector position;
+    public Vector velocity;
+    public Cell cell;
+    Number tick: (TotalTimeElapsed()%1-this.tickOffset);
+    
+    void entity_constructor(){
+        tickOffset = TotalTimeElapsed();
+        velocity = Vector(0,0,0); //as otherwise it tries to add a vector to the number 0, has a conniption, and goes to 0, aka 0,0,0
+    }
 }
+
+globalvar Entity[] entities;

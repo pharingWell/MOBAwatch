@@ -1,23 +1,21 @@
 import "entity.del";
 
-define CREATURE_COUNT: 96; 
-globalvar Creature[] tickOffsetSorted;
+define CREATURE_COUNT: 96;
+
+//Generic class for Mercenaries and Minions
+//Can take damage, can be targetted
+//has id, team, etc
 
 class Creature : Entity{
-    void creature_constructor(){
-        tickOffset = TotalTimeElapsed();
-        isPlayer = false;
-        velocity = Vector(0,0,0); //as otherwise it tries to add a vector to the number 0, has a conniption, and goes to 0, aka 0,0,0
-    }
-    Number tick: (TotalTimeElapsed()%1-this.tickOffset);
-    public Boolean visibility; //#2
-    public Vector position;
-    public Vector velocity;
-
     public Number health;
     public Entity target;
     public Team team;
     public String appearance;
     public Color color; //#9
+}
 
+struct CreaturePlayer {
+    public Boolean isPlayer;
+    public Creature creatureRef;
+    public Player playerRef;
 }

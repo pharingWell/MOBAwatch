@@ -1,1 +1,109 @@
 import "../Header Files/grid.del";
+import "../Header Files/ui.del";
+import "../debug.ostw";
+
+Any createGrapple(in Vector origin, in Vector offset, in Number j):
+    CreateBeamEffect(
+        LocalPlayer(),
+        BeamType.GoodBeam,
+        origin,
+        origin + offset,
+        Color.Black,
+        EffectRev.VisibleToAndColor);
+
+void gridConstructor()
+{
+    new Cell(); //discard a cell for "null"
+    for(define j! = 0; j < GRID_COLUMNS * GRID_ROWS; j++){
+        Number x: j%GRID_COLUMNS;
+        Number y: RoundToInteger(j/GRID_COLUMNS, Rounding.Down);
+        
+        grid.cells[j] = new Cell();
+        grid.cells[j].statics = [1]; //TODO load from disk
+        grid.cells[j].dynamic = [];
+        Vector bottomCorner! = GRID_BASE + Vector(
+            CELL_WIDTH * (j%GRID_COLUMNS), 0, 
+            CELL_HEIGHT * RoundToInteger(j/GRID_COLUMNS,Rounding.Down));
+        CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],bottomCorner + Vector(CELL_WIDTH/2,0,CELL_WIDTH/2)
+            ,3,Clipping.DoNotClip,InworldTextRev.VisibleToStringAndColor,
+            LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)]) ? CustomColor(EvaluateOnce(j)*10+100, 6, EvaluateOnce(j)*10+100, 100) : CustomColor(1,1,1, 1),
+            Spectators.DefaultVisibility);
+        createGrapple(bottomCorner, Vector(CELL_WIDTH,0,0), j);
+        createGrapple(bottomCorner, Vector(0,0,CELL_HEIGHT), j);
+        createGrapple(bottomCorner + Vector(CELL_WIDTH,0,0), Vector(0,0,CELL_HEIGHT), j);
+        createGrapple(bottomCorner + Vector(0,0,CELL_HEIGHT), Vector(CELL_WIDTH,0,0), j);
+        Wait();
+    }
+    
+    printToScreen(toString(grid.cells),Location.Left,true);
+}
+
+/*
+    
+    */
+Cell Grid_cellByPosition(in Vector inputPosition)
+{
+    define xcord: RoundToInteger((inputPosition-GRID_BASE).X/CELL_WIDTH,Rounding.Down);
+    define ycord: RoundToInteger((inputPosition-GRID_BASE).Z/CELL_HEIGHT,Rounding.Down);
+    
+    if(xcord >= GRID_COLUMNS || xcord < 0 || ycord >= GRID_ROWS || ycord < 0){
+        EventPlayer().debug1.ModAppend(Vector(xcord,-1,ycord));
+        return NULL_CELL;
+    }
+    EventPlayer().debug1.ModAppend(Vector(xcord,0,ycord));
+    return grid.cells[ycord * GRID_COLUMNS + xcord];
+}
+
+Vector Grid_positionOfCell(in Cell cell): 
+    Vector(
+        (grid.cells.IndexOf(cell)%GRID_COLUMNS+0.5) * CELL_WIDTH,
+        0, (RoundToInteger(grid.cells.IndexOf(cell)/GRID_COLUMNS,Rounding.Down)+0.5) * CELL_HEIGHT
+    ) + GRID_BASE;
+
+void Grid_add(in Entity e, in Cell cell){
+    grid.cells[cell].dynamic.ModAppend(e);
+}
+void Grid_remove(in Entity e, in Cell cell){
+    grid.cells[cell].dynamic.ModRemoveByValue(e);
+}
+void Grid_move(in Entity e, in Cell from, in Cell to){
+    if(grid.cells[from].dynamic.Contains(e)){
+        Grid_remove(e,from);
+        Grid_add(e,to);
+    }
+}
+
+void requestCells(ref Any[] arrayPointer, in Cell[] cells){
+    arrayPointer = [];
+    foreach(Cell cell in cells){
+        arrayPointer.ModAppend(grid.cells[cell]);
+    }
+}
+
+define VIEW_RANGE: 1;
+void handlePlayerCells(){
+    define position: EventPlayer().Position();
+    debug1 = [];
+    Cell[] cells = [];
+//    checkRange(cells,position);
+    checkRange(cells,position + Vector(CELL_WIDTH*VIEW_RANGE,0,0));
+    checkRange(cells,position + Vector(-CELL_WIDTH*VIEW_RANGE,0,0));
+    checkRange(cells,position + Vector(0,0,CELL_HEIGHT*VIEW_RANGE));
+    checkRange(cells,position + Vector(0,0,-CELL_HEIGHT*VIEW_RANGE));
+    // checkRange(cells,position + Vector(CELL_WIDTH*VIEW_RANGE,0,CELL_WIDTH*VIEW_RANGE));
+    // checkRange(cells,position + Vector(-CELL_WIDTH*VIEW_RANGE,0,CELL_WIDTH*VIEW_RANGE));
+    // checkRange(cells,position + Vector(CELL_WIDTH*VIEW_RANGE,0,-CELL_HEIGHT*VIEW_RANGE));
+    // checkRange(cells,position + Vector(-CELL_WIDTH*VIEW_RANGE,0,-CELL_HEIGHT*VIEW_RANGE));
+    requestCells(EventPlayer().playerCells,cells); //moves all the requested cells into playerCells
+}
+
+void checkRange(ref Cell[] cells, in Vector pos){
+    Cell temp = Grid_cellByPosition(pos);
+    if(cells.Contains(temp) || temp == NULL_CELL){
+        return;
+    }   
+    if(cells.Length>0)
+        cells.ModAppend(temp);
+    else
+        cells[0] = temp;
+} 

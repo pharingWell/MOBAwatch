@@ -8,6 +8,10 @@ globalvar Minion[] minions;
 globalvar Number[] waves; //points to the index of the first minion in the wave. When removing a mi
 //zeroes?
 
+define TEAM1_MINION_SPAWN: Vector(0,0,10);
+
+define TEAM2_MINION_SPAWN: Vector(0,0,-10);
+
 enum EMinionType{
     MELEE,
     MAGE,
@@ -19,16 +23,16 @@ class Minion : Creature
 {
     public EMinionType type;
     public constructor(in Team team, in EMinionType type){
-        creature_constructor();
+        entity_constructor();
         switch (team){
             case Team.Team1:
                 color = Color.Team1;
-                position = Vector(0,0,10);
+                position = TEAM1_MINION_SPAWN;
                 velocity = Vector(0,0,-1);
                 break;
             case Team.Team2:
                 color = Color.Team2;
-                position = Vector(0,0,-10);
+                position = TEAM2_MINION_SPAWN;
                 velocity = Vector(0,0,1);
                 break;
             case Team.All:
