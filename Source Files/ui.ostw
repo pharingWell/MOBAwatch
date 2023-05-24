@@ -28,7 +28,10 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 rule: 'Player Render Setup'
 Event.OngoingPlayer
 {
-    handlePlayerCells();
+    DisableGameModeHud();
+    define position: EventPlayer().Position();
+    define VIEW_RANGE: 2;
+    Cell[] observedCells = getAllCellsInUniformDistanceFromCell(Grid_cellByPosition(position), VIEW_RANGE);
     Wait(0.25);
     Loop();
 }

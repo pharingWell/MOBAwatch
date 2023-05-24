@@ -9,9 +9,8 @@ define CREATURE_COUNT: 96;
 class Creature : Entity{
     public Number health;
     public Entity target;
-    public Team team;
     public String appearance;
-    public Color color; //#9
+    public Color color;
 }
 
 struct CreaturePlayer {

@@ -1,6 +1,9 @@
-import "../Header Files/grid.del";
-import "../Header Files/ui.del";
+import "../global.del";
 import "../debug.ostw";
+import "../Header Files/ui.del";
+import "../Header Files/grid.del";
+import "../Header Files/controller-puppet model/player_controller.del";
+
 
 Any createGrapple(in Vector origin, in Vector offset, in Number j):
     CreateBeamEffect(
@@ -10,21 +13,26 @@ Any createGrapple(in Vector origin, in Vector offset, in Number j):
         origin + offset,
         Color.Black,
         EffectRev.VisibleToAndColor);
-
 void gridConstructor()
 {
-    new Cell(); //discard a cell for "null"
+    for(define i! = 0; i < 6; i++){
+        new Cell(-1,-1); //discard a cell for "null"
+    }
+    //
     for(define j! = 0; j < GRID_COLUMNS * GRID_ROWS; j++){
         Number x: j%GRID_COLUMNS;
         Number y: RoundToInteger(j/GRID_COLUMNS, Rounding.Down);
         
-        grid.cells[j] = new Cell();
+        grid.cells[j] = new Cell(x,y);
         grid.cells[j].statics = [1]; //TODO load from disk
         grid.cells[j].dynamic = [];
+        
+        //DEBUG
+
         Vector bottomCorner! = GRID_BASE + Vector(
             CELL_WIDTH * (j%GRID_COLUMNS), 0, 
             CELL_HEIGHT * RoundToInteger(j/GRID_COLUMNS,Rounding.Down));
-        CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],bottomCorner + Vector(CELL_WIDTH/2,0,CELL_WIDTH/2)
+        CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],Grid_positionOfCell(grid.cells[EvaluateOnce(j)])
             ,3,Clipping.DoNotClip,InworldTextRev.VisibleToStringAndColor,
             LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)]) ? CustomColor(EvaluateOnce(j)*10+100, 6, EvaluateOnce(j)*10+100, 100) : CustomColor(1,1,1, 1),
             Spectators.DefaultVisibility);
@@ -34,76 +42,115 @@ void gridConstructor()
         createGrapple(bottomCorner + Vector(0,0,CELL_HEIGHT), Vector(CELL_WIDTH,0,0), j);
         Wait();
     }
-    
-    printToScreen(toString(grid.cells),Location.Left,true);
 }
 
-/*
-    
-    */
+Cell Grid_cellFromGridCoord(in Number xcord, in Number ycord){
+    return (xcord >= GRID_COLUMNS || xcord < 0 || ycord >= GRID_ROWS || ycord < 0) ? null : grid.cells[xcord + ycord * GRID_COLUMNS];
+}
+
+Vector Grid_positionFromGridCoord(in Number xcord, in Number ycord):
+   Vector((xcord + 0.5) * CELL_WIDTH, 0, (ycord + 0.5) * CELL_HEIGHT) 
+    + GRID_BASE;
+
 Cell Grid_cellByPosition(in Vector inputPosition)
 {
     define xcord: RoundToInteger((inputPosition-GRID_BASE).X/CELL_WIDTH,Rounding.Down);
     define ycord: RoundToInteger((inputPosition-GRID_BASE).Z/CELL_HEIGHT,Rounding.Down);
-    
-    if(xcord >= GRID_COLUMNS || xcord < 0 || ycord >= GRID_ROWS || ycord < 0){
-        EventPlayer().debug1.ModAppend(Vector(xcord,-1,ycord));
-        return NULL_CELL;
-    }
-    EventPlayer().debug1.ModAppend(Vector(xcord,0,ycord));
-    return grid.cells[ycord * GRID_COLUMNS + xcord];
+    return Grid_cellFromGridCoord(xcord,ycord);
 }
 
+//(grid.cells.IndexOf(cell)%GRID_COLUMNS+0.5)
+//(RoundToInteger(grid.cells.IndexOf(cell)/GRID_COLUMNS,Rounding.Down)+0.5)
+
 Vector Grid_positionOfCell(in Cell cell): 
-    Vector(
-        (grid.cells.IndexOf(cell)%GRID_COLUMNS+0.5) * CELL_WIDTH,
-        0, (RoundToInteger(grid.cells.IndexOf(cell)/GRID_COLUMNS,Rounding.Down)+0.5) * CELL_HEIGHT
-    ) + GRID_BASE;
+    Grid_positionFromGridCoord(cell.x,cell.y);
 
 void Grid_add(in Entity e, in Cell cell){
     grid.cells[cell].dynamic.ModAppend(e);
+    foreach(Controller viewer in cell.viewers){
+
+    }
 }
-void Grid_remove(in Entity e, in Cell cell){
-    grid.cells[cell].dynamic.ModRemoveByValue(e);
-}
-void Grid_move(in Entity e, in Cell from, in Cell to){
-    if(grid.cells[from].dynamic.Contains(e)){
-        Grid_remove(e,from);
-        Grid_add(e,to);
+void Grid_remove(in Creature c, in Cell cell){
+    grid.cells[cell].dynamic.ModRemoveByValue(c);
+    foreach(Controller viewer in cell.viewers){
+        Number indexOfRenderData = c.viewerIndex[viewer.self.ID];
+        Dictionary<Cell,Number[]>.Set(
+            viewer.self.cellData,/*with key*/ cell,
+            viewer.self.cellData.Get(cell).Remove(indexOfRenderData));
+            //remove the given index from the data
+        c.viewerIndex[viewer.self.ID] = null;
+
     }
 }
 
-void requestCells(ref Any[] arrayPointer, in Cell[] cells){
-    arrayPointer = [];
-    foreach(Cell cell in cells){
-        arrayPointer.ModAppend(grid.cells[cell]);
+void Grid_remove(in Projectile p, in Cell cell){
+    grid.cells[cell].dynamic.ModRemoveByValue(p);
+    foreach(Controller viewer in cell.viewers){
+        Number indexOfRenderData = p.viewerIndex[viewer.self.ID];
+        Dictionary<Cell,Number[]>.Set(
+            viewer.self.cellData,/*with key*/ cell,
+            viewer.self.cellData.Get(cell).Remove(indexOfRenderData));
+            //remove the given index from the data
+        p.viewerIndex[viewer.self.ID] = null;
+        if(viewer.self.renderProjectiles[indexOfRenderData] != p){
+            throwError({message: $"projectile {viewer.self.renderProjectiles[indexOfRenderData]}  "+
+            "overwritten with null", source: "Grid_remove: projectile", severity: EErrorSeverity.ERROR});
+        }
+        viewer.self.renderProjectiles[indexOfRenderData] = null; //removes self from each player's render buffer
     }
 }
 
-define VIEW_RANGE: 1;
-void handlePlayerCells(){
-    define position: EventPlayer().Position();
-    debug1 = [];
-    Cell[] cells = [];
-//    checkRange(cells,position);
-    checkRange(cells,position + Vector(CELL_WIDTH*VIEW_RANGE,0,0));
-    checkRange(cells,position + Vector(-CELL_WIDTH*VIEW_RANGE,0,0));
-    checkRange(cells,position + Vector(0,0,CELL_HEIGHT*VIEW_RANGE));
-    checkRange(cells,position + Vector(0,0,-CELL_HEIGHT*VIEW_RANGE));
-    // checkRange(cells,position + Vector(CELL_WIDTH*VIEW_RANGE,0,CELL_WIDTH*VIEW_RANGE));
-    // checkRange(cells,position + Vector(-CELL_WIDTH*VIEW_RANGE,0,CELL_WIDTH*VIEW_RANGE));
-    // checkRange(cells,position + Vector(CELL_WIDTH*VIEW_RANGE,0,-CELL_HEIGHT*VIEW_RANGE));
-    // checkRange(cells,position + Vector(-CELL_WIDTH*VIEW_RANGE,0,-CELL_HEIGHT*VIEW_RANGE));
-    requestCells(EventPlayer().playerCells,cells); //moves all the requested cells into playerCells
+void Grid_move(in Creature c, in Cell from, in Cell to){
+    if(grid.cells[from].dynamic.Contains(c)){
+        Grid_remove(c,from);
+        Grid_add(c,to);
+    }
 }
 
-void checkRange(ref Cell[] cells, in Vector pos){
+void Grid_move(in Projectile p, in Cell from, in Cell to){
+    if(grid.cells[from].dynamic.Contains(p)){
+        Grid_remove(p,from);
+        Grid_add(p,to);
+    }
+}
+
+
+
+playervar Cell[] cells;
+
+
+//checkRange(cells,position + Vector(0,0,-CELL_HEIGHT*VIEW_RANGE));
+void checkRange(ref Cell[] cellsRef, in Vector pos){
     Cell temp = Grid_cellByPosition(pos);
-    if(cells.Contains(temp) || temp == NULL_CELL){
+    if(temp == null || cellsRef.Contains(temp)){
         return;
     }   
-    if(cells.Length>0)
-        cells.ModAppend(temp);
+    if(cellsRef.Length>0)
+        cellsRef.ModAppend(temp);
     else
-        cells[0] = temp;
+        cellsRef[0] = temp;
 } 
+
+Cell[] getAllCellsInUniformDistanceFromCell(in Cell given, Number distance){
+    Number index = IndexOfArrayValue(grid.cells,given);
+    Cell[] returnCells = [];
+    for(define j! = -distance; j <= distance; j++){
+       for(define i! = -distance; i <= distance; i++){
+            Cell temp = Grid_cellFromGridCoord(i,j);
+            if (temp != null){
+                returnCells.ModAppend(temp);
+            }
+        } 
+    }
+    return returnCells;
+}
+
+
+
+// void requestCells(ref Any[] arrayPointer, in Cell[] cells){ //moves all the requested cells into playerCells
+//     arrayPointer = [];
+//     foreach(Cell cell in cells){
+//         arrayPointer.ModAppend(cell);
+//     }
+// }

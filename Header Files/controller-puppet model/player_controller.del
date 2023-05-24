@@ -1,7 +1,19 @@
 import "../grid.del";
+import "../../const.del";
 playervar Cell[] viewedCells;
 
-rule: "setup viewed cell"
-{
+struct Controller{
+    public Player self;
+    public Player controlled;
+}
 
+playervar Number ID;
+
+rule: 'set ID'
+Event.OngoingPlayer
+{
+    ID = SlotOf(EventPlayer()) + (TeamOf(EventPlayer()) == Team.Team2 ? PLAYER_COUNT : 0);
+    if(!EventPlayer().IsDummy()){
+        ID += 10; //controllers have ids 10-19, puppets have ids 0-9
+    }
 }

@@ -3,13 +3,27 @@ import "grid.del";
 //Class for any object that is dynamic
 //Grid works with entities 
 
+// enum EEntityType{
+//     MINION,
+//     MERCENARY,
+//     PROJECTILE
+// }
+
 class Entity{
     public Boolean visibility;
+    
+    public Team team;
     public Number tickOffset;
     public Vector position;
     public Vector velocity;
     public Cell cell;
+    //public EEntityType type;
+    public Number[] viewerIndex;
+    
+
+    
     Number tick: (TotalTimeElapsed()%1-this.tickOffset);
+    
     
     void entity_constructor(){
         tickOffset = TotalTimeElapsed();

@@ -1,11 +1,19 @@
 import "../Header Files/entity.del";
+import "../Header Files/statics.del";
+import "../Header Files/controller-puppet model/player_controller.del";
 import "../error.ostw";
-playervar Vector[] debug1;
+
 class Cell{
+    public Controller[] viewers;
     public Entity[] dynamic;
-    public Effect[] statics;
+    public Statics[] statics;
+    public Number x;
+    public Number y;
+    public constructor(in Number x, in Number y){
+        this.x = x;
+        this.y = y;
+    }
 }
-define NULL_CELL: <Cell>0;
 struct GridStruct{ //only used once
     public Cell[] cells;
 }
@@ -17,8 +25,8 @@ define CELL_WIDTH: 10;
 define CELL_HEIGHT: 10;
 
 # X Count
-define GRID_COLUMNS: 7;
+define GRID_COLUMNS: 8;
 # Y Count
-define GRID_ROWS: 4;
+define GRID_ROWS: 8;
 
 
