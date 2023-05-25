@@ -5,7 +5,7 @@ import "../debug.ostw";
 import "ui.ostw";
 
 public void waveConstructor(){
-    Number pointerIndex = CountOf(waves); 
+    //Number pointerIndex! = CountOf(waves); 
     for(define i!  = 0; i < CountOf(EMinionType_toArray); i++){
         waveMacro_perType(EMinionType_toArray[i], MINION_WAVE_SIZE[i]);
     }
@@ -20,7 +20,7 @@ public void waveConstructor(){
 
 private void waveMacro_perType(in EMinionType type, in Number size){
     for(define i! = 0; i < size; i++){
-        waveMacro_perTeam(Team.Team1,type);
+        //waveMacro_perTeam(Team.Team1,type);
         waveMacro_perTeam(Team.Team2,type);
         Wait(0.33);
     }
@@ -29,12 +29,16 @@ private void waveMacro_perType(in EMinionType type, in Number size){
 private void waveMacro_perTeam(in Team team, in EMinionType type){
     minions.ModAppend(new Minion(team, type));
     entities.ModAppend(LastOf(minions));
+    Cell temp!;
     if(team == Team.Team1){
-        Cell_addCreature(Grid_cellByPosition(TEAM1_MINION_SPAWN), LastOf(minions));
+        Cell_byPosition(temp,TEAM1_MINION_SPAWN);
+        addCreatureToCell(temp, LastOf(minions));
     }else if(team == Team.Team2){
-        Cell_addCreature(Grid_cellByPosition(TEAM2_MINION_SPAWN), LastOf(minions));
+        Cell_byPosition(temp,TEAM2_MINION_SPAWN);
+        addCreatureToCell(temp, LastOf(minions));
     }
 }
+
 
 public void constructorCleanup(){
     //tickOffsetSorted = SortedArray(tickOffsetSorted, (<Creature>ArrayElement()).tickOffset);

@@ -4,7 +4,7 @@ import "../Header Files/controller-puppet model/player_controller.del";
 import "../error.ostw";
 
 class Cell{
-    public Controller[] viewers;
+    public Model[] viewers;
     public Entity[] dynamic;
     public Statics[] statics;
     public Number x;

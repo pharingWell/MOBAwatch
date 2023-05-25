@@ -28,14 +28,13 @@ rule: 'Debug Tings'
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
     Wait(3);
+    waveConstructor();
     SetMatchTime(0);
 }
 rule: 'Create Minion For Host'
-Event.OngoingPlayer
-if(EventPlayer() == HostPlayer())
-if(IsButtonHeld(EventPlayer(),Button.Interact))
+if(IsButtonHeld(HostPlayer(),Button.Interact))
 {
     waveConstructor();
     //debugString = toString(tickOffsetSorted);
-    WaitUntil(IsButtonHeld(EventPlayer(),Button.Interact)==false, 10);
+    WaitUntil(IsButtonHeld(HostPlayer(),Button.Interact)==false, 10);
 }

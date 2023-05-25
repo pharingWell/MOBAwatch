@@ -3,9 +3,9 @@ import "../Header Files/creature.del";
 import "../Header Files/projectile.del";
 import "../Header Files/structures.del";
 define RENDER_SIZE: 50;
-playervar Cell[] playerCells;
-playervar Creature[] renderCreatures;
-playervar Projectile[] renderProjectiles;
+playervar Cell[] playerCells = [];
+playervar Creature[] renderCreatures = [];
+playervar Projectile[] renderProjectiles = [];
 
 //playervar Dictionary<Cell,Number[]> cellData;
 playervar Dictionary<Cell,Number[]> cellCreatures;

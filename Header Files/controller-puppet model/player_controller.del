@@ -1,10 +1,13 @@
 import "../grid.del";
 import "../../const.del";
 playervar Cell[] viewedCells;
-playervar Controller controller;
-struct Controller{
-    public Player self;
-    public Player controlled;
+playervar Model controller;
+struct Model{
+    public Player controller;
+    public Player puppet;
+    public String asString(){
+        return $"[{controller},{puppet}]";
+    } 
 }
 
 playervar Number ID;

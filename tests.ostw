@@ -26,11 +26,12 @@ globalvar Boolean setting_testsEnabled = WorkshopSettingToggle("DEBUG", "Run wit
 
 Vector test_getCenterOfCell(Number x, Number y): Vector((x+0.5)* CELL_WIDTH, 0 , (y+0.5) * CELL_HEIGHT) + GRID_BASE;
 void test_Grid(){
-    assert("position of cell",Grid_positionOfCell(grid.cells[1]),test_getCenterOfCell(1,0));
-    assert("cell by position",Grid_cellByPosition(test_getCenterOfCell(1,0)),grid.cells[1]);
+    assert("position of cell",positionOfCell(grid.cells[1]),test_getCenterOfCell(1,0));
+    Cell temp!;
+    Cell_byPosition(temp,test_getCenterOfCell(1,0));
+    assert("cell by position",temp,grid.cells[1]);
     
 }
-
 
 
 rule: 'Tests'

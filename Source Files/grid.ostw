@@ -32,7 +32,7 @@ void gridConstructor()
         Vector bottomCorner! = GRID_BASE + Vector(
             CELL_WIDTH * (j%GRID_COLUMNS), 0, 
             CELL_HEIGHT * RoundToInteger(j/GRID_COLUMNS,Rounding.Down));
-        CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],Grid_positionOfCell(grid.cells[EvaluateOnce(j)])
+        CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],positionOfCell(grid.cells[EvaluateOnce(j)])
             ,3,Clipping.DoNotClip,InworldTextRev.VisibleToStringAndColor,
             LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)]) ? CustomColor(EvaluateOnce(j)*10+100, 6, EvaluateOnce(j)*10+100, 100) : CustomColor(1,1,1, 1),
             Spectators.DefaultVisibility);
@@ -44,134 +44,127 @@ void gridConstructor()
     }
 }
 
-Cell Grid_cellFromGridCoord(in Number xcord, in Number ycord){
-    return (xcord >= GRID_COLUMNS || xcord < 0 || ycord >= GRID_ROWS || ycord < 0) ? null : grid.cells[xcord + ycord * GRID_COLUMNS];
+void Cell_fromGridCoord(ref Cell cellptr, in Number xcord, in Number ycord){
+    Boolean outOfBounds! = (xcord >= GRID_COLUMNS || xcord < 0 || ycord >= GRID_ROWS || ycord < 0);
+    if(outOfBounds){
+        cellptr = null;
+    }else{
+        cellptr = grid.cells[xcord + ycord * GRID_COLUMNS];
+    }  
 }
 
-Vector Grid_positionFromGridCoord(in Number xcord, in Number ycord):
-   Vector((xcord + 0.5) * CELL_WIDTH, 0, (ycord + 0.5) * CELL_HEIGHT) 
-    + GRID_BASE;
-
-Cell Grid_cellByPosition(in Vector inputPosition)
+void Cell_byPosition(ref Cell cellptr, in Vector inputPosition)
 {
-    define xcord: RoundToInteger((inputPosition-GRID_BASE).X/CELL_WIDTH,Rounding.Down);
-    define ycord: RoundToInteger((inputPosition-GRID_BASE).Z/CELL_HEIGHT,Rounding.Down);
-    return Grid_cellFromGridCoord(xcord,ycord);
+    Number xcord! = RoundToInteger((inputPosition-GRID_BASE).X/CELL_WIDTH,Rounding.Down);
+    Number ycord! = RoundToInteger((inputPosition-GRID_BASE).Z/CELL_HEIGHT,Rounding.Down);
+    Cell_fromGridCoord(cellptr, xcord,ycord);
 }
 
 //(grid.cells.IndexOf(cell)%GRID_COLUMNS+0.5)
 //(RoundToInteger(grid.cells.IndexOf(cell)/GRID_COLUMNS,Rounding.Down)+0.5)
 
-Vector Grid_positionOfCell(in Cell cell): 
-    Grid_positionFromGridCoord(cell.x,cell.y);
+Vector positionFromGridCoord(in Number xcord, in Number ycord):
+   Vector((xcord + 0.5) * CELL_WIDTH, 0, (ycord + 0.5) * CELL_HEIGHT) 
+    + GRID_BASE;
 
-void Cell_addProjectile(in Cell cell, in Projectile p){
-    grid.cells[cell].dynamic.ModAppend(p);
-    foreach(Controller viewer! in cell.viewers){
-        Number nullIndex = 0;
-        nullIndex = IndexOfArrayValue(renderProjectiles,null);
+Vector positionOfCell(in Cell cell): 
+    positionFromGridCoord(cell.x,cell.y);
+
+void addProjectileToCell(Cell cell, Projectile p) "Add Projectile"
+{
+    cell.dynamic.ModAppend(p);
+    foreach(Model viewer! in cell.viewers){
+        Number nullIndex! = -1;
+        nullIndex = IndexOfArrayValue(viewer.controller.renderProjectiles,null);
         if(nullIndex != -1){
-            nullIndex = CountOf(renderProjectiles);
-            renderProjectiles.Append(p);
+            nullIndex = CountOf(viewer.controller.renderProjectiles);
+            viewer.controller.renderProjectiles.Append(p);
             throwError({message: "Expanded renderProjectiles array size",
             source: "grid add (projectile)", severity: EErrorSeverity.WARNING});
         }
         Dictionary<Cell,Number[]>.Set(
-            viewer.self.cellProjectiles,/*with key*/ cell,
-            viewer.self.cellProjectiles.Get(cell).Append(nullIndex));
+            viewer.controller.cellProjectiles,/*with key*/ cell,
+            viewer.controller.cellProjectiles.Get(cell).Append(nullIndex));
     }
 }
 
-void Cell_addCreature(in Cell cell, in Creature c){
-    grid.cells[cell].dynamic.ModAppend(c);
-    foreach(Controller viewer! in cell.viewers){
-        Number nullIndex = 0;
-        nullIndex = IndexOfArrayValue(renderCreatures,null);
+void addCreatureToCell(Cell cell, Creature c) "Add Creature"
+{
+    cell.dynamic.ModAppend(c);
+    LogToInspector($"Added creature {c}  to cell {cell}");
+    foreach(Model viewer! in cell.viewers){
+        Number nullIndex! = -1;
+        nullIndex = IndexOfArrayValue(viewer.controller.renderCreatures,null);
         if(nullIndex != -1){
-            nullIndex = CountOf(renderCreatures);
-            renderCreatures.Append(c);
+            nullIndex = CountOf(viewer.controller.renderCreatures);
+            viewer.controller.renderCreatures.Append(c);
             throwError({message: "Expanded renderCreatures array size",
             source: "grid add (creature)", severity: EErrorSeverity.WARNING});
         }
         Dictionary<Cell,Number[]>.Set(
-            viewer.self.cellCreatures,/*with key*/ cell,
-            viewer.self.cellCreatures.Get(cell).Append(nullIndex));
+            viewer.controller.cellCreatures,/*with key*/ cell,
+            viewer.controller.cellCreatures.Get(cell).Append(nullIndex));
     }
 }
 
 
-void Cell_removeProjectile(in Cell cell, in Projectile p){
+void removeProjectileFromCell(in Cell cell, in Projectile p){
     grid.cells[cell].dynamic.ModRemoveByValue(p);
-    foreach(Controller viewer! in cell.viewers){
-        Number indexOfRenderData = p.viewerIndex[viewer.self.ID];
+    foreach(Model viewer! in cell.viewers){
+        Number indexOfRenderData = p.viewerIndex[viewer.controller.ID];
         Dictionary<Cell,Number[]>.Set(
-            viewer.self.cellProjectiles,/*with key*/ cell,
-            viewer.self.cellProjectiles.Get(cell).Remove(indexOfRenderData));
+            viewer.controller.cellProjectiles,/*with key*/ cell,
+            viewer.controller.cellProjectiles.Get(cell).Remove(indexOfRenderData));
             //remove the given index from the data
-        p.viewerIndex[viewer.self.ID] = null;
-        if(viewer.self.renderProjectiles[indexOfRenderData] != p){
-                throwError({message: $"buffer {viewer.self.renderProjectiles[indexOfRenderData]}  "+
+        p.viewerIndex[viewer.controller.ID] = null;
+        if(viewer.controller.renderProjectiles[indexOfRenderData] != p){
+                throwError({message: $"buffer {viewer.controller.renderProjectiles[indexOfRenderData]}  "+
                 "overwritten with null caught", source: "Grid_remove: projectile", severity: EErrorSeverity.ERROR});
                 Abort();
             }
-            viewer.self.renderProjectiles[indexOfRenderData] = null; //removes self from each player's render buffer
+            viewer.controller.renderProjectiles[indexOfRenderData] = null; //removes self from each player's render buffer
     }
 }
 
-void Cell_removeCreature(in Cell cell, in Creature c){
+void removeCreatureFromCell(in Cell cell, in Creature c){
     grid.cells[cell].dynamic.ModRemoveByValue(c);
-    foreach(Controller viewer! in cell.viewers){
-        Number indexOfRenderData = c.viewerIndex[viewer.self.ID];
+    foreach(Model viewer! in cell.viewers){
+        Number indexOfRenderData = c.viewerIndex[viewer.controller.ID];
         Dictionary<Cell,Number[]>.Set(
-            viewer.self.cellCreatures,/*with key*/ cell,
-            viewer.self.cellCreatures.Get(cell).Remove(indexOfRenderData));
+            viewer.controller.cellCreatures,/*with key*/ cell,
+            viewer.controller.cellCreatures.Get(cell).Remove(indexOfRenderData));
             //remove the given index from the data
-        c.viewerIndex[viewer.self.ID] = null;
-        if(viewer.self.renderCreatures[indexOfRenderData] != c){
-                throwError({message: $"buffer {viewer.self.renderCreatures[indexOfRenderData]}  "+
+        c.viewerIndex[viewer.controller.ID] = null;
+        if(viewer.controller.renderCreatures[indexOfRenderData] != c){
+                throwError({message: $"buffer {viewer.controller.renderCreatures[indexOfRenderData]}  "+
                 "overwritten with null caught", source: "Grid_remove: creature", severity: EErrorSeverity.ERROR});
                 Abort();
             }
-            viewer.self.renderCreatures[indexOfRenderData] = null; //removes self from each player's render buffer
+            viewer.controller.renderCreatures[indexOfRenderData] = null; //removes self from each player's render buffer
     }
 }
 
 void Grid_moveCreature(in Creature c, in Cell from, in Cell to){
     if(grid.cells[from].dynamic.Contains(c)){
-        Cell_removeCreature(from,c);
-        Cell_addCreature(to,c);
+        removeCreatureFromCell(from,c);
+        addCreatureToCell(to,c);
     }
 }
 
-playervar Cell[] cells;
-
-
-//checkRange(cells,position + Vector(0,0,-CELL_HEIGHT*VIEW_RANGE));
-void checkRange(ref Cell[] cellsRef, in Vector pos){
-    Cell temp = Grid_cellByPosition(pos);
-    if(temp == null || cellsRef.Contains(temp)){
-        return;
-    }   
-    if(cellsRef.Length>0)
-        cellsRef.ModAppend(temp);
-    else
-        cellsRef[0] = temp;
-} 
-
-Cell[] getAllCellsInUniformDistanceFromCell(in Cell given, Number distance){
+void getAllCellsInUniformDistanceFromCell(ref Cell[] retCells, in Cell given, in Number distance){
     if(given == null){
-        return [];
+        return;
     }
-    Cell[] retCells = [];
+    retCells = [];
     for(define j! = -distance; j <= distance; j++){
        for(define i! = -distance; i <= distance; i++){
-            Cell temp = Grid_cellFromGridCoord(given.x+i,given.y+j);
+            Cell temp!;
+            Cell_fromGridCoord(temp, given.x+i,given.y+j);
             if (temp != null){
                 retCells.ModAppend(temp);
             }
         } 
     }
-    return retCells;
 }
 
 

@@ -27,42 +27,63 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 
 rule: 'Player Render Setup'
 Event.OngoingPlayer
-if(!IsDummyBot(EventPlayer()))
 {
     DisableGameModeHud();
+}
+
+rule: 'Grind Render Loop'
+
+Event.OngoingPlayer
+if(!IsDummyBot(EventPlayer()))
+if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
+{
+    
     define VIEW_RANGE: 2;
-    Cell[] observedCells! = getAllCellsInUniformDistanceFromCell(Grid_cellByPosition(EventPlayer().Position()), VIEW_RANGE);
-    if(observedCells!=null){
-        Cell[] newCells! = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement())); 
-        Cell[] oldCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
-        foreach(Cell cell! in oldCells){
-            foreach(Number n! in cellCreatures.Get(cell)){
-                renderCreatures = RemoveFromArrayAtIndex(renderCreatures,n);
-            }
-            Dictionary<Cell,Number[]>.Set(cellCreatures,cell,[]);
-            //for each item in the cell data, 
-            foreach(Number n! in cellProjectiles.Get(cell)){
-                renderProjectiles = RemoveFromArrayAtIndex(renderProjectiles,n);
-            }
-            Dictionary<Cell,Number[]>.Set(cellProjectiles,cell,[]);
-            cell.viewers.ModRemoveByValue(EventPlayer().controller);
-        }
-        foreach(Cell cell! in newCells){
-            cell.viewers.ModAppend(EventPlayer().controller);
-            Number[] creatureIndexes! = [];
-            Number[] projectileIndexes! = [];
-            foreach(Entity e! in cell.dynamic){
-                if(e.subclass == EEntitySubclass.CREATURE){
-                    creatureIndexes.ModAppend(renderCreatures.Length);
-                    renderCreatures.ModAppend(<Creature>e);
-                }else{
-                    projectileIndexes.ModAppend(renderProjectiles.Length);
-                    renderProjectiles.ModAppend(<Projectile>e);
-                }
-            }
-        }
-        EventPlayer().playerCells = observedCells;
+    Cell[] observedCells;
+    Cell temp!;
+    Cell_byPosition(temp,EventPlayer().Position());
+    getAllCellsInUniformDistanceFromCell(observedCells,temp, VIEW_RANGE);
+    //!
+    Cell[] noLongerObservedCells = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
+    //!
+    Cell[] newlyObservedCells = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement())); 
+    
+    if(CountOf(EventPlayer().playerCells)!=CountOf(observedCells)){
+        LogToInspector($"-{CountOf(noLongerObservedCells)}  +{CountOf(newlyObservedCells)}");
     }
+    
+    foreach(Cell cell! in noLongerObservedCells){
+        LogToInspector($"Removing {cell}");
+        foreach(Number n! in EventPlayer().cellCreatures.Get(cell)){
+            EventPlayer().renderCreatures = RemoveFromArrayAtIndex(EventPlayer().renderCreatures,n);
+        }
+        Dictionary<Cell,Number[]>.Set(EventPlayer().cellCreatures,cell,[]);
+        //for each item in the cell data, 
+        foreach(Number n! in EventPlayer().cellProjectiles.Get(cell)){
+            EventPlayer().renderProjectiles = RemoveFromArrayAtIndex(EventPlayer().renderProjectiles,n);
+        }
+        Dictionary<Cell,Number[]>.Set(EventPlayer().cellProjectiles,cell,[]);
+        cell.viewers.ModRemoveByValue(EventPlayer().controller);
+    }
+    
+    foreach(Cell cell! in newlyObservedCells){
+        LogToInspector($"Adding {cell}, dynamic: {toString(cell.dynamic)}");
+        cell.viewers.ModAppend(EventPlayer().controller);
+        Number[] creatureIndexes = [];
+        Number[] projectileIndexes = [];
+        foreach(Entity e! in cell.dynamic){
+            if(e.subclass == EEntitySubclass.CREATURE){
+                creatureIndexes.ModAppend(renderCreatures.Length);
+                EventPlayer().renderCreatures.ModAppend(<Creature>e);
+            }else{
+                projectileIndexes.ModAppend(renderProjectiles.Length);
+                EventPlayer().renderProjectiles.ModAppend(<Projectile>e);
+            }
+        }
+        Dictionary<Cell,Number[]>.Set(EventPlayer().cellCreatures,cell,creatureIndexes);
+        Dictionary<Cell,Number[]>.Set(EventPlayer().cellProjectiles,cell,projectileIndexes);
+    }
+    EventPlayer().playerCells = observedCells;
     Wait(0.25);
     Loop();
 }
