@@ -1,0 +1,16 @@
+import "statics.del";
+import "creature.del";
+
+enum EStructureStrength{
+    TOWER,
+    FORT,
+    KEEP,
+    CORE
+}
+
+class Structure : Statics{
+    Number health;
+    Team team;
+    CreaturePlayer target;
+    
+}

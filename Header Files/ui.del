@@ -1,15 +1,15 @@
 import "../global.del";
 import "../Header Files/creature.del";
 import "../Header Files/projectile.del";
-import "../Header Files/Structure.del";
+import "../Header Files/structures.del";
 define RENDER_SIZE: 50;
+playervar Cell[] playerCells;
 playervar Creature[] renderCreatures;
 playervar Projectile[] renderProjectiles;
-playervar Structure[] renderStructures;
-playervar Cell[] playerCells;
 
-playervar Dictionary<Cell,Number[]> cellData;
-
+//playervar Dictionary<Cell,Number[]> cellData;
+playervar Dictionary<Cell,Number[]> cellCreatures;
+playervar Dictionary<Cell,Number[]> cellProjectiles;
 /*
     #!define eyePosition localPlayer.getEyePosition() 
 // Replace all instances of eyePosition with cameraPosition if you're using a camera //

@@ -1,4 +1,0 @@
-import "statics.del";
-class Structure : Statics{
-
-}

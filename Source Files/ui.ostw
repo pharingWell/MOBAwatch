@@ -27,11 +27,42 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 
 rule: 'Player Render Setup'
 Event.OngoingPlayer
+if(!IsDummyBot(EventPlayer()))
 {
     DisableGameModeHud();
-    define position: EventPlayer().Position();
     define VIEW_RANGE: 2;
-    Cell[] observedCells = getAllCellsInUniformDistanceFromCell(Grid_cellByPosition(position), VIEW_RANGE);
+    Cell[] observedCells! = getAllCellsInUniformDistanceFromCell(Grid_cellByPosition(EventPlayer().Position()), VIEW_RANGE);
+    if(observedCells!=null){
+        Cell[] newCells! = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement())); 
+        Cell[] oldCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
+        foreach(Cell cell! in oldCells){
+            foreach(Number n! in cellCreatures.Get(cell)){
+                renderCreatures = RemoveFromArrayAtIndex(renderCreatures,n);
+            }
+            Dictionary<Cell,Number[]>.Set(cellCreatures,cell,[]);
+            //for each item in the cell data, 
+            foreach(Number n! in cellProjectiles.Get(cell)){
+                renderProjectiles = RemoveFromArrayAtIndex(renderProjectiles,n);
+            }
+            Dictionary<Cell,Number[]>.Set(cellProjectiles,cell,[]);
+            cell.viewers.ModRemoveByValue(EventPlayer().controller);
+        }
+        foreach(Cell cell! in newCells){
+            cell.viewers.ModAppend(EventPlayer().controller);
+            Number[] creatureIndexes! = [];
+            Number[] projectileIndexes! = [];
+            foreach(Entity e! in cell.dynamic){
+                if(e.subclass == EEntitySubclass.CREATURE){
+                    creatureIndexes.ModAppend(renderCreatures.Length);
+                    renderCreatures.ModAppend(<Creature>e);
+                }else{
+                    projectileIndexes.ModAppend(renderProjectiles.Length);
+                    renderProjectiles.ModAppend(<Projectile>e);
+                }
+            }
+        }
+        EventPlayer().playerCells = observedCells;
+    }
     Wait(0.25);
     Loop();
 }

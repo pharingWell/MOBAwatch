@@ -1,1 +1,7 @@
+struct Puppet{
+    Player self;
+    Player controller;
+}
+
+playervar Puppet puppet;
 

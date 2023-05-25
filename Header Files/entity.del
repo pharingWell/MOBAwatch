@@ -1,13 +1,18 @@
 import "grid.del";
-
 //Class for any object that is dynamic
 //Grid works with entities 
 
-// enum EEntityType{
-//     MINION,
-//     MERCENARY,
-//     PROJECTILE
-// }
+struct CreaturePlayer {
+    public Boolean isPlayer;
+    public Entity creatureRef;
+    public Player playerRef;
+}
+
+enum EEntitySubclass{
+    NONE = -1,
+    PROJECTILE = 1,
+    CREATURE = 2
+}
 
 class Entity{
     public Boolean visibility;
@@ -16,14 +21,15 @@ class Entity{
     public Number tickOffset;
     public Vector position;
     public Vector velocity;
+    
+    public CreaturePlayer target;
     public Cell cell;
     //public EEntityType type;
     public Number[] viewerIndex;
     
-
-    
     Number tick: (TotalTimeElapsed()%1-this.tickOffset);
-    
+
+    public virtual EEntitySubclass subclass: EEntitySubclass.NONE;
     
     void entity_constructor(){
         tickOffset = TotalTimeElapsed();

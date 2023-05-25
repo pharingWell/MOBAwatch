@@ -8,13 +8,8 @@ define CREATURE_COUNT: 96;
 
 class Creature : Entity{
     public Number health;
-    public Entity target;
     public String appearance;
     public Color color;
+    public EEntitySubclass subclass: EEntitySubclass.CREATURE;
 }
 
-struct CreaturePlayer {
-    public Boolean isPlayer;
-    public Creature creatureRef;
-    public Player playerRef;
-}

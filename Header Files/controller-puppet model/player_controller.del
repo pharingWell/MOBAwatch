@@ -1,7 +1,7 @@
 import "../grid.del";
 import "../../const.del";
 playervar Cell[] viewedCells;
-
+playervar Controller controller;
 struct Controller{
     public Player self;
     public Player controlled;

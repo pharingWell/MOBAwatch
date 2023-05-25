@@ -23,11 +23,10 @@ rule: 'Debug Tings'
 {
     CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
     ForcePlayerHero(HostPlayer(),Hero.Ana);
-    printToScreen("Player Cells: " + toString(LocalPlayer().playerCells));
-    printToScreen("Player Cells: " + toString(LocalPlayer().cells));
-    printToScreen($"X:{GRID_COLUMNS}, Y:{GRID_ROWS}");
-    //CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
-    //CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
+    printToScreen("active cells: " + toString(LocalPlayer().cellCreatures.Values));
+    printToScreen("rendered minions: " + toString(LocalPlayer().renderCreatures));
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
     Wait(3);
     SetMatchTime(0);
 }

@@ -43,6 +43,7 @@ class Minion : Creature
                     });
                 break;
         }
+        LogToInspector(this.subclass);
         appearance = ["ι","ί",team == Team.Team1 ? "R" : "Я","ϊ","ΐ"][type];
         if(!appearance){
             throwError({

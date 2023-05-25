@@ -30,9 +30,9 @@ private void waveMacro_perTeam(in Team team, in EMinionType type){
     minions.ModAppend(new Minion(team, type));
     entities.ModAppend(LastOf(minions));
     if(team == Team.Team1){
-        Grid_add(LastOf(minions), Grid_cellByPosition(TEAM1_MINION_SPAWN));
+        Cell_addCreature(Grid_cellByPosition(TEAM1_MINION_SPAWN), LastOf(minions));
     }else if(team == Team.Team2){
-        Grid_add(LastOf(minions), Grid_cellByPosition(TEAM2_MINION_SPAWN));
+        Cell_addCreature(Grid_cellByPosition(TEAM2_MINION_SPAWN), LastOf(minions));
     }
 }
 

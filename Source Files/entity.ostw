@@ -14,7 +14,7 @@ if(TotalTimeElapsed()%1 <= 0.016)
         entity.position += entity.velocity * tick;
         Cell temp = Grid_cellByPosition(entity.position);
         if(entity.cell != temp){
-            Grid_move(entity, entity.cell, temp);
+            Grid_move(entity, entity.cell, temp); 
         }
         entity.tickOffset = TotalTimeElapsed();
         Wait(0.016);
@@ -26,3 +26,4 @@ if(TotalTimeElapsed()%1 <= 0.016)
     Wait(0.016);
     Loop();
 }
+
