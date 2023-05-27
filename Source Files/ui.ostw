@@ -1,6 +1,8 @@
 import "../Header Files/ui.del";
 import "../Header Files/state.del";
 import "../debug.ostw";
+import "../debug.del";
+import "../const.del";
 import "grid.ostw";
 import "render.ostw";
 
@@ -8,24 +10,44 @@ import "render.ostw";
 rule: 'Global Render Setup' 
 if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 {
+    
     gridConstructor();
     for(define i = 1; i <= RENDER_SIZE; i++){
         Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
-        Number tick: (TotalTimeElapsed()-creature.tickOffset);
-        CreateInWorldText(
-            creature.visibility ? LocalPlayer() : null,
-            creature.appearance,
-            creature.position + tick*creature.velocity,
-            1, 
-            Clipping.DoNotClip, 
-            InworldTextRev.VisibleToPositionStringAndColor,
-            creature.color, 
-            Spectators.DefaultVisibility   
-        );
+        Number tick: (TotalTimeElapsed()-creature.tickOffset+TICK_MAGIC);
+
+        if(SHOW_ENTITY_PROJECTEDLOC){
+            CreateInWorldText(
+                creature.visibility ? LocalPlayer() : null,
+                creature,
+                creature.position + tick*creature.velocity,
+                3, 
+                Clipping.DoNotClip, 
+                InworldTextRev.VisibleToPositionStringAndColor,
+                creature.color, 
+                Spectators.DefaultVisibility   
+            );
+        }
+        if(SHOW_ENTITY_TRUELOC){
+            CreateInWorldText(
+                creature.visibility ? LocalPlayer() : null,
+                creature,
+                creature.position,
+                2, 
+                Clipping.DoNotClip, 
+                InworldTextRev.VisibleToPositionStringAndColor,
+                CustomColor(0,0,0,50), 
+                Spectators.DefaultVisibility   
+            );
+        }
     }
+    LogToInspector(TotalTimeElapsed()*1000);
     progressState();
 }
-
+rule: 'My Rule'
+{
+    
+}
 rule: 'Player Render Setup'
 Event.OngoingPlayer
 {

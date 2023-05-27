@@ -46,8 +46,7 @@ class Minion : Creature
                     });
                 break;
         }
-        appearance = <Number>this;
-        //appearance = ["","ι","ί",team == Team.Team1 ? "R" : "Я","ϊ","ΐ"][type];
+        appearance = ["","ι","ί",team == Team.Team1 ? "R" : "Я","ϊ","ΐ"][type];
         if(!appearance){
             throwError({
                 message: "Minion rendered with no appearance", 

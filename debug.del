@@ -1,0 +1,4 @@
+define SHOW_ENTITY_PROJECTEDLOC: true;
+define SHOW_ENTITY_TRUELOC: false;
+
+globalvar Boolean LOCK = false;

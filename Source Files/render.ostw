@@ -12,9 +12,7 @@ void addEntityToViewer(
         while(renderBuffer[indexOfFirstNull] != null){
             indexOfFirstNull++;
         }
-        LogToInspector($"pre:{toString_extended(renderIndexContainer[<Number>cell])}");
         renderIndexContainer[<Number>cell] += indexOfFirstNull;
-        LogToInspector($"post:{toString_extended(renderIndexContainer[<Number>cell])}");
         e.viewerIndex[ID] = indexOfFirstNull;
         renderBuffer[indexOfFirstNull] = e;
 }
@@ -41,11 +39,10 @@ void addCreatureToCell(Cell cell, Creature c) "Add Creature"
 //REMOVE
 
 private void removeEntityFromViewer(
-    ref Any[] renderBuffer, Number[][] renderIndexContainer,
+    ref Any[] renderBuffer, ref Number[][] renderIndexContainer,
     in Number ID, in Cell cell, in Entity e
 ){
     Number indexOfRenderData: e.viewerIndex[ID];
-    //LogToInspector($"renderContainer:{toString(renderIndexContainer.Get(cell))}, viewerIndex:{e.viewerIndex[ID]},render buffer: {renderBuffer[indexOfRenderData]}");
     renderIndexContainer[<Number>cell] -= indexOfRenderData;
     renderBuffer[indexOfRenderData] = null;
     e.viewerIndex[ID] = null; //must be last

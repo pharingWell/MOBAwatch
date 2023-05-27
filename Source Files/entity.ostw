@@ -8,24 +8,25 @@ rule: 'Update positions with velocity'
 if(gamePhase == EGamePhase.BATTLE)
 if(CountOf(entities) > 0)
 {   
+    if(gamePhase!=EGamePhase.BATTLE){
+        LogToInspector($"NOT BATTLE: {gamePhase}");
+        Abort();
+    }
     foreach(Entity entity! in entities){ 
         if(entity == null){
             continue;
         }
-        WaitUntil(LOCK == false, 999);
-        Number tick: (TotalTimeElapsed()-entity.tickOffset);
+        Number tick! = (TotalTimeElapsed()-entity.tickOffset);
         entity.position += entity.velocity * tick;
+        entity.tickOffset = TotalTimeElapsed();
+        //WaitUntil(LOCK == false, 999); //lock is a system to prevent entities moving while the active cells are being changed
         Cell temp!;
-        Cell_byPosition(temp, entity.position);
+        Cell_byPosition(temp, entity.position + entity.velocity * tick);
         if(entity.cell != temp){
             moveEntityBetweenCells(entity,entity.cell,temp);
         }
-        entity.tickOffset = TotalTimeElapsed();
         Wait(0.016);
-    }
-    if(gamePhase!=EGamePhase.BATTLE){
-        LogToInspector($"NOT BATTLE: {gamePhase}");
-        Abort();
+
     }
     Wait(0.016);
     Loop();

@@ -26,8 +26,6 @@ class Entity{
     public Cell cell;
     //public EEntityType type;
     public Number[] viewerIndex; //
-    
-    Number tick: (TotalTimeElapsed()%1-this.tickOffset);
 
     public virtual EEntitySubclass subclass: EEntitySubclass.NONE;
     
