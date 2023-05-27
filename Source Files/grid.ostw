@@ -6,7 +6,7 @@ import "../Header Files/grid.del";
 
 Any createGrapple(in Vector origin, in Vector offset, in Number j):
     CreateBeamEffect(
-        LocalPlayer(),
+        LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)]) ? LocalPlayer() : null,
         BeamType.GoodBeam,
         origin,
         origin + offset,
@@ -31,16 +31,24 @@ void gridConstructor()
         Vector bottomCorner! = GRID_BASE + Vector(
             CELL_WIDTH * (j%GRID_COLUMNS), 0, 
             CELL_HEIGHT * RoundToInteger(j/GRID_COLUMNS,Rounding.Down));
-        CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],positionOfCell(grid.cells[EvaluateOnce(j)])
-            ,3,Clipping.DoNotClip,InworldTextRev.VisibleToStringAndColor,
-            CustomColor(LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)])*EvaluateOnce(j)*10+100, 2, EvaluateOnce(j)*10*LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)]), 100+100*grid.cells[EvaluateOnce(j)].viewers.Contains(LocalPlayer())),
-            Spectators.DefaultVisibility);
+        // CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],positionOfCell(grid.cells[EvaluateOnce(j)])
+        //     ,3,Clipping.DoNotClip,InworldTextRev.VisibleToStringAndColor,
+        //     CustomColor(LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)])*EvaluateOnce(j)*10+100, 2, EvaluateOnce(j)*10*LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)]), 100+100*grid.cells[EvaluateOnce(j)].viewers.Contains(LocalPlayer())),
+        //     Spectators.DefaultVisibility);
         createGrapple(bottomCorner, Vector(CELL_WIDTH,0,0), j);
         createGrapple(bottomCorner, Vector(0,0,CELL_HEIGHT), j);
         createGrapple(bottomCorner + Vector(CELL_WIDTH,0,0), Vector(0,0,CELL_HEIGHT), j);
         createGrapple(bottomCorner + Vector(0,0,CELL_HEIGHT), Vector(CELL_WIDTH,0,0), j);
         Wait();
     }
+    define NN_CORNER: GRID_BASE;
+    define NP_CORNER: GRID_BASE + Vector(0, 0, CELL_HEIGHT * GRID_ROWS);
+    define PN_CORNER: GRID_BASE + Vector(CELL_WIDTH * GRID_COLUMNS, 0,  0);
+    define PP_CORNER: GRID_BASE + Vector(CELL_WIDTH * GRID_COLUMNS, 0,  CELL_HEIGHT * GRID_ROWS);
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam, NN_CORNER, NP_CORNER, Color.Aqua, EffectRev.VisibleTo);
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam, NN_CORNER, PN_CORNER, Color.Aqua, EffectRev.VisibleTo);
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam, NP_CORNER, PP_CORNER, Color.Aqua, EffectRev.VisibleTo);
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam, PN_CORNER, PP_CORNER, Color.Aqua, EffectRev.VisibleTo);
 }
 
 void Cell_fromGridCoord(ref Cell cellptr, in Number xcord, in Number ycord){
@@ -79,7 +87,7 @@ void getAllCellsInUniformDistanceFromCell(ref Cell[] retCells, in Cell given, in
             Cell temp!;
             Cell_fromGridCoord(temp, given.x+i,given.y+j);
             if (temp != null){
-                retCells.ModAppend(temp);
+                retCells[retCells.Length] = temp;
             }
         } 
     }

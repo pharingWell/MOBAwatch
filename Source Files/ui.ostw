@@ -19,7 +19,7 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
         if(SHOW_ENTITY_PROJECTEDLOC){
             CreateInWorldText(
                 creature.visibility ? LocalPlayer() : null,
-                creature,
+                creature.appearance,
                 creature.position + tick*creature.velocity,
                 3, 
                 Clipping.DoNotClip, 
@@ -44,16 +44,13 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
     LogToInspector(TotalTimeElapsed()*1000);
     progressState();
 }
-rule: 'My Rule'
-{
-    
-}
+
 rule: 'Player Render Setup'
 Event.OngoingPlayer
 {
     DisableGameModeHud();
 }
-define VIEW_RANGE: 0;
+globalvar Number VIEW_RANGE = WorkshopSettingInteger("Player Settings","View Range",1,0,6,0);
 rule: 'Grid Render Loop'
 
 Event.OngoingPlayer
@@ -64,8 +61,11 @@ if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
     Cell[] observedCells;
     Cell temp!;
     Cell_byPosition(temp,EventPlayer().Position());
-    observedCells = [temp];
-   // getAllCellsInUniformDistanceFromCell(observedCells,temp, VIEW_RANGE);
+    if(VIEW_RANGE == 0){
+        observedCells = [temp];
+    }else{   
+        getAllCellsInUniformDistanceFromCell(observedCells,temp, VIEW_RANGE);
+    }
     Cell[] noLongerObservedCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
     Cell[] newlyObservedCells! = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement()));
     foreach(Cell cell! in noLongerObservedCells){

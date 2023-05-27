@@ -23,15 +23,24 @@ rule: 'Setup Phase'
 
 rule: 'Debug Tings'
 {
-    CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
-    ForcePlayerHero(HostPlayer(),Hero.Ana);
+    CreateHudText(LocalPlayer(),"Minions Summoned: "+ClassMemoryUsed(),null,null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+    printToScreen("Press " + Button.Interact +" to summon new wave");
     //printToScreen("active cells: " + toString_extended(MappedArray(LocalPlayer().creatureRenderIndexes,$"{CurrentArrayIndex()}: {CountOf(ArrayElement())}")));
     //printToScreen("rendered minions: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
-    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
-    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
-    Wait(3);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,TEAM1_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,TEAM2_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
     SetMatchTime(0);
 }
+
+rule: 'Player Setup'
+Event.OngoingPlayer
+{
+    Wait(3);
+    ForcePlayerHero(EventPlayer(),Hero.Ana);
+    WaitUntil(HasSpawned(EventPlayer())==true,999);
+    Teleport(EventPlayer(),Vector(11.5,0,-2.5));
+}
+
 rule: 'Create Minion For Host'
 if(IsButtonHeld(HostPlayer(),Button.Interact))
 {

@@ -3,7 +3,7 @@ import "Header Files/ui.del";
 import "Header Files/grid.del";
 import "Header Files/main.del";
 import "Source Files/grid.ostw";
-
+import "error.ostw";
 
 void assert<T>(in String testName, in T actual, in T expected){
     if(actual == expected){
@@ -22,7 +22,7 @@ void assertFalse(in String testName, in Boolean a){
     assert(testName, a, false);
 } 
 
-globalvar Boolean setting_testsEnabled = WorkshopSettingToggle("DEBUG", "Run with test suite", true, 0);
+//globalvar Boolean setting_testsEnabled = WorkshopSettingToggle("DEBUG", "Run with test suite", true, 0);
 
 Vector test_getCenterOfCell(Number x, Number y): Vector((x+0.5)* CELL_WIDTH, 0 , (y+0.5) * CELL_HEIGHT) + GRID_BASE;
 void test_Grid(){
@@ -34,15 +34,15 @@ void test_Grid(){
 }
 
 
-rule: 'Tests'
-Event.OngoingPlayer
-if(setting_testsEnabled)
-{
-    errorThrown = false;
+// rule: 'Tests'
+// Event.OngoingPlayer
+// if(setting_testsEnabled)
+// {
+//     errorThrown = false;
 
-    test_Grid();
+//     test_Grid();
 
-    if(!errorThrown){
-        LogToInspector("All Tests Passed Successfully");
-    }
-}
+//     if(!errorThrown){
+//         LogToInspector("All Tests Passed Successfully");
+//     }
+// }

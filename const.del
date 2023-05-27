@@ -1,3 +1,10 @@
 define PLAYER_COUNT: 5;
 define CREATURE_COUNT: 96;
+define CELL_WIDTH: 6;
+define CELL_HEIGHT: 6;
+# X Count
+define GRID_COLUMNS: 8;
+# Y Count
+define GRID_ROWS: 8;
+
 define TICK_MAGIC: 1.5;
