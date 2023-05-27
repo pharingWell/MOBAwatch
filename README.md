@@ -33,8 +33,8 @@ This project accomplishes this by:
 
 ### What's the progress look like?
 
-- [x] Make 2D view mode
-- [x] Link Dummy Bots to players
+- [ ] Make 2D view mode
+- [ ] Link Dummy Bots to players
 - [ ] Simulate Minions:
   - [x] Are created
   - [x] Simulate movement
@@ -43,17 +43,17 @@ This project accomplishes this by:
   - [ ] Are destroyed
   - [ ] Can be affected player abilities (Ice Wall, Graviton Surge)
 - [ ] Create structures
-- [ ] Make lane
+- [x] Make lane
   - [ ] Lane collisions/bounds
   - [ ] Small jungle
     - [ ] Implement brutes/some jungle reward
 - [ ] Translate Heroes
-  - [x] Targeting system / basic attacks
+  - [ ] Targeting system / basic attacks
   - [ ] Implement mana
-  - [x] Can take/deal damage
-    - [x] Damage abstraction
-  - [x] Damage over time/healing over time
-  - [x] Basic attacks
+  - [ ] Can take/deal damage
+    - [ ] Damage abstraction
+  - [ ] Damage over time/healing over time
+  - [ ] Basic attacks
      - [ ] Auto lock option 
   - [ ] Visibility
 - [ ] UI
@@ -68,7 +68,7 @@ Either join the [discord server](https://discord.gg/7EmrUhx6gC) or add me on dis
 
 ### How do I run it?
 
-There is currently no stable version.
+There is currently no stable version, but you can check out a demo of the grid system with this code: `894P4`
 
 ---
 
