@@ -25,7 +25,7 @@ class Entity{
     public CreaturePlayer target;
     public Cell cell;
     //public EEntityType type;
-    public Number[] viewerIndex;
+    public Number[] viewerIndex; //
     
     Number tick: (TotalTimeElapsed()%1-this.tickOffset);
 

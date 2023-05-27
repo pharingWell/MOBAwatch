@@ -1,1 +1,2 @@
 define PLAYER_COUNT: 5;
+globalvar Boolean LOCK = false;

@@ -1,13 +1,17 @@
 import "../Header Files/minion.del";
 
 import "../debug.ostw";
-
 import "ui.ostw";
+import "render.ostw";
 
 public void waveConstructor(){
     //Number pointerIndex! = CountOf(waves); 
-    for(define i!  = 0; i < CountOf(EMinionType_toArray); i++){
-        waveMacro_perType(EMinionType_toArray[i], MINION_WAVE_SIZE[i]);
+    for(define i!  = 1; i < CountOf(EMinionType_toArray); i++){
+        for(define j! = 0; j < MINION_WAVE_SIZE[i]; j++){
+            createMinion_perTeam(Team.Team1,EMinionType_toArray[i]);
+            createMinion_perTeam(Team.Team2,EMinionType_toArray[i]);
+            Wait(0.33);
+        }
     }
     if(CountOf(waves)>0){
         waves.ModAppend(LastOf(minions));
@@ -18,25 +22,19 @@ public void waveConstructor(){
     //for()
 }
 
-private void waveMacro_perType(in EMinionType type, in Number size){
-    for(define i! = 0; i < size; i++){
-        //waveMacro_perTeam(Team.Team1,type);
-        waveMacro_perTeam(Team.Team2,type);
-        Wait(0.33);
-    }
-}
-
-private void waveMacro_perTeam(in Team team, in EMinionType type){
-    minions.ModAppend(new Minion(team, type));
-    entities.ModAppend(LastOf(minions));
-    Cell temp!;
+private void createMinion_perTeam(in Team team, in EMinionType type){
+    Minion minion! = new Minion(team, type);
+    minions.ModAppend(minion);
+    entities.ModAppend(minion);
     if(team == Team.Team1){
-        Cell_byPosition(temp,TEAM1_MINION_SPAWN);
-        addCreatureToCell(temp, LastOf(minions));
+        minion.position = TEAM1_MINION_SPAWN;
     }else if(team == Team.Team2){
-        Cell_byPosition(temp,TEAM2_MINION_SPAWN);
-        addCreatureToCell(temp, LastOf(minions));
+        minion.position = TEAM2_MINION_SPAWN;
+
     }
+    Cell temp!;
+    Cell_byPosition(temp, minion.position);
+    addCreatureToCell(temp, minion);
 }
 
 

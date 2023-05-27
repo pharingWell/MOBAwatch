@@ -1,8 +1,8 @@
 import "creature.del";
 import "../error.ostw";
 
-define MINION_WAVE_SIZE: [3,1,3,0,0];
-define EMinionType_toArray: [EMinionType.MELEE,EMinionType.MAGE,EMinionType.RANGED,EMinionType.SEIGE,EMinionType.BRUTE];
+define MINION_WAVE_SIZE: [0,3,1,3,0,0];
+define EMinionType_toArray: [EMinionType.NONE,EMinionType.MELEE,EMinionType.MAGE,EMinionType.RANGED,EMinionType.SEIGE,EMinionType.BRUTE];
 globalvar Minion[] minions;
 
 globalvar Number[] waves; //points to the index of the first minion in the wave. When removing a mi
@@ -13,6 +13,7 @@ define TEAM1_MINION_SPAWN: Vector(0,0,10);
 define TEAM2_MINION_SPAWN: Vector(0,0,-10);
 
 enum EMinionType{
+    NONE,
     MELEE,
     MAGE,
     RANGED,
@@ -24,16 +25,18 @@ class Minion : Creature
     public EMinionType type;
     public constructor(in Team team, in EMinionType type){
         entity_constructor();
+        this.team = team;
+        this.type = type;
         switch (team){
             case Team.Team1:
-                color = Color.Team1;
-                position = TEAM1_MINION_SPAWN;
-                velocity = Vector(0,0,-1);
+                this.color = Color.Team1;
+                this.position = TEAM1_MINION_SPAWN;
+                this.velocity = Vector(0,0,-1);
                 break;
             case Team.Team2:
-                color = Color.Team2;
-                position = TEAM2_MINION_SPAWN;
-                velocity = Vector(0,0,1);
+                this.color = Color.Team2;
+                this.position = TEAM2_MINION_SPAWN;
+                this.velocity = Vector(0,0,1);
                 break;
             case Team.All:
                 async throwError({
@@ -43,8 +46,8 @@ class Minion : Creature
                     });
                 break;
         }
-        LogToInspector(this.subclass);
-        appearance = ["ι","ί",team == Team.Team1 ? "R" : "Я","ϊ","ΐ"][type];
+        appearance = <Number>this;
+        //appearance = ["","ι","ί",team == Team.Team1 ? "R" : "Я","ϊ","ΐ"][type];
         if(!appearance){
             throwError({
                 message: "Minion rendered with no appearance", 
@@ -55,10 +58,6 @@ class Minion : Creature
         
         Wait(0.016);
         visibility = true;
-    }
-
-    public void destroy(){
-        //TODO: remove from tickOffsetSorted
     }
 
 }

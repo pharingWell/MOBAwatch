@@ -2,20 +2,21 @@ import "../Header Files/ui.del";
 import "../Header Files/state.del";
 import "../debug.ostw";
 import "grid.ostw";
+import "render.ostw";
 
 
 rule: 'Global Render Setup' 
 if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 {
     gridConstructor();
-    for(define i = 0; i < RENDER_SIZE; i++){
+    for(define i = 1; i <= RENDER_SIZE; i++){
         Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
         Number tick: (TotalTimeElapsed()-creature.tickOffset);
         CreateInWorldText(
             creature.visibility ? LocalPlayer() : null,
             creature.appearance,
             creature.position + tick*creature.velocity,
-            3, 
+            1, 
             Clipping.DoNotClip, 
             InworldTextRev.VisibleToPositionStringAndColor,
             creature.color, 
@@ -30,60 +31,48 @@ Event.OngoingPlayer
 {
     DisableGameModeHud();
 }
-
-rule: 'Grind Render Loop'
+define VIEW_RANGE: 0;
+rule: 'Grid Render Loop'
 
 Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
 if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
 {
-    
-    define VIEW_RANGE: 2;
+    LOCK = true;
     Cell[] observedCells;
     Cell temp!;
     Cell_byPosition(temp,EventPlayer().Position());
-    getAllCellsInUniformDistanceFromCell(observedCells,temp, VIEW_RANGE);
-    //!
-    Cell[] noLongerObservedCells = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
-    //!
-    Cell[] newlyObservedCells = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement())); 
-    
-    if(CountOf(EventPlayer().playerCells)!=CountOf(observedCells)){
-        LogToInspector($"-{CountOf(noLongerObservedCells)}  +{CountOf(newlyObservedCells)}");
-    }
-    
+    observedCells = [temp];
+   // getAllCellsInUniformDistanceFromCell(observedCells,temp, VIEW_RANGE);
+    Cell[] noLongerObservedCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
+    Cell[] newlyObservedCells! = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement()));
     foreach(Cell cell! in noLongerObservedCells){
-        LogToInspector($"Removing {cell}");
-        foreach(Number n! in EventPlayer().cellCreatures.Get(cell)){
-            EventPlayer().renderCreatures = RemoveFromArrayAtIndex(EventPlayer().renderCreatures,n);
+        foreach(Entity e! in cell.dynamic){
+            if(e.subclass == EEntitySubclass.CREATURE){
+                removeEntityFromViewer(EventPlayer().renderCreatures,EventPlayer().creatureRenderIndexes,EventPlayer().ID,cell,e);
+            }else if(e.subclass == EEntitySubclass.PROJECTILE){
+                removeEntityFromViewer(EventPlayer().renderProjectiles,EventPlayer().projectileRenderIndexes,EventPlayer().ID,cell,e);
+            }   
         }
-        Dictionary<Cell,Number[]>.Set(EventPlayer().cellCreatures,cell,[]);
-        //for each item in the cell data, 
-        foreach(Number n! in EventPlayer().cellProjectiles.Get(cell)){
-            EventPlayer().renderProjectiles = RemoveFromArrayAtIndex(EventPlayer().renderProjectiles,n);
-        }
-        Dictionary<Cell,Number[]>.Set(EventPlayer().cellProjectiles,cell,[]);
-        cell.viewers.ModRemoveByValue(EventPlayer().controller);
+        cell.viewers -= EventPlayer();
     }
     
     foreach(Cell cell! in newlyObservedCells){
-        LogToInspector($"Adding {cell}, dynamic: {toString(cell.dynamic)}");
-        cell.viewers.ModAppend(EventPlayer().controller);
-        Number[] creatureIndexes = [];
-        Number[] projectileIndexes = [];
+        cell.viewers += EventPlayer();
         foreach(Entity e! in cell.dynamic){
             if(e.subclass == EEntitySubclass.CREATURE){
-                creatureIndexes.ModAppend(renderCreatures.Length);
-                EventPlayer().renderCreatures.ModAppend(<Creature>e);
-            }else{
-                projectileIndexes.ModAppend(renderProjectiles.Length);
-                EventPlayer().renderProjectiles.ModAppend(<Projectile>e);
-            }
+                addEntityToViewer(EventPlayer().renderCreatures,EventPlayer().creatureRenderIndexes,EventPlayer().ID,cell,e);
+            }else if(e.subclass == EEntitySubclass.PROJECTILE){
+                addEntityToViewer(EventPlayer().renderProjectiles,EventPlayer().projectileRenderIndexes,EventPlayer().ID,cell,e);
+            }   
         }
-        Dictionary<Cell,Number[]>.Set(EventPlayer().cellCreatures,cell,creatureIndexes);
-        Dictionary<Cell,Number[]>.Set(EventPlayer().cellProjectiles,cell,projectileIndexes);
     }
+
+//todo: an observable list of cells per team
+
     EventPlayer().playerCells = observedCells;
+    Wait();
+    LOCK = false;
     Wait(0.25);
     Loop();
 }

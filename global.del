@@ -31,3 +31,7 @@ struct Dictionary<K, V>
             dictionary.Values[index] = value;
     }
 }
+
+void BetterAppend(ref Any[] array, in Any value){
+    array[array.Length] = value;
+}

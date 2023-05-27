@@ -1,0 +1,95 @@
+import "../global.del";
+import "../Header Files/ui.del";
+import "../Header Files/controller-puppet model/player_controller.del";
+
+//ADD
+
+void addEntityToViewer(
+    ref Any[] renderBuffer, ref Number[][] renderIndexContainer, 
+    in Number ID, in Cell cell, in Entity e
+){
+        define indexOfFirstNull! = 1;
+        while(renderBuffer[indexOfFirstNull] != null){
+            indexOfFirstNull++;
+        }
+        LogToInspector($"pre:{toString_extended(renderIndexContainer[<Number>cell])}");
+        renderIndexContainer[<Number>cell] += indexOfFirstNull;
+        LogToInspector($"post:{toString_extended(renderIndexContainer[<Number>cell])}");
+        e.viewerIndex[ID] = indexOfFirstNull;
+        renderBuffer[indexOfFirstNull] = e;
+}
+
+
+
+void addProjectileToCell(Cell cell, Projectile p) "Add Projectile"
+{   cell.dynamic.ModAppend(p);
+    foreach(Player player! in cell.viewers){
+        addEntityToViewer(player.renderProjectiles,player.projectileRenderIndexes,player.ID, cell, p);
+    }
+    p.cell = cell;
+}
+void addCreatureToCell(Cell cell, Creature c) "Add Creature"
+{
+    cell.dynamic.ModAppend(c);
+    foreach(Player viewer! in cell.viewers){
+        define self: viewer;
+        addEntityToViewer(self.renderCreatures,self.creatureRenderIndexes,self.ID, cell, c);
+    }
+    c.cell = cell;
+}
+
+//REMOVE
+
+private void removeEntityFromViewer(
+    ref Any[] renderBuffer, Number[][] renderIndexContainer,
+    in Number ID, in Cell cell, in Entity e
+){
+    Number indexOfRenderData: e.viewerIndex[ID];
+    //LogToInspector($"renderContainer:{toString(renderIndexContainer.Get(cell))}, viewerIndex:{e.viewerIndex[ID]},render buffer: {renderBuffer[indexOfRenderData]}");
+    renderIndexContainer[<Number>cell] -= indexOfRenderData;
+    renderBuffer[indexOfRenderData] = null;
+    e.viewerIndex[ID] = null; //must be last
+}
+
+//MOVE
+
+void moveEntityBetweenCells(Entity e, Cell from, Cell to) "move Entity between Cells"
+{
+    
+    Player addEntityTo! = FilteredArray(to.viewers, !from.viewers.Contains(ArrayElement()));
+    Player moveEntityBetween = FilteredArray(to.viewers, from.viewers.Contains(ArrayElement()));
+    Player removeEntityFrom! = FilteredArray(from.viewers, !to.viewers.Contains(ArrayElement()));
+    
+    if(from.dynamic.Contains(e)){
+        from.dynamic -= e;
+    }else{
+        throwError({message: $"Tried to move entity {e}  between cells {from}  and {to}", source: "moveEntityBetweenCells", severity: EErrorSeverity.ERROR});
+        return;
+    }
+    foreach(Player p! in addEntityTo){
+        if(e.subclass == EEntitySubclass.CREATURE){
+            addEntityToViewer(p.renderCreatures,p.creatureRenderIndexes,p.ID,to,e);
+        }else if(e.subclass == EEntitySubclass.PROJECTILE){
+            addEntityToViewer(p.renderProjectiles,p.projectileRenderIndexes,p.ID,to,e);
+        }
+    }
+    foreach(Player p! in moveEntityBetween){
+        Number index: e.viewerIndex[p.ID];
+        if(e.subclass == EEntitySubclass.CREATURE){
+            p.creatureRenderIndexes[<Number>from] -= index;
+            p.creatureRenderIndexes[<Number>to] += index;
+        }else if(e.subclass == EEntitySubclass.PROJECTILE){
+            p.projectileRenderIndexes[<Number>from] -= index;
+            p.projectileRenderIndexes[<Number>to] += index;
+        }
+    }
+    foreach(Player p! in removeEntityFrom){
+        if(e.subclass == EEntitySubclass.CREATURE){
+            removeEntityFromViewer(p.renderCreatures,p.creatureRenderIndexes,p.ID,from,e);
+        }else if(e.subclass == EEntitySubclass.PROJECTILE){
+            removeEntityFromViewer(p.renderProjectiles,p.projectileRenderIndexes,p.ID,from,e);
+        }
+    }
+    to.dynamic += e;
+    e.cell = to;
+}

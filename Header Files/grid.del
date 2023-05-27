@@ -4,7 +4,7 @@ import "../Header Files/controller-puppet model/player_controller.del";
 import "../error.ostw";
 
 class Cell{
-    public Model[] viewers;
+    public Player[] viewers;
     public Entity[] dynamic;
     public Statics[] statics;
     public Number x;
@@ -25,8 +25,7 @@ define CELL_WIDTH: 10;
 define CELL_HEIGHT: 10;
 
 # X Count
-define GRID_COLUMNS: 8;
-# Y Count
-define GRID_ROWS: 8;
+define GRID_COLUMNS: 3;
+define GRID_ROWS: 6;
 
 

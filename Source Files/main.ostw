@@ -7,6 +7,7 @@ import "../tests.ostw";
 
 import "state.ostw";
 import "ui.ostw";
+import "entity.ostw";
 import "creature.ostw"; 
 import "minion.ostw";
 globalvar String debugString;
@@ -16,6 +17,8 @@ rule: 'Setup Phase'
     gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
     WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
     gamePhase = EGamePhase.BATTLE;
+    waveConstructor();
+    LogToInspector(CountOf(entities));
     //printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
 }
 
@@ -23,12 +26,11 @@ rule: 'Debug Tings'
 {
     CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
     ForcePlayerHero(HostPlayer(),Hero.Ana);
-    printToScreen("active cells: " + toString(LocalPlayer().cellCreatures.Values));
-    printToScreen("rendered minions: " + toString(LocalPlayer().renderCreatures));
+    printToScreen("active cells: " + toString_extended(MappedArray(LocalPlayer().creatureRenderIndexes,$"{CurrentArrayIndex()}: {CountOf(ArrayElement())}")));
+    printToScreen("rendered minions: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
     Wait(3);
-    waveConstructor();
     SetMatchTime(0);
 }
 rule: 'Create Minion For Host'
