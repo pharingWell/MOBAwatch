@@ -8,34 +8,46 @@ import "../tests.ostw";
 import "state.ostw";
 import "ui.ostw";
 import "entity.ostw";
+import "structures.ostw";
 import "creature.ostw"; 
 import "minion.ostw";
+import "controller-puppet model/player_controller.ostw";
 globalvar String debugString;
 rule: 'Setup Phase'
 {   
+
     gamePhase = EGamePhase.LOADING;
     gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
     WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
     gamePhase = EGamePhase.BATTLE;
-    waveConstructor();
     //printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
 }
 
 rule: 'Debug Tings'
 {
-    CreateHudText(LocalPlayer(),TextCount(),gameState[EGamePhase.LOADING],null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
-    ForcePlayerHero(HostPlayer(),Hero.Ana);
-    //printToScreen("active cells: " + toString_extended(MappedArray(LocalPlayer().creatureRenderIndexes,$"{CurrentArrayIndex()}: {CountOf(ArrayElement())}")));
+    CreateHudText(LocalPlayer(),"Minions Summoned: "+ClassMemoryUsed(),null,null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+    //printToScreen("starts:\n\n" + toString_extended(LocalPlayer().edgeStarts));
+    //printToScreen("ends:\n\n" + toString_extended(LocalPlayer().edgeEnds));
+    //MappedArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))
     //printToScreen("rendered minions: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
-    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,Vector(0,0,10),1,EffectRev.VisibleToPositionRadiusAndColor);
-    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,Vector(0,0,-10),1,EffectRev.VisibleToPositionRadiusAndColor);
-    Wait(3);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,TEAM1_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,TEAM2_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
     SetMatchTime(0);
 }
+
+rule: 'Player'
+Event.OngoingPlayer
+{
+    Wait(3);
+    ForcePlayerHero(EventPlayer(),Hero.Ana);
+    WaitUntil(HasSpawned(EventPlayer())==true,999);
+    Teleport(EventPlayer(),Vector(11.5,0,-2.5));
+}
+
 rule: 'Create Minion For Host'
 if(IsButtonHeld(HostPlayer(),Button.Interact))
 {
-    waveConstructor();
+    newWave();
     //debugString = toString(tickOffsetSorted);
     WaitUntil(IsButtonHeld(HostPlayer(),Button.Interact)==false, 10);
 }

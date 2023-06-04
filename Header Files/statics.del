@@ -1,8 +1,4 @@
-struct Mesh{
-    Vector[] starts;
-    Vector[] ends;
-}
-
 class Statics{
-    Mesh render;
+    public Vector[] points;
+    public Vector position;
 }

@@ -1,3 +1,0 @@
-define PLAYER_COUNT: 5;
-define CREATURE_COUNT: 96;
-define TICK_MAGIC: 1.5;

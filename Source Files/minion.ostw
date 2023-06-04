@@ -1,10 +1,10 @@
 import "../Header Files/minion.del";
 
 import "../debug.ostw";
-import "ui.ostw";
 import "render.ostw";
 
-public void waveConstructor(){
+public void newWave() "Wave Constructor"
+{
     //Number pointerIndex! = CountOf(waves); 
     for(define i!  = 1; i < CountOf(EMinionType_toArray); i++){
         for(define j! = 0; j < MINION_WAVE_SIZE[i]; j++){

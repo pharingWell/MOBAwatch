@@ -4,6 +4,7 @@ import "entity.del";
 //Can take damage, can be targetted
 //has id, team, etc
 
+define CREATURE_COUNT: 96;
 class Creature : Entity{
     public Number health;
     public String appearance;

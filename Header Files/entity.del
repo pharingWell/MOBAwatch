@@ -24,8 +24,8 @@ class Entity{
     
     public CreaturePlayer target;
     public Cell cell;
-    //public EEntityType type;
-    public Number[] viewerIndex; //
+    //Render:
+    public Number[] viewerIndex;
 
     public virtual EEntitySubclass subclass: EEntitySubclass.NONE;
     

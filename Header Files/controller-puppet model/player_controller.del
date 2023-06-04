@@ -1,5 +1,4 @@
 import "../grid.del";
-import "../../const.del";
 playervar Cell[] viewedCells;
 struct Model{
     public Player controller;
@@ -7,7 +6,7 @@ struct Model{
 }
 
 playervar Number ID;
-
+define PLAYER_COUNT: 5;
 rule: 'set ID'
 Event.OngoingPlayer
 {

@@ -1,2 +1,38 @@
 import "../../Header Files/controller-puppet model/player_controller.del";
 import "../creature.ostw";
+import "../../Header Files/ui.del";
+
+rule: 'Setup player controller'
+Event.OngoingPlayer
+if(HasSpawned(EventPlayer()))
+if(!IsDummyBot(EventPlayer()))
+{
+    Teleport(EventPlayer(),Vector(0,-10,0));
+    SetInvisible(EventPlayer(),InvisibleTo.All);
+    SetGravity(EventPlayer(),0);
+    DisallowButton(EventPlayer(),Button.PrimaryFire);
+}
+
+rule: 'Better Forcing'
+Event.OngoingPlayer
+if(HasSpawned(EventPlayer()))
+if(!IsDummyBot(EventPlayer()))
+{
+    if( (Vector(1,0,1)*(EventPlayer().Position() - cameraPosition(EventPlayer()))).Magnitude > 1){
+        define PC: PositionOf(EventPlayer());
+        define CAM: cameraPosition(EventPlayer());
+        ApplyImpulse(EventPlayer(), DirectionTowards(PC,CAM), DistanceBetween(PC,CAM), Relative.ToWorld, ContraryMotion.CancelXYZ);
+    }
+    Wait(1);
+    Loop();
+}
+
+rule: 'Move camera to mouse on click'
+Event.OngoingPlayer
+if(HasSpawned(EventPlayer()))
+if(!IsDummyBot(EventPlayer()))
+if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
+{
+    EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+    Wait(0.25);
+}

@@ -2,14 +2,32 @@ import "../global.del";
 import "../Header Files/creature.del";
 import "../Header Files/projectile.del";
 import "../Header Files/structures.del";
-define RENDER_SIZE: 50;
-playervar Cell[] playerCells = [<Cell>(-1)];
-playervar Creature[] renderCreatures = [<Creature>(-1)];
-playervar Projectile[] renderProjectiles = [<Projectile>(-1)];
-playervar Number[][] creatureRenderIndexes;
-playervar Number[][] projectileRenderIndexes;
 
+define VAL1: 0.6;
+define VAL2: -0.8;
+define FORWARD_VECTOR: Vector(VAL1, VAL2, 0);
+define RIGHT_VECTOR: Vector(0,0,-1);
+define UP_VECTOR: Vector(-VAL2,VAL1,0);
+playervar Number Setting_CAMERA_DISTANCE = 15;
+playervar Vector cameraPos = Vector(0,0,0);
+playervar Vector cursorWorldPositon;
+Vector cameraEye(in Player p){
+    return FORWARD_VECTOR * -p.Setting_CAMERA_DISTANCE + cameraPosition(p);
+}
 
+Vector cameraPosition(in Player p){
+    return p.cameraPos;
+}
+
+define SCALE: 100;
+Vector uiPos(in Player p, in Number x, in Number y){
+    return cameraEye(p) + SCALE * FORWARD_VECTOR + RIGHT_VECTOR * x + UP_VECTOR * y;
+}
+
+Vector uiToWorld(in Player p, in Number x, in Number y){
+    define towards: <Vector>(FORWARD_VECTOR * SCALE + RIGHT_VECTOR * x + UP_VECTOR * y);
+    return (-cameraEye(p).Y/towards.Y)*towards + cameraEye(p);
+}
 /*
     #!define eyePosition localPlayer.getEyePosition() 
 // Replace all instances of eyePosition with cameraPosition if you're using a camera //

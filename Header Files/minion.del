@@ -8,9 +8,10 @@ globalvar Minion[] minions;
 globalvar Number[] waves; //points to the index of the first minion in the wave. When removing a mi
 //zeroes?
 
-define TEAM1_MINION_SPAWN: Vector(0,0,10);
+define TEAM1_MINION_SPAWN: Vector(0,0,-10);
 
-define TEAM2_MINION_SPAWN: Vector(0,0,-10);
+define TEAM2_MINION_SPAWN: Vector(0,0,10);
+
 
 enum EMinionType{
     NONE,
@@ -31,12 +32,12 @@ class Minion : Creature
             case Team.Team1:
                 this.color = Color.Team1;
                 this.position = TEAM1_MINION_SPAWN;
-                this.velocity = Vector(0,0,-1);
+                this.velocity = Vector(0,0,1);
                 break;
             case Team.Team2:
                 this.color = Color.Team2;
                 this.position = TEAM2_MINION_SPAWN;
-                this.velocity = Vector(0,0,1);
+                this.velocity = Vector(0,0,-1);
                 break;
             case Team.All:
                 async throwError({
@@ -46,7 +47,7 @@ class Minion : Creature
                     });
                 break;
         }
-        appearance = ["","ι","ί",team == Team.Team1 ? "R" : "Я","ϊ","ΐ"][type];
+        appearance = ["","ι","ί",team == Team.Team1 ? "Ｒ" : "Я","ϊ","ΐ"][type];
         if(!appearance){
             throwError({
                 message: "Minion rendered with no appearance", 
