@@ -3,16 +3,17 @@ import "../Header Files/creature.del";
 import "../Header Files/projectile.del";
 import "../Header Files/structures.del";
 
-define VAL1: 0.6;
-define VAL2: -0.8;
-define FORWARD_VECTOR: Vector(VAL1, VAL2, 0);
-define RIGHT_VECTOR: Vector(0,0,-1);
-define UP_VECTOR: Vector(-VAL2,VAL1,0);
-playervar Number Setting_CAMERA_DISTANCE = 15;
+define VAL1: 0.5;
+define VAL2: -0.866;
+define FORWARD_VECTOR: Vector(0, VAL2, VAL1);
+define RIGHT_VECTOR: Vector(1,0,0);
+define UP_VECTOR: Vector(0,VAL1,-VAL2);
+//playervar Number Setting_CAMERA_DISTANCE = 12;
+define Setting_CAMERA_DISTANCE : 12;
 playervar Vector cameraPos = Vector(0,0,0);
 playervar Vector cursorWorldPositon;
 Vector cameraEye(in Player p){
-    return FORWARD_VECTOR * -p.Setting_CAMERA_DISTANCE + cameraPosition(p);
+    return FORWARD_VECTOR * -Setting_CAMERA_DISTANCE + cameraPosition(p);
 }
 
 Vector cameraPosition(in Player p){

@@ -10,22 +10,20 @@ public void newWave() "Wave Constructor"
         for(define j! = 0; j < MINION_WAVE_SIZE[i]; j++){
             createMinion_perTeam(Team.Team1,EMinionType_toArray[i]);
             createMinion_perTeam(Team.Team2,EMinionType_toArray[i]);
-            Wait(0.33);
+            Wait(TEXT_SIZE/10);
         }
     }
-    if(CountOf(waves)>0){
-        waves.ModAppend(LastOf(minions));
-    }else{
-        waves[0] = LastOf(minions);
-    }
+    // if(CountOf(waves)>0){
+    //     waves.ModAppend(LastOf(minions));
+    // }else{
+    //     waves[0] = LastOf(minions);
+    // }
     constructorCleanup();
     //for()
 }
 
 private void createMinion_perTeam(in Team team, in EMinionType type){
     Minion minion! = new Minion(team, type);
-    minions.ModAppend(minion);
-    entities.ModAppend(minion);
     if(team == Team.Team1){
         minion.position = TEAM1_MINION_SPAWN;
     }else if(team == Team.Team2){
@@ -34,7 +32,7 @@ private void createMinion_perTeam(in Team team, in EMinionType type){
     }
     Cell temp!;
     Cell_byPosition(temp, minion.position);
-    addCreatureToCell(temp, minion);
+    addEntityToCell(temp, minion);
 }
 
 

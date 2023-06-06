@@ -1,6 +1,6 @@
 import "statics.del";
 import "creature.del";
-
+import "grid.del";
 enum EStructureStrength{
     TOWER,
     FORT,
@@ -23,4 +23,17 @@ class Core : Structure{
         this.health = 100;
         this.team = team;
     }
+}
+
+void addStructures(){
+    Number x! = 0;
+    Number y! = RoundToInteger(GRID_ROWS/2,Rounding.Up)-1;
+    Core t1Core = new Core(positionFromGridCoord(x,y), Team.Team1);
+    grid.cells[x+y*GRID_COLUMNS].statics += t1Core;
+    x = GRID_COLUMNS-1;
+    y = RoundToInteger(GRID_ROWS/2,Rounding.Up)-1;
+    Core t2Core = new Core(positionFromGridCoord(x,y), Team.Team1);
+    grid.cells[x+y*GRID_COLUMNS].statics += t2Core;
+    Wait(1);
+    LogToInspector($"{GRID_BASE},{t1Core.position},{t2Core.position}");
 }

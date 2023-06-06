@@ -1,10 +1,8 @@
 import "state.del";
 import "creature.del";
 import "projectile.del";
-import "grid.del";
 import "../debug.del";
-define STATICS_COUNT: 200;
-define TEXT_COUNT: 60;
+
 playervar Cell[] playerCells = [<Cell>(-1)];
 playervar Vector[] edgeStarts;
 playervar Vector[] edgeEnds;
@@ -13,47 +11,8 @@ playervar Projectile[] renderProjectiles = [<Projectile>(-1)];
 playervar Number[][] creatureRenderIndexes;
 playervar Number[][] projectileRenderIndexes;
 playervar Number[][] staticsRenderIndexes;
-define VIEW_RANGE: 2;
-define TICK_MAGIC: 1.5;
-rule: 'Global Render Setup' 
-if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
-{
-    
-    gridConstructor();
-    define i!;
-    for(i = 1; i <= TEXT_COUNT; i++){
-        Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
-        Number tick: (TotalTimeElapsed()-creature.tickOffset+TICK_MAGIC);
 
-        if(SHOW_ENTITY_PROJECTEDLOC){
-            CreateInWorldText(
-                creature.visibility ? LocalPlayer() : null,
-                creature.appearance,
-                creature.position + tick*creature.velocity,
-                3, 
-                Clipping.DoNotClip, 
-                InworldTextRev.VisibleToPositionStringAndColor,
-                creature.color, 
-                Spectators.DefaultVisibility   
-            );
-        }
-        /* if(SHOW_ENTITY_TRUELOC){ //this should be disabled unless debugging, in which case, TEXT_RENDER should be halved
-            CreateInWorldText(
-                creature.visibility ? LocalPlayer() : null,
-                creature,
-                creature.position,
-                2, 
-                Clipping.DoNotClip, 
-                InworldTextRev.VisibleToPositionStringAndColor,
-                CustomColor(0,0,0,50), 
-                Spectators.DefaultVisibility   
-            );
-        }*/
-    }
-    for(i = 1; i < STATICS_COUNT; i++){
-        Vector edge_start: LocalPlayer().edgeStarts[EvaluateOnce(i)];
-        Vector edge_end: LocalPlayer().edgeEnds[EvaluateOnce(i)];
-        CreateBeamEffect(LocalPlayer(),BeamType.BrigitteFlailChainBeam,edge_start,edge_end,Color.Black,EffectRev.VisibleToPositionAndRadius);
-    }
-    progressState();
-}
+define STATICS_COUNT: 200;
+define TEXT_COUNT: 64;
+define TEXT_SIZE: 2.75;
+define TICK_MAGIC: 1.5;

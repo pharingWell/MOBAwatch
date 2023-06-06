@@ -35,7 +35,7 @@ void throwError(Error e) "throw Error"
         case EErrorSeverity.ERROR:
             SmallMessage(HostPlayer(), "Error: " + e.message);
             CreateHudText(HostPlayer(), $"!Error!: {e.message}  from {e.source}", null, null, Location.Right, 29, Color.White,Color.White, null, HudTextRev.None,Spectators.VisibleNever);
-            LogToInspector("!!Error!!" + e.source + " threw the following error:\n " + e.message);
+            LogToInspector("!!Error!! " + e.source + " threw the following error:\n " + e.message);
             errorThrown = true;
             break;
         case EErrorSeverity.FATAL:

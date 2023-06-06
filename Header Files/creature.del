@@ -4,11 +4,20 @@ import "entity.del";
 //Can take damage, can be targetted
 //has id, team, etc
 
-define CREATURE_COUNT: 96;
+
 class Creature : Entity{
     public Number health;
     public String appearance;
     public Color color;
     public EEntitySubclass subclass: EEntitySubclass.CREATURE;
+    public constructor(){
+        creature_constructor();
+    }
+    void creature_constructor(){
+        entity_constructor();
+        color = Color.White;
+        appearance = "";
+        health = 0;
+    }
 }
 

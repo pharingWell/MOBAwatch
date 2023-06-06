@@ -30,8 +30,11 @@ class Entity{
     public virtual EEntitySubclass subclass: EEntitySubclass.NONE;
     
     void entity_constructor(){
+        visibility = false;
         tickOffset = TotalTimeElapsed();
+        position = Vector(0,-1,0);
         velocity = Vector(0,0,0); //as otherwise it tries to add a vector to the number 0, has a conniption, and goes to 0, aka 0,0,0
+        entities.ModAppend(this);
     }
 }
 

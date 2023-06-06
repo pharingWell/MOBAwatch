@@ -16,6 +16,9 @@ if(CountOf(entities) > 0)
         if(entity == null){
             continue;
         }
+        if(entity.velocity == Vector(0,0,0)){
+            continue;
+        }
         Number tick! = (TotalTimeElapsed()-entity.tickOffset);
         entity.position += entity.velocity * tick;
         entity.tickOffset = TotalTimeElapsed();
@@ -25,7 +28,7 @@ if(CountOf(entities) > 0)
         if(entity.cell != temp){
             moveEntityBetweenCells(entity,entity.cell,temp);
         }
-        Wait(0.016);
+        Wait(2/CountOf(entity));
 
     }
     Wait(0.016);

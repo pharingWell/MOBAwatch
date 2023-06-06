@@ -1,38 +1,51 @@
 import "../../Header Files/controller-puppet model/player_controller.del";
 import "../creature.ostw";
 import "../../Header Files/ui.del";
-
+import "../../Header Files/main.del";
 rule: 'Setup player controller'
 Event.OngoingPlayer
 if(HasSpawned(EventPlayer()))
 if(!IsDummyBot(EventPlayer()))
 {
-    Teleport(EventPlayer(),Vector(0,-10,0));
-    SetInvisible(EventPlayer(),InvisibleTo.All);
+    SetInvisible(EventPlayer(),InvisibleTo.All);  
+    ForcePlayerHero(EventPlayer(),Hero.Ana);
     SetGravity(EventPlayer(),0);
+    Wait(0.5);
+    StartForcingPlayerPosition(EventPlayer(),Vector(1,0,1)*cameraPosition(EventPlayer())+Vector(0,-10,0),true);
+    Wait(0.5);
+    StopForcingPlayerPosition(EventPlayer());
     DisallowButton(EventPlayer(),Button.PrimaryFire);
+    while(1==1){
+        if( (Vector(1,0,1)*(EventPlayer().Position() - cameraPosition(EventPlayer()))).Magnitude > 1){
+            define PC: PositionOf(EventPlayer());
+            define CAM: Vector(1,0,1)*cameraPosition(EventPlayer())+Vector(0,-10,-30);
+            ApplyImpulse(EventPlayer(), DirectionTowards(PC,CAM), DistanceBetween(PC,CAM), Relative.ToWorld, ContraryMotion.CancelXYZ);
+        }
+    Wait(1);
+    }
 }
 
 rule: 'Better Forcing'
 Event.OngoingPlayer
-if(HasSpawned(EventPlayer()))
+
 if(!IsDummyBot(EventPlayer()))
+if(HasSpawned(EventPlayer()))
 {
-    if( (Vector(1,0,1)*(EventPlayer().Position() - cameraPosition(EventPlayer()))).Magnitude > 1){
-        define PC: PositionOf(EventPlayer());
-        define CAM: cameraPosition(EventPlayer());
-        ApplyImpulse(EventPlayer(), DirectionTowards(PC,CAM), DistanceBetween(PC,CAM), Relative.ToWorld, ContraryMotion.CancelXYZ);
-    }
-    Wait(1);
-    Loop();
+    
 }
 
 rule: 'Move camera to mouse on click'
 Event.OngoingPlayer
-if(HasSpawned(EventPlayer()))
 if(!IsDummyBot(EventPlayer()))
+if(HasSpawned(EventPlayer()))
 if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
+if(READY == true)
 {
-    EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+    if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
+        EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+    }else{
+        SmallMessage(EventPlayer(),"Out of bounds");
+    }
     Wait(0.25);
+
 }

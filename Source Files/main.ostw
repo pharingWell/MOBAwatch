@@ -15,7 +15,7 @@ import "controller-puppet model/player_controller.ostw";
 globalvar String debugString;
 rule: 'Setup Phase'
 {   
-
+    DisableInspectorRecording();
     gamePhase = EGamePhase.LOADING;
     gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
     WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
@@ -25,29 +25,60 @@ rule: 'Setup Phase'
 
 rule: 'Debug Tings'
 {
-    CreateHudText(LocalPlayer(),"Minions Summoned: "+ClassMemoryUsed(),null,null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
-    //printToScreen("starts:\n\n" + toString_extended(LocalPlayer().edgeStarts));
+    //CreateHudText(LocalPlayer(),"Minions Summoned: "+ClassMemoryUsed(),null,null,Location.Top,0,Color.Aqua,Color.Aqua,null,HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+    printToScreen(<String>LocalPlayer().cameraPos,Location.Right,true);
+    printToScreen($"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}");
+    //printToScreen(toString(MappedArray(LocalPlayer().playerCells,(<Cell>ArrayElement()).id)));
+    //printToScreen("current cell:" + toString_extended(LocalPlayer().playerCells[1].dynamic));
     //printToScreen("ends:\n\n" + toString_extended(LocalPlayer().edgeEnds));
-    //MappedArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))
-    //printToScreen("rendered minions: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
+    //Mapp  edArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))
+    //printToScreen("rendered creatures: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,TEAM1_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,TEAM2_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.White,LocalPlayer().cameraPos,0.1,EffectRev.VisibleToPositionRadiusAndColor);
     SetMatchTime(0);
+    PauseMatchTime();
+    CreateDummyBot(Hero.Ana,Team.Team2,PLAYER_COUNT,Vector(0,0,0), Vector(0,0,0));
+    CreateDummyBot(Hero.Roadhog,Team.Team1,PLAYER_COUNT,Vector(0,0,3), Vector(0,0,3));
 }
 
-rule: 'Player'
-Event.OngoingPlayer
-{
-    Wait(3);
-    ForcePlayerHero(EventPlayer(),Hero.Ana);
-    WaitUntil(HasSpawned(EventPlayer())==true,999);
-    Teleport(EventPlayer(),Vector(11.5,0,-2.5));
-}
-
+Button CREATE_MINION : Button.Reload;
 rule: 'Create Minion For Host'
-if(IsButtonHeld(HostPlayer(),Button.Interact))
+if(IsButtonHeld(HostPlayer(),CREATE_MINION))
 {
     newWave();
     //debugString = toString(tickOffsetSorted);
-    WaitUntil(IsButtonHeld(HostPlayer(),Button.Interact)==false, 10);
+    WaitUntil(IsButtonHeld(HostPlayer(),CREATE_MINION)==false, 10);
 }
+
+
+rule: 'toggle controller state'
+Event.OngoingPlayer
+if(!IsDummyBot(EventPlayer()))
+if(HasSpawned(EventPlayer()))
+if(IsButtonHeld(EventPlayer(), Button.Interact))
+{
+    if(controllers[EventPlayer().ID]){
+        controllers[EventPlayer().ID] = null;
+    }else{
+        controllers[EventPlayer().ID] = EventPlayer();
+    }
+    WaitUntil(IsButtonHeld(EventPlayer(), Button.Interact)==false,999);
+}
+
+// rule: 'Change weapon zoom'
+// Event.OngoingPlayer
+// if(!IsDummyBot(EventPlayer()))
+// if(HasSpawned(EventPlayer()))
+// if(ThrottleOf(EventPlayer()).Z!=0)
+// {
+//     if(ThrottleOf(EventPlayer()).Z>0){
+//         if(EventPlayer().Setting_CAMERA_DISTANCE>0){
+//             EventPlayer().Setting_CAMERA_DISTANCE--;
+//         }
+//     }else{
+//         EventPlayer().Setting_CAMERA_DISTANCE++;
+//     }
+//     Wait(0.1);
+//     LoopIfConditionIsTrue();
+// }

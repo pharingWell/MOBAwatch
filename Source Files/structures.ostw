@@ -1,9 +1,3 @@
 import "../Header Files/structures.del";
 import "render.ostw";
 import "grid.ostw";
-
-rule: 'My Rule'
-{
-    Wait(1);
-    grid.cells[13].statics += new Core(positionFromGridCoord(grid.cells[13].x,grid.cells[12].y),Team.Team1);
-}

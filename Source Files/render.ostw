@@ -5,6 +5,48 @@ import "../Header Files/ui.del";
 import "../Header Files/render.del";
 import "../Header Files/controller-puppet model/player_controller.del";
 
+rule: 'Global Render Setup' 
+if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
+{
+    
+    gridConstructor();
+    define i!;
+    for(i = 1; i <= TEXT_COUNT; i++){
+        Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
+        Number tick: (TotalTimeElapsed()-creature.tickOffset+TICK_MAGIC);
+
+        if(SHOW_ENTITY_PROJECTEDLOC){
+            CreateInWorldText(
+                creature.visibility ? controllers : null,
+                creature.appearance,
+                creature.position + tick*creature.velocity,
+                TEXT_SIZE, 
+                Clipping.DoNotClip, 
+                InworldTextRev.VisibleToPositionStringAndColor,
+                creature.color, 
+                Spectators.DefaultVisibility   
+            );
+        }
+        /* if(SHOW_ENTITY_TRUELOC){ //this should be disabled unless debugging, in which case, TEXT_COUNT should be halved
+            CreateInWorldText(
+                creature.visibility ? controllers : null,
+                creature,
+                creature.position,
+                TEXT_SIZE, 
+                Clipping.DoNotClip, 
+                InworldTextRev.VisibleToPositionStringAndColor,
+                CustomColor(0,0,0,50), 
+                Spectators.DefaultVisibility   
+            );
+        }*/
+    }
+    for(i = 1; i < STATICS_COUNT; i++){
+        Vector edge_start: LocalPlayer().edgeStarts[EvaluateOnce(i)];
+        Vector edge_end: LocalPlayer().edgeEnds[EvaluateOnce(i)];
+        CreateBeamEffect(controllers,BeamType.BrigitteFlailChainBeam,edge_start,edge_end,Color.Black,EffectRev.VisibleToPositionAndRadius);
+    }
+    progressState();
+}
 
 rule: 'Grid Render Loop'
 
@@ -13,14 +55,17 @@ if(!IsDummyBot(EventPlayer()))
 if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
 {
     LOCK = true;
+    async! updateCells();
+    LOCK = false;
+    Wait(0.4);
+    Loop();
+}
+
+
+void updateCells() "Update Observed Cells"
+{
     Cell[] observedCells;
-    Cell temp!;
-    Cell_byPosition(temp,EventPlayer().cameraPos);
-    if(VIEW_RANGE == 0){
-        observedCells = [temp];
-    }else{
-        getAllCellsInUniformDistanceFromCell(observedCells,temp, VIEW_RANGE);
-    }
+    getAllCellsOnScreen(observedCells,EventPlayer().cameraPos);
     Cell[] noLongerObservedCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
     Cell[] newlyObservedCells! = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement()));
     if(noLongerObservedCells.Length > 0){
@@ -47,18 +92,19 @@ if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
                         addEntityToViewer(EventPlayer().renderCreatures,creatureRenderTemp,EventPlayer().ID,cell,e);
                     }else if(e.subclass == EEntitySubclass.PROJECTILE){
                         addEntityToViewer(EventPlayer().renderProjectiles,projectileRenderTemp,EventPlayer().ID,cell,e);
-                    }   
+                    }
+                    else{
+                        throwError({message: "can't add entity without subclass",source: "newly observed cells",severity: EErrorSeverity.ERROR});
+                    }
                 }
-                EventPlayer().creatureRenderIndexes[<Number>cell] = creatureRenderTemp;
-                EventPlayer().projectileRenderIndexes[<Number>cell] = projectileRenderTemp;
+                EventPlayer().creatureRenderIndexes[cell.id] = creatureRenderTemp;
+                EventPlayer().projectileRenderIndexes[cell.id] = projectileRenderTemp;
         }
     }
 //todo: an observable list of cells per team
     EventPlayer().playerCells = observedCells;
     Wait();
-    LOCK = false;
-    Wait(0.25);
-    Loop();
+
 }
 
 //ADD
@@ -66,31 +112,38 @@ if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
 void addEntityToViewer(
     ref Any[] renderBuffer, ref Number[] renderIndexContainer, 
     in Number ID, in Cell cell, in Entity e
-){
-        define indexOfFirstNull! = 1;
-        while(renderBuffer[indexOfFirstNull] != null){
-            indexOfFirstNull++;
-        }
-        renderIndexContainer += indexOfFirstNull;
-        e.viewerIndex[ID] = indexOfFirstNull;
-        renderBuffer[indexOfFirstNull] = e;
+){      
+    if(e == null){
+        return;
+    }    
+    define indexOfFirstNull! = 1;
+    while(renderBuffer[indexOfFirstNull] != null){
+        indexOfFirstNull++;
+    }
+    renderIndexContainer += indexOfFirstNull;
+    e.viewerIndex[ID] = indexOfFirstNull;
+    renderBuffer[indexOfFirstNull] = e;
 }
 
-void addProjectileToCell(Cell cell, Projectile p) "Add Projectile"
-{   cell.dynamic.ModAppend(p);
-    foreach(Player player! in cell.viewers){
-        addEntityToViewer(player.renderProjectiles,player.projectileRenderIndexes[<Number>cell],player.ID, cell, p);
-    }
-    p.cell = cell;
+void addEntityToViewer(Cell cell, Entity e){
+    if(e.subclass == EEntitySubclass.CREATURE){
+        addEntityToViewer(EventPlayer().renderCreatures,EventPlayer().creatureRenderIndexes[cell.id],EventPlayer().ID,cell,e);
+    }else if(e.subclass == EEntitySubclass.PROJECTILE){
+        addEntityToViewer(EventPlayer().renderProjectiles,EventPlayer().projectileRenderIndexes[cell.id],EventPlayer().ID,cell,e);
+    } 
 }
-void addCreatureToCell(Cell cell, Creature c) "Add Creature"
-{
-    cell.dynamic.ModAppend(c);
-    foreach(Player viewer! in cell.viewers){
-        define self: viewer;
-        addEntityToViewer(self.renderCreatures,self.creatureRenderIndexes[<Number>cell],self.ID, cell, c);
+
+void addEntityToCell(Cell cell, Entity e) "Add Entity To Cell"
+{   
+    cell.dynamic.ModAppend(e);
+    foreach(Player player! in cell.viewers){
+        if(e.subclass == EEntitySubclass.CREATURE){
+            addEntityToViewer(player.renderCreatures,player.creatureRenderIndexes[cell.id],player.ID, cell, e);
+        }else if(e.subclass == EEntitySubclass.PROJECTILE){
+            addEntityToViewer(player.renderProjectiles,player.projectileRenderIndexes[cell.id],player.ID, cell, e);
+        }
     }
-    c.cell = cell;
+    e.cell = cell;
 }
 
 void addAllStaticsInCellToViewer(in Player player, in Cell cell){
@@ -108,7 +161,7 @@ void addAllStaticsInCellToViewer(in Player player, in Cell cell){
             indexOfFirstNull++;
         }
     }
-    player.staticsRenderIndexes[<Number>cell] = renderIndexesTemp;
+    player.staticsRenderIndexes[cell.id] = renderIndexesTemp;
 }
 
 //REMOVE
@@ -118,18 +171,18 @@ private void removeEntityFromViewer(
     in Number ID, in Cell cell, in Entity e
 ){
     Number indexOfRenderData: e.viewerIndex[ID];
-    renderIndexContainer[<Number>cell] -= indexOfRenderData;
+    renderIndexContainer[cell.id] -= indexOfRenderData;
     renderBuffer[indexOfRenderData] = null;
     e.viewerIndex[ID] = null; //must be last
 }
 
 private void removeAllStaticsInCellFromViewer(in Player player, in Cell cell){
-    for(define i! = 0; i < player.staticsRenderIndexes[<Number>cell].Length; i++){
-        define index: player.staticsRenderIndexes[<Number>cell][i];
+    for(define i! = 0; i < player.staticsRenderIndexes[cell.id].Length; i++){
+        define index: player.staticsRenderIndexes[cell.id][i];
         player.edgeStarts[index] = null;
         player.edgeEnds[index] = null;
     }
-    player.staticsRenderIndexes[<Number>cell] = null;
+    player.staticsRenderIndexes[cell.id] = null;
 }
 
 //MOVE
@@ -149,19 +202,19 @@ void moveEntityBetweenCells(Entity e, Cell from, Cell to) "move Entity between C
     }
     foreach(Player p! in addEntityTo){
         if(e.subclass == EEntitySubclass.CREATURE){
-            addEntityToViewer(p.renderCreatures,p.creatureRenderIndexes[<Number>to],p.ID,to,e);
+            addEntityToViewer(p.renderCreatures,p.creatureRenderIndexes[to.id],p.ID,to,e);
         }else if(e.subclass == EEntitySubclass.PROJECTILE){
-            addEntityToViewer(p.renderProjectiles,p.projectileRenderIndexes[<Number>to],p.ID,to,e);
+            addEntityToViewer(p.renderProjectiles,p.projectileRenderIndexes[to.id],p.ID,to,e);
         }
     }
     foreach(Player p! in moveEntityBetween){
         Number index: e.viewerIndex[p.ID];
         if(e.subclass == EEntitySubclass.CREATURE){
-            p.creatureRenderIndexes[<Number>from] -= index;
-            p.creatureRenderIndexes[<Number>to] += index;
+            p.creatureRenderIndexes[from.id] -= index;
+            p.creatureRenderIndexes[to.id] += index;
         }else if(e.subclass == EEntitySubclass.PROJECTILE){
-            p.projectileRenderIndexes[<Number>from] -= index;
-            p.projectileRenderIndexes[<Number>to] += index;
+            p.projectileRenderIndexes[from.id] -= index;
+            p.projectileRenderIndexes[to.id] += index;
         }
     }
     foreach(Player p! in removeEntityFrom){

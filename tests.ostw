@@ -36,6 +36,7 @@ void test_Grid(){
 
 rule: 'Tests'
 Event.OngoingPlayer
+if(EventPlayer() == HostPlayer())
 if(setting_testsEnabled)
 {
     errorThrown = false;

@@ -1,6 +1,7 @@
 import "entity.del";
 import "statics.del";
 import "render.del";
+import "structures.del";
 import "controller-puppet model/player_controller.del";
 import "../error.ostw";
 
@@ -10,9 +11,14 @@ class Cell{
     public Statics[] statics;
     public Number x;
     public Number y;
+    public Number id;
     public constructor(in Number x, in Number y){
         this.x = x;
         this.y = y;
+        this.id = x+y*GRID_COLUMNS;
+        this.viewers = [];
+        this.dynamic = [];
+        this.statics = [];
     }
 }
 struct GridStruct{ //only used once
@@ -22,13 +28,13 @@ globalvar GridStruct grid;
 
 define GRID_BASE: Vector(-GRID_COLUMNS/2 * CELL_WIDTH,0,-GRID_ROWS/2 * CELL_HEIGHT);
 
-define CELL_WIDTH: 10;
+define CELL_WIDTH: 9.285;
 define CELL_HEIGHT: 10;
 
 # X Count
-define GRID_COLUMNS: 5;
+define GRID_COLUMNS: 20;
 # Y Count
-define GRID_ROWS: 5;
+define GRID_ROWS: 15;
 
 Vector positionFromGridCoord(in Number xcord, in Number ycord):
    Vector((xcord + 0.5) * CELL_WIDTH, 0, (ycord + 0.5) * CELL_HEIGHT) 
@@ -37,30 +43,4 @@ Vector positionFromGridCoord(in Number xcord, in Number ycord):
 Vector positionOfCell(in Cell cell): 
     positionFromGridCoord(cell.x,cell.y);
 
-void gridConstructor()
-{
-    for(define i! = 0; i < 6; i++){ //add 6 blank cells for debug purposes
-        new Cell(-1,-1); //discard a cell for "null"
-    }
-    //
-    for(define j! = 0; j < GRID_COLUMNS * GRID_ROWS; j++){
-        Number x: j%GRID_COLUMNS;
-        Number y: RoundToInteger(j/GRID_COLUMNS, Rounding.Down);
-        
-        grid.cells[j] = new Cell(x,y);
-        grid.cells[j].dynamic = [];
-        
-        //DEBUG
 
-        Vector bottomCorner! = GRID_BASE + Vector(CELL_WIDTH * x, 0, CELL_HEIGHT * y);
-        CreateInWorldText(LocalPlayer(),grid.cells[EvaluateOnce(j)],positionOfCell(grid.cells[EvaluateOnce(j)])
-            ,3,Clipping.DoNotClip,InworldTextRev.VisibleToStringAndColor,
-            CustomColor(LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)])*EvaluateOnce(j)*10+100, 2, EvaluateOnce(j)*10*LocalPlayer().playerCells.Contains(grid.cells[EvaluateOnce(j)]), 100+100*grid.cells[EvaluateOnce(j)].viewers.Contains(LocalPlayer())),
-            Spectators.DefaultVisibility);
-        Statics s = new Statics();
-        s.points = [Vector(0,0,0),Vector(CELL_WIDTH,0,0),Vector(0,0,0),Vector(0,0,CELL_HEIGHT),Vector(CELL_WIDTH,0,0),Vector(CELL_WIDTH,0,CELL_HEIGHT),Vector(0,0,CELL_HEIGHT),Vector(CELL_WIDTH,0,CELL_HEIGHT)];
-        s.position = bottomCorner;
-        grid.cells[j].statics += s;
-        Wait();
-    }
-}

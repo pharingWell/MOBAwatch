@@ -16,10 +16,15 @@ rule: 'Global UI Setup'
 
 rule: 'Player UI Setup'
 Event.OngoingPlayer
+if(!IsDummyBot(EventPlayer()))
 {
     DisableGameModeHud();
     StartCamera(EventPlayer(),UpdateEveryFrame(cameraEye(EventPlayer())),UpdateEveryFrame(cameraPosition(EventPlayer())),60);
     ChaseVariableAtRate(EventPlayer().cursorWorldPositon,uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer())),99999,RateChaseReevaluation.DestinationAndRate);
+    WaitUntil(HasSpawned(EventPlayer())==true,9999);
+    EventPlayer().cameraPos = Vector(0,40,1);
+    WaitUntil(READY==true,999);
+    EventPlayer().cameraPos = Vector(0,0,1);
 }
 
 

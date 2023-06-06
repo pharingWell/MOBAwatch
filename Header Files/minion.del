@@ -3,14 +3,14 @@ import "../error.ostw";
 
 define MINION_WAVE_SIZE: [0,3,1,3,0,0];
 define EMinionType_toArray: [EMinionType.NONE,EMinionType.MELEE,EMinionType.MAGE,EMinionType.RANGED,EMinionType.SEIGE,EMinionType.BRUTE];
-globalvar Minion[] minions;
+//globalvar Minion[] minions;
 
 globalvar Number[] waves; //points to the index of the first minion in the wave. When removing a mi
 //zeroes?
 
-define TEAM1_MINION_SPAWN: Vector(0,0,-10);
+define TEAM1_MINION_SPAWN: Vector(10,0,0);
 
-define TEAM2_MINION_SPAWN: Vector(0,0,10);
+define TEAM2_MINION_SPAWN: Vector(-10,0,0);
 
 
 enum EMinionType{
@@ -25,19 +25,19 @@ class Minion : Creature
 {
     public EMinionType type;
     public constructor(in Team team, in EMinionType type){
-        entity_constructor();
+        creature_constructor();
         this.team = team;
         this.type = type;
         switch (team){
             case Team.Team1:
                 this.color = Color.Team1;
                 this.position = TEAM1_MINION_SPAWN;
-                this.velocity = Vector(0,0,1);
+                this.velocity = Vector(-1,0,0);
                 break;
             case Team.Team2:
                 this.color = Color.Team2;
                 this.position = TEAM2_MINION_SPAWN;
-                this.velocity = Vector(0,0,-1);
+                this.velocity = Vector(1,0,0);
                 break;
             case Team.All:
                 async throwError({
