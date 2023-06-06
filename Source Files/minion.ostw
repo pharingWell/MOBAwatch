@@ -33,6 +33,7 @@ private void createMinion_perTeam(in Team team, in EMinionType type){
     Cell temp!;
     Cell_byPosition(temp, minion.position);
     addEntityToCell(temp, minion);
+    entities.ModAppend(minion);
 }
 
 

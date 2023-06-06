@@ -1,5 +1,6 @@
 import "../../Header Files/controller-puppet model/player_controller.del";
 import "../creature.ostw";
+import "../render.ostw";
 import "../../Header Files/ui.del";
 import "../../Header Files/main.del";
 rule: 'Setup player controller'
@@ -36,16 +37,21 @@ if(HasSpawned(EventPlayer()))
 
 rule: 'Move camera to mouse on click'
 Event.OngoingPlayer
+if(READY == true)
 if(!IsDummyBot(EventPlayer()))
 if(HasSpawned(EventPlayer()))
 if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
-if(READY == true)
-{
+{   
+    Vector toRevert! = EventPlayer().cursorWorldPositon;
+    EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer()));
     if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
         EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+        async updateCells();
     }else{
         SmallMessage(EventPlayer(),"Out of bounds");
+        EventPlayer().cursorWorldPositon = toRevert;
     }
     Wait(0.25);
+    LoopIfConditionIsTrue();
 
 }

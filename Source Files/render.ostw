@@ -9,7 +9,8 @@ rule: 'Global Render Setup'
 if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 {
     
-    gridConstructor();
+    async gridConstructor();
+    Wait(0.5);
     define i!;
     for(i = 1; i <= TEXT_COUNT; i++){
         Creature creature: LocalPlayer().renderCreatures[EvaluateOnce(i)];
@@ -40,6 +41,7 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
             );
         }*/
     }
+
     for(i = 1; i < STATICS_COUNT; i++){
         Vector edge_start: LocalPlayer().edgeStarts[EvaluateOnce(i)];
         Vector edge_end: LocalPlayer().edgeEnds[EvaluateOnce(i)];
@@ -53,12 +55,13 @@ rule: 'Grid Render Loop'
 Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
 if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
+if(READY == true)
 {
     LOCK = true;
-    async! updateCells();
+    async updateCells();
     LOCK = false;
     Wait(0.4);
-    Loop();
+    //Loop();
 }
 
 

@@ -28,7 +28,7 @@ if(CountOf(entities) > 0)
         if(entity.cell != temp){
             moveEntityBetweenCells(entity,entity.cell,temp);
         }
-        Wait(2/CountOf(entity));
+        Wait();
 
     }
     Wait(0.016);

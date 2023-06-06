@@ -12,7 +12,9 @@ playervar Number[][] creatureRenderIndexes;
 playervar Number[][] projectileRenderIndexes;
 playervar Number[][] staticsRenderIndexes;
 
-define STATICS_COUNT: 200;
-define TEXT_COUNT: 64;
+define STATICS_COUNT: 150;//200;
+define TEXT_COUNT: 64;//64;
 define TEXT_SIZE: 2.75;
 define TICK_MAGIC: 1.5;
+
+//globalvar Number maxEffectCount = STATICS_COUNT;
