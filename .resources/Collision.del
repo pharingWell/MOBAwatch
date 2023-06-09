@@ -1,16 +1,16 @@
-globalvar define AllPos = EmptyArray();
-globalvar define AllDir = EmptyArray();
-playervar define filterpos = EmptyArray();
+import "customGameSettings.lobby";
+globalvar define wallMidpointPositions = EmptyArray();
+globalvar define wallCollisionDirection = EmptyArray();
+playervar define collisionPointToWallProjection = EmptyArray();
 globalvar define firstpos = EmptyArray();
 globalvar define secondpos = EmptyArray();
 globalvar define firstpoint2 = EmptyArray();
 globalvar define secondpoint2 = EmptyArray();
 globalvar define second;
 playervar define point;
-globalvar define z;
-playervar define lastsavedpos = 0;
-playervar define closestbodypos =0;
-playervar define fullbodypos =0;
+globalvar Number z;
+playervar Number collisionYPos =0;
+playervar define collidingPointOnBody =0;
 playervar define vertical_points = EmptyArray();
 
 //////////////////UI Variables//////////////
@@ -18,7 +18,6 @@ globalvar define showwalls = true;
 playervar define openui = false;
 playervar define UIVector;
 playervar define UI_ID=0; //0 =  No Wall Default
-globalvar define Wall_ID;
 playervar define prevpos_intersection=0;
 playervar define active_wall=0;
 playervar define AllVertices;
@@ -26,14 +25,17 @@ playervar define closestwall;
 playervar define beam_dir = EmptyArray();
 playervar define beam_Cursor_ID;
 
+globalvar Vector[] starts;
+globalvar Vector[] ends;
+playervar Vector newthing;
 
 
 ////////////////Marcros//////////////////////////////////////
 define eventPlayer: EventPlayer();
-define ftbl: DotProduct(DirectionTowards(firstpos[z],Vector(XOf(firstpos[z]),YOf(secondpos[z]),ZOf(firstpos[z]))),DirectionTowards(firstpos[z],filterpos));
-define fttr: DotProduct(DirectionTowards(firstpos[z],Vector(XOf(secondpos[z]),YOf(firstpos[z]),ZOf(secondpos[z]))),DirectionTowards(firstpos[z],filterpos));
-define stbl: DotProduct(DirectionTowards(secondpos[z],Vector(XOf(firstpos[z]),YOf(secondpos[z]),ZOf(firstpos[z]))),DirectionTowards(secondpos[z],filterpos));
-define sttr: DotProduct(DirectionTowards(secondpos[z],Vector(XOf(secondpos[z]),YOf(firstpos[z]),ZOf(secondpos[z]))),DirectionTowards(secondpos[z],filterpos));
+define ftbl: DotProduct(DirectionTowards(firstpos[z],Vector(XOf(firstpos[z]),YOf(secondpos[z]),ZOf(firstpos[z]))),DirectionTowards(firstpos[z],collisionPointToWallProjection));
+define fttr: DotProduct(DirectionTowards(firstpos[z],Vector(XOf(secondpos[z]),YOf(firstpos[z]),ZOf(secondpos[z]))),DirectionTowards(firstpos[z],collisionPointToWallProjection));
+define stbl: DotProduct(DirectionTowards(secondpos[z],Vector(XOf(firstpos[z]),YOf(secondpos[z]),ZOf(firstpos[z]))),DirectionTowards(secondpos[z],collisionPointToWallProjection));
+define sttr: DotProduct(DirectionTowards(secondpos[z],Vector(XOf(secondpos[z]),YOf(firstpos[z]),ZOf(secondpos[z]))),DirectionTowards(secondpos[z],collisionPointToWallProjection));
 define ftbl_prev_pos: DotProduct(DirectionTowards(firstpos[z],Vector(XOf(firstpos[z]),YOf(secondpos[z]),ZOf(firstpos[z]))),DirectionTowards(firstpos[z],prevpos_intersection));
 define fttr_prev_pos: DotProduct(DirectionTowards(firstpos[z],Vector(XOf(secondpos[z]),YOf(firstpos[z]),ZOf(secondpos[z]))),DirectionTowards(firstpos[z],prevpos_intersection));
 define stbl_prev_pos: DotProduct(DirectionTowards(secondpos[z],Vector(XOf(firstpos[z]),YOf(secondpos[z]),ZOf(firstpos[z]))),DirectionTowards(secondpos[z],prevpos_intersection));
@@ -44,81 +46,121 @@ rule: "Main Collision Logic"
 Event.OngoingPlayer
 if (HasSpawned())
 {
-    lastsavedpos = Midpoint(EyePosition(),PositionOf());
+    define lastsavedpos! = Midpoint(EyePosition(),PositionOf());
     Wait();   
-    closestwall = FilteredArray(AllPos,
-        DistanceBetween(AllPos[CurrentArrayIndex()],eventPlayer) <= DistanceBetween(AllPos[CurrentArrayIndex()],firstpos[CurrentArrayIndex()])
-        || active_wall[CurrentArrayIndex()] == 1 || (DotProduct(DirectionTowards(ArrayElement(),lastsavedpos),AllDir[CurrentArrayIndex()]) > 0) != (DotProduct(DirectionTowards(ArrayElement(),eventPlayer),AllDir[CurrentArrayIndex()]) > 0)
+    closestwall = FilteredArray(wallMidpointPositions,
+        DistanceBetween(wallMidpointPositions[CurrentArrayIndex()],eventPlayer) <= DistanceBetween(wallMidpointPositions[CurrentArrayIndex()],firstpos[CurrentArrayIndex()])
+        || active_wall[CurrentArrayIndex()] == 1 || (DotProduct(DirectionTowards(ArrayElement(),lastsavedpos),wallCollisionDirection[CurrentArrayIndex()]) > 0) != (DotProduct(DirectionTowards(ArrayElement(),eventPlayer),wallCollisionDirection[CurrentArrayIndex()]) > 0)
         ); 
     
-    for( define x = 0; x < CountOf(closestwall); x++)
+    for( define x! = 0; x < CountOf(closestwall); x++)
     {
-        z = IndexOfArrayValue(AllPos,closestwall[x]);
-        if(YOf(firstpos[z]) >= YOf(PositionOf()) && YOf(firstpos[z]) <= YOf(EyePosition()+Vector(0,0.2,0)))
+        z = IndexOfArrayValue(wallMidpointPositions,closestwall[x]);
+        define wallNormal: wallCollisionDirection[z];
+        define wallMidpoint: wallMidpointPositions[z];
+        if(YOf(firstpos[z]) >= YOf(PositionOf()) && YOf(firstpos[z]) <= YOf(EyePosition()+Vector(0,0.2,0))) //if the body is colliding with the bottom plane
         {
-            closestbodypos = firstpos[z];
+            collisionYPos = YOf(firstpos[z]);
         }
-        else if(YOf(secondpos[z]) >= YOf(PositionOf()) && YOf(secondpos[z]) <= YOf(EyePosition()+Vector(0,0.2,0)))
+        else if(YOf(secondpos[z]) >= YOf(PositionOf()) && YOf(secondpos[z]) <= YOf(EyePosition()+Vector(0,0.2,0))) //if the body is colliding with the top
         {
-            closestbodypos = secondpos[z];
+            collisionYPos = YOf(secondpos[z]);
         }
         else
-        {
-            closestbodypos = PositionOf();
+        { 
+            collisionYPos = YOf(PositionOf());
         }
-        fullbodypos = Vector(XOf(EyePosition()),YOf(closestbodypos),ZOf(EyePosition()));
-        filterpos = fullbodypos + AllDir[z] * DotProduct(AllPos[z] - fullbodypos,AllDir[z]) / DotProduct(AllDir[z], AllDir[z]);
-        if((DotProduct(DirectionTowards(AllPos[z],lastsavedpos),AllDir[z]) > 0) != (DotProduct(DirectionTowards(AllPos[z],fullbodypos),AllDir[z]) > 0))
+        collidingPointOnBody = Vector(XOf(EyePosition()),collisionYPos,ZOf(EyePosition()));
+        define vectorFromWallToCollidingPoint: (wallMidpoint - collidingPointOnBody);
+        collisionPointToWallProjection = collidingPointOnBody + vectorProjection(vectorFromWallToCollidingPoint,wallNormal);
+        define thickness: 0.25;
+        if((DotProduct(DirectionTowards(wallMidpoint,lastsavedpos),wallNormal) > 0) != (DotProduct(DirectionTowards(wallMidpoint,collidingPointOnBody),wallNormal) > 0))
         {
-            define intersection_length = DotProduct(AllPos[z] - fullbodypos,AllDir[z]) / DotProduct(DirectionTowards(lastsavedpos,fullbodypos) , AllDir[z]);
-                prevpos_intersection = fullbodypos + (DirectionTowards(lastsavedpos,fullbodypos)) * intersection_length;
+            define intersection_length = DotProduct(vectorFromWallToCollidingPoint,wallNormal) / DotProduct(DirectionTowards(lastsavedpos,collidingPointOnBody), wallNormal);
+            prevpos_intersection = PositionOf() + (DirectionTowards(lastsavedpos,collidingPointOnBody)) * intersection_length;
             if(fttr_prev_pos >= 0 && ftbl_prev_pos >= 0 && sttr_prev_pos >= 0 && stbl_prev_pos >= 0)
             {
                 CancelPrimaryAction();
-                define temp_calc_pos = prevpos_intersection + DirectionTowards(prevpos_intersection,lastsavedpos) * Vector(1,0,1) * 2;
+                define temp_calc_pos = prevpos_intersection + DirectionTowards(prevpos_intersection,lastsavedpos) * Vector(1,0,1) * thickness;
+               // SmallMessage(EventPlayer(),$"Teleported {temp_calc_pos},{lastsavedpos}");
+                StartForcingPlayerPosition(eventPlayer,temp_calc_pos);
                 Teleport(eventPlayer,temp_calc_pos);
+                WaitUntil(SpeedOf()<1,9999);
+                StopForcingPlayerPosition();
             }
         }
-        define thickness: 1;
-        if(DistanceBetween(fullbodypos,filterpos)<=thickness&&fttr >= 0 && ftbl >= 0 && sttr >= 0 && stbl >= 0)
+        if(DistanceBetween(collidingPointOnBody,collisionPointToWallProjection)<=thickness&&fttr >= 0 && ftbl >= 0 && sttr >= 0 && stbl >= 0)
         {
-            if(active_wall[z] == false)
+            if(active_wall[z] == 0)
                 {
-                    active_wall[z] = true;
+                    active_wall[z] = 1;
                 }
-            ApplyImpulse(eventPlayer, DirectionTowards(filterpos,fullbodypos) * Vector(1,0,1), 0.001);
+            ApplyImpulse(eventPlayer, DirectionTowards(collisionPointToWallProjection,collidingPointOnBody) * Vector(1,0,1), 0.001);
             if(ThrottleOf()!= Vector())
-            SetMoveSpeed(eventPlayer,100 - (DotProduct(DirectionTowards(EyePosition(),EyePosition() + WorldVectorOf(ThrottleOf(),eventPlayer)),-1*DirectionTowards(filterpos,fullbodypos)) * 100));                                
+            SetMoveSpeed(eventPlayer,100 - (DotProduct(DirectionTowards(EyePosition(),EyePosition() + WorldVectorOf(ThrottleOf(),eventPlayer)),-1*DirectionTowards(collisionPointToWallProjection,collidingPointOnBody)) * 100));                                
         }
         else
         {
             active_wall[z] = 0;
             SetMoveSpeed(eventPlayer,100);
         }
-    }     
+    } 
+    LogToInspector(z);
     Loop();
 
 }
 
+Vector vectorProjection(Vector a, Vector onto){
+    return onto * (DotProduct(a,onto)/DotProduct(onto,onto));
+}
+
 rule: 'My Rule'
 {
-    firstpos[0] = Vector(0,0,0);
-    firstpoint2[0] = Vector(0,0,2);
-    secondpos[0] = Vector(0,2,2);
-    secondpoint2[0] = Vector(0,2,0);
-    AllPos[0] = Vector(0,1,1);
-    AllDir[0] = Vector(1,0,0);
-    CreateBeamEffect(LocalPlayer(),BeamType.GoodBeam,Vector(0,2,0),Vector(0,2,2),Color.Yellow,EffectRev.VisibleTo);
+    //wallConstructor({x:0,z:0},{x:2,z:3},2);
+    //wallConstructor({x:0,z:0},{x:2,z:-3},2);
+    //wallConstructor({x:0,z:2},{x:-2,z:5},6);
+    wallConstructor({x:0,z:-2},{x:-2,z:-5},6);
+    wallConstructor({x:0,z:4},{x:2,z:9},6);
+    CreateBeamEffect(LocalPlayer(),BeamType.BadBeam,LocalPlayer().collidingPointOnBody,LocalPlayer().collisionPointToWallProjection,Color.Yellow,EffectRev.VisibleToPositionRadiusAndColor);
     printToScreen($"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}");
+    CreateHudText(LocalPlayer(), z, null, null, Location.Left, 1, Color.White, null, null, HudTextRev.VisibleToAndString, Spectators.DefaultVisibility);
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam,LocalPlayer().prevpos_intersection,LocalPlayer().collidingPointOnBody,Color.Yellow,EffectRev.VisibleTo);
+
 }
 
-define printToScreen(in String s){
-    return printToScreen(s, Location.Left, true);
+struct Vector2{
+    public Number x;
+    public Number z;
 }
 
-define printToScreen(in String s, Location l, Boolean shouldRev){
+public void wallConstructor(Vector2 start, Vector2 end, Number height) "Wall Constructor"
+{
+    define s! = Vector(start.x,height,start.z);
+    define e! = Vector(end.x, height, end.z);
+    define base! = Vector(start.x,0,start.z);
+    define base2! = Vector(end.x,0,end.z);
+    define index! = CountOf(wallMidpointPositions);
+    firstpos[index] = base;
+    firstpoint2[index] = s;
+    secondpoint2[index] = base2;
+    secondpos[index] = e;
+    wallMidpointPositions[index] = Midpoint(base,e);
+    wallCollisionDirection[index] = Normalize(CrossProduct(VectorTowards(s,e),VectorTowards(s,base)));
+    starts[index] = s;
+    ends[index] = e;
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam,s,e,Color.Yellow,EffectRev.VisibleTo);
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam,base2,base,Color.Yellow,EffectRev.VisibleTo);
+    CreateBeamEffect(LocalPlayer(),BeamType.GrappleBeam,wallMidpointPositions[index],wallMidpointPositions[index]+wallCollisionDirection[index],Color.Yellow,EffectRev.VisibleTo);
+    CreateInWorldText(LocalPlayer(),index,wallMidpointPositions[index],2,Clipping.ClipAgainstSurfaces,InworldTextRev.VisibleTo,Color.White,Spectators.DefaultVisibility);
+}
+
+void printToScreen(in String s){
+    printToScreen(s, Location.Left, true);
+}
+
+void printToScreen(in String s, Location l, Boolean shouldRev){
     if(shouldRev)
-        return CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+        CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
     else 
-        return CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleTo,Spectators.DefaultVisibility);
+        CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleTo,Spectators.DefaultVisibility);
 }
