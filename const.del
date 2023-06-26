@@ -1,0 +1,22 @@
+# counts
+    Number PLAYER_COUNT: 5;
+    Number STATICS_COUNT: 150;//200;
+    Number TEXT_COUNT: 64;//64;
+
+# waves
+
+    Number[] MINION_WAVE_SIZE: [0,3,1,3,0,0];
+
+# cells
+
+    Number CELL_WIDTH: 9;
+    Number CELL_HEIGHT: 9;
+    # X Count
+    Number GRID_COLUMNS: 20;
+    # Y Count
+    Number GRID_ROWS: 15;
+
+# core positions
+    
+    Vector[] CORE_POSITIONS: [Vector()];
+

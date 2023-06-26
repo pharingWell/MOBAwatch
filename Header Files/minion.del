@@ -1,17 +1,16 @@
 import "creature.del";
 import "../error.ostw";
+import "../const.del";
 
-define MINION_WAVE_SIZE: [0,3,1,3,0,0];
 define EMinionType_toArray: [EMinionType.NONE,EMinionType.MELEE,EMinionType.MAGE,EMinionType.RANGED,EMinionType.SEIGE,EMinionType.BRUTE];
 //globalvar Minion[] minions;
 
 globalvar Number[] waves; //points to the index of the first minion in the wave. When removing a mi
 //zeroes?
 
-define TEAM1_MINION_SPAWN: Vector(10,0,0);
+define TEAM1_MINION_SPAWN: Vector(10,0,0); //to change
 
 define TEAM2_MINION_SPAWN: Vector(-10,0,0);
-
 
 enum EMinionType{
     NONE,

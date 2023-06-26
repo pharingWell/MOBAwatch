@@ -11,6 +11,7 @@ rule: 'Global UI Setup'
     define cursorPosition: uiPos(LocalPlayer(),HorizontalFacingAngleOf(LocalPlayer()),-VerticalFacingAngleOf(LocalPlayer()));
     CreateInWorldText(LocalPlayer(),"•",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition);
     CreateEffect(LocalPlayer(),Effect.Sphere, Color.Aqua, UpdateEveryFrame(LocalPlayer().cursorWorldPositon),0.1,EffectRev.VisibleToPositionAndRadius);
+
 }
 
 

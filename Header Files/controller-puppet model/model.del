@@ -1,0 +1,35 @@
+import "../../const.del";
+import "../main.del";
+import "../../debug.ostw";
+globalvar Player[] controllers;
+globalvar Player[] puppets;
+
+struct Model{
+    public Player controller;
+    public Player puppet;
+}
+
+# represents the puppet's controller and the controller's puppet, dependent on who calls it
+playervar Player otherModelMember;
+
+playervar Number ID;
+# 0 for Team.1, 1 for Team.2
+playervar Number teamNum;
+playervar Boolean canSetup;
+playervar Boolean isReady;
+rule: 'set ID'
+Event.OngoingPlayer
+{
+    teamNum = TeamOf(EventPlayer()) == Team.Team2 ? 1 : 0;
+    ID = SlotOf(EventPlayer()) + teamNum * PLAYER_COUNT; //puppets have ids 10-19, controllers have ids 0-9
+    if(EventPlayer().IsDummy()){
+        ID += PLAYER_COUNT;
+        puppets[ID-PLAYER_COUNT*2] = EventPlayer();
+        canSetup = true;
+    }else{
+        WaitUntil(READY, 999);
+        controllers[ID] = EventPlayer();
+        canSetup = true;
+    }
+    printToScreen($"{EventPlayer()}:{ID}", Location.Right);
+}

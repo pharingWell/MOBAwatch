@@ -23,6 +23,7 @@ class Core : Structure{
         this.health = 100;
         this.team = team;
     }
+    public static Core[] corePositions = [];
 }
 
 void addStructures(){

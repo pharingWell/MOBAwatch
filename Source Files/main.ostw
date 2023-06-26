@@ -12,6 +12,7 @@ import "structures.ostw";
 import "creature.ostw"; 
 import "minion.ostw";
 import "controller-puppet model/player_controller.ostw";
+import "async.ostw";
 globalvar String debugString;
 rule: 'Setup Phase'
 {   
@@ -25,12 +26,12 @@ rule: 'Setup Phase'
 
 rule: 'Debug Tings'
 {
-    printToScreen("Resources Remaining: "+ClassMemoryRemaining(),Location.Right,true);
-    printToScreen(<String>LocalPlayer().cameraPos,Location.Right,true);
+    printToScreen("Resources Remaining: "+ClassMemoryRemaining(),Location.Right);
+    printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
     printToScreen($"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}");
-    printToScreen("Reload to summon minions",Location.Top,false);
-    printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top,true);
-    printToScreen("Left click to move the camera",Location.Top,false);
+    printToScreen_noRev("Reload to summon minions",Location.Top);
+    printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top);
+    printToScreen_noRev("Left click to move the camera",Location.Top);
     //printToScreen(toString(MappedArray(LocalPlayer().playerCells,(<Cell>ArrayElement()).id)));
     //printToScreen("current cell:" + toString_extended(LocalPlayer().playerCells[1].dynamic));
     //printToScreen("ends:\n\n" + toString_extended(LocalPlayer().edgeEnds));
@@ -41,10 +42,10 @@ rule: 'Debug Tings'
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.White,LocalPlayer().cameraPos,0.1,EffectRev.VisibleToPositionRadiusAndColor);
     SetMatchTime(0);
     PauseMatchTime();
-    CreateDummyBot(Hero.Ana,Team.Team2,PLAYER_COUNT,Vector(0,0,0), Vector(0,0,0));
-    CreateDummyBot(Hero.Roadhog,Team.Team1,PLAYER_COUNT,Vector(0,0,3), Vector(0,0,3));
+    CreateDummyBot(Hero.Ana,Team.Team2,PLAYER_COUNT+3,Vector(0,0,0), Vector(0,0,0));
+    CreateDummyBot(Hero.Roadhog,Team.Team1,PLAYER_COUNT+3,Vector(0,0,3), Vector(0,0,3));
 }
-
+    
 Button CREATE_MINION : Button.Reload;
 rule: 'Create Minion For Host'
 if(IsButtonHeld(HostPlayer(),CREATE_MINION))
@@ -68,23 +69,6 @@ if(IsButtonHeld(EventPlayer(), Button.Interact))
     }
     WaitUntil(IsButtonHeld(EventPlayer(), Button.Interact)==false,999);
 }
-
-// rule: 'Change weapon zoom'
-// Event.OngoingPlayer
-// if(!IsDummyBot(EventPlayer()))
-// if(HasSpawned(EventPlayer()))
-// if(ThrottleOf(EventPlayer()).Z!=0)
-// {
-//     if(ThrottleOf(EventPlayer()).Z>0){
-//         if(EventPlayer().Setting_CAMERA_DISTANCE>0){
-//             EventPlayer().Setting_CAMERA_DISTANCE--;
-//         }
-//     }else{
-//         EventPlayer().Setting_CAMERA_DISTANCE++;
-//     }
-//     Wait(0.1);
-//     LoopIfConditionIsTrue();
-// }
 
 // rule: 'update maxeffect count'
 // Event.OngoingPlayer

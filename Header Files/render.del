@@ -2,6 +2,7 @@ import "state.del";
 import "creature.del";
 import "projectile.del";
 import "../debug.del";
+import "../const.del";
 
 playervar Cell[] playerCells = [<Cell>(-1)];
 playervar Vector[] edgeStarts;
@@ -12,8 +13,6 @@ playervar Number[][] creatureRenderIndexes;
 playervar Number[][] projectileRenderIndexes;
 playervar Number[][] staticsRenderIndexes;
 
-define STATICS_COUNT: 150;//200;
-define TEXT_COUNT: 64;//64;
 define TEXT_SIZE: 2.75;
 define TICK_MAGIC: 1.5;
 

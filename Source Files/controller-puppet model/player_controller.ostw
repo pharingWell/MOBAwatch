@@ -1,9 +1,10 @@
 import "../../Header Files/controller-puppet model/player_controller.del";
 import "../creature.ostw";
 import "../render.ostw";
+import "puppet.ostw";
 import "../../Header Files/ui.del";
 import "../../Header Files/main.del";
-rule: 'Setup player controller'
+rule: 'Force to become observer'
 Event.OngoingPlayer
 if(HasSpawned(EventPlayer()))
 if(!IsDummyBot(EventPlayer()))
@@ -16,42 +17,29 @@ if(!IsDummyBot(EventPlayer()))
     Wait(0.5);
     StopForcingPlayerPosition(EventPlayer());
     DisallowButton(EventPlayer(),Button.PrimaryFire);
-    while(1==1){
-        if( (Vector(1,0,1)*(EventPlayer().Position() - cameraPosition(EventPlayer()))).Magnitude > 1){
-            define PC: PositionOf(EventPlayer());
-            define CAM: Vector(1,0,1)*cameraPosition(EventPlayer())+Vector(0,-10,-30);
-            ApplyImpulse(EventPlayer(), DirectionTowards(PC,CAM), DistanceBetween(PC,CAM), Relative.ToWorld, ContraryMotion.CancelXYZ);
-        }
-    Wait(1);
-    }
+    async betterForcing();
 }
 
-rule: 'Better Forcing'
+rule: 'Setup player'
 Event.OngoingPlayer
-
 if(!IsDummyBot(EventPlayer()))
-if(HasSpawned(EventPlayer()))
+if(canSetup)
 {
-    
+    DisableNameplates(puppets, EventPlayer());
+    //printToScreen("\n\n"+toString(puppets));
 }
 
-rule: 'Move camera to mouse on click'
-Event.OngoingPlayer
-if(READY == true)
-if(!IsDummyBot(EventPlayer()))
-if(HasSpawned(EventPlayer()))
-if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
-{   
-    Vector toRevert! = EventPlayer().cursorWorldPositon;
-    EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer()));
-    if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
-        EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
-        async updateCells();
-    }else{
-        SmallMessage(EventPlayer(),"Out of bounds");
-        EventPlayer().cursorWorldPositon = toRevert;
+
+void betterForcing() "Better Camera Forcing"{ //this is not in async.ostw because starting a tick late doesnt matter
+    if( (Vector(1,0,1)*(EventPlayer().Position() - cameraPosition(EventPlayer()))).Magnitude > 1){
+        define PC: PositionOf(EventPlayer());
+        define CAM: Vector(1,0,1)*cameraPosition(EventPlayer())+Vector(0,-10,-30);
+        ApplyImpulse(EventPlayer(), DirectionTowards(PC,CAM), DistanceBetween(PC,CAM), Relative.ToWorld, ContraryMotion.CancelXYZ);
     }
-    Wait(0.25);
-    LoopIfConditionIsTrue();
-
+    Wait(1);
+    Loop();
 }
+
+//"Move camera to mouse on click" is found in async.ostw
+
+

@@ -1,4 +1,4 @@
-String toString1(Any[] arr) "Array to String - DEBUG"
+String toString_subroutine(Any[] arr) "Array to String - DEBUG"
 {
     String s! = $"[{arr[0]}";
     
@@ -12,15 +12,16 @@ String toString1(Any[] arr) "Array to String - DEBUG"
     return $"{s}]";
 }
 
-define printToScreen(in String s){
-    return printToScreen(s, Location.Left, true);
+define printToScreen(in Any s){
+    return printToScreen(<String>s, Location.Left);
 }
 
-define printToScreen(in String s, Location l, Boolean shouldRev){
-    if(shouldRev)
-        return CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
-    else 
-        return CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleTo,Spectators.DefaultVisibility);
+define printToScreen(in String s, Location l){
+    return CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
+}
+
+define printToScreen_noRev(in String s, Location l){
+    return CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleTo,Spectators.DefaultVisibility);
 }
 
 String toString(in Any[] arr){

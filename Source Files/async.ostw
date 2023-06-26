@@ -1,0 +1,84 @@
+import "grid.ostw";
+
+rule: 'Grid Render Loop'
+Event.OngoingPlayer
+if(!IsDummyBot(EventPlayer()))
+if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
+if(READY == true)
+{
+    LOCK = true;
+    async updateCells();
+    LOCK = false;
+    Wait(0.4);
+    //Loop();
+}
+
+
+rule: 'Move camera to mouse on click'
+Event.OngoingPlayer
+if(READY == true)
+if(!IsDummyBot(EventPlayer()))
+if(HasSpawned(EventPlayer()))
+if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
+{   
+    Vector toRevert! = EventPlayer().cursorWorldPositon;
+    EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer()));
+    // if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
+        EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+        async updateCells();
+    // }else{
+    //     SmallMessage(EventPlayer(),"Out of bounds");
+    //     EventPlayer().cursorWorldPositon = toRevert;
+    // }
+    Wait(0.25);
+    LoopIfConditionIsTrue();
+
+}
+
+/// SUBROUTINES ///
+
+
+void updateCells() "Update Observed Cells"
+{
+    Cell[] observedCells;
+    getAllCellsOnScreen(observedCells,EventPlayer().cameraPos);
+    Cell[] noLongerObservedCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
+    Cell[] newlyObservedCells! = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement()));
+    if(noLongerObservedCells.Length > 0){
+        foreach(Cell cell! in noLongerObservedCells){
+        removeAllStaticsInCellFromViewer(EventPlayer(),cell);
+        foreach(Entity e! in cell.dynamic){
+            if(e.subclass == EEntitySubclass.CREATURE){
+                removeEntityFromViewer(EventPlayer().renderCreatures,EventPlayer().creatureRenderIndexes,EventPlayer().ID,cell,e);
+            }else if(e.subclass == EEntitySubclass.PROJECTILE){
+                removeEntityFromViewer(EventPlayer().renderProjectiles,EventPlayer().projectileRenderIndexes,EventPlayer().ID,cell,e);
+            }   
+        }
+        cell.viewers -= EventPlayer();
+    }
+    }
+    if(newlyObservedCells.Length > 0){
+        foreach(Cell cell! in newlyObservedCells){
+                addAllStaticsInCellToViewer(EventPlayer(),cell);
+                cell.viewers += EventPlayer();
+                Number[] creatureRenderTemp = []; //EventPlayer().creatureRenderIndexes
+                Number[] projectileRenderTemp = []; //EventPlayer().projectileRenderIndexes
+                foreach(Entity e! in cell.dynamic){
+                    if(e.subclass == EEntitySubclass.CREATURE){
+                        addEntityToViewer(EventPlayer().renderCreatures,creatureRenderTemp,EventPlayer().ID,cell,e);
+                    }else if(e.subclass == EEntitySubclass.PROJECTILE){
+                        addEntityToViewer(EventPlayer().renderProjectiles,projectileRenderTemp,EventPlayer().ID,cell,e);
+                    }
+                    else{
+                        throwError({message: "can't add entity without subclass",source: "newly observed cells",severity: EErrorSeverity.ERROR});
+                    }
+                }
+                EventPlayer().creatureRenderIndexes[cell.id] = creatureRenderTemp;
+                EventPlayer().projectileRenderIndexes[cell.id] = projectileRenderTemp;
+        }
+    }
+//todo: an observable list of cells per team
+    EventPlayer().playerCells = observedCells;
+    Wait();
+
+}

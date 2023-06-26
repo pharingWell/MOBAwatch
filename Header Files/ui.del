@@ -21,28 +21,7 @@ Vector cameraPosition(in Player p){
 }
 
 define SCALE: 100;
-Vector uiPos(in Player p, in Number x, in Number y){
-    return cameraEye(p) + SCALE * FORWARD_VECTOR + RIGHT_VECTOR * x + UP_VECTOR * y;
-}
+Vector uiPos(in Player p, in Number x, in Number y): (cameraEye(p) + SCALE * FORWARD_VECTOR + RIGHT_VECTOR * x + UP_VECTOR * y);
 
-Vector uiToWorld(in Player p, in Number x, in Number y){
-    define towards: <Vector>(FORWARD_VECTOR * SCALE + RIGHT_VECTOR * x + UP_VECTOR * y);
-    return (-cameraEye(p).Y/towards.Y)*towards + cameraEye(p);
-}
-/*
-    #!define eyePosition localPlayer.getEyePosition() 
-// Replace all instances of eyePosition with cameraPosition if you're using a camera //
-    #!define cameraPosition vect()
-    #!define cameraLookAt vect()   
-    #!define vFOR localPlayer.getFacingDirection()
-    #!define vFOR_Camera directionTowards(cameraPosition,cameraLookAt)
-// Replace all instances of vFOR with vFOR_Camera if you're using a camera //
-    #!define vLEFT angleToDirection(horizontalAngleOfDirection(vFOR)-90,verticalAngleOfDirection(vFOR))
-    #!define vDOWN crossProduct(vLEFT,vFOR)
-    #!define SCALE 50
-    #!define uiPos(xpos,ypos) updateEveryTick(eyePosition+SCALE*vFOR+(xpos)*vLEFT+ (ypos)*vDOWN) //takes a position on the 2D screen, thus only x and y
-rule "":
-    createInWorldText(localPlayer,"¤",uiPos(0,0),2.0,Clip.NONE,WorldTextReeval.VISIBILITY_POSITION_AND_COLOR,Color.SKY_BLUE,SpecVisibility.NEVER)
-    
-
-*/
+Vector towards(Number x, Number y): (FORWARD_VECTOR * SCALE + RIGHT_VECTOR * x + UP_VECTOR * y);
+Vector uiToWorld(in Player p, in Number x, in Number y) : (-cameraEye(p).Y/towards(x,y).Y)*towards(x,y) + cameraEye(p);

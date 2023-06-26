@@ -4,7 +4,7 @@ import "render.del";
 import "structures.del";
 import "controller-puppet model/player_controller.del";
 import "../error.ostw";
-
+import "../const.del";
 class Cell{
     public Player[] viewers;
     public Entity[] dynamic;
@@ -28,13 +28,7 @@ globalvar GridStruct grid;
 
 define GRID_BASE: Vector(-GRID_COLUMNS/2 * CELL_WIDTH,0,-GRID_ROWS/2 * CELL_HEIGHT);
 
-define CELL_WIDTH: 9.285;
-define CELL_HEIGHT: 10;
 
-# X Count
-define GRID_COLUMNS: 20;
-# Y Count
-define GRID_ROWS: 15;
 
 Vector positionFromGridCoord(in Number xcord, in Number ycord):
    Vector((xcord + 0.5) * CELL_WIDTH, 0, (ycord + 0.5) * CELL_HEIGHT) 

@@ -1,21 +1,5 @@
 import "../grid.del";
+import "model.del";
 playervar Cell[] viewedCells;
-struct Model{
-    public Player controller;
-    public Player puppet;
-}
-globalvar Player[] controllers;
-globalvar Player[] puppets;
-playervar Number ID;
-define PLAYER_COUNT: 5;
-rule: 'set ID'
-Event.OngoingPlayer
-{
-    ID = SlotOf(EventPlayer()) + (TeamOf(EventPlayer()) == Team.Team2 ? PLAYER_COUNT : 0);
-    if(EventPlayer().IsDummy()){
-        puppets[ID-10] = EventPlayer();
-        ID += 10; //puppets have ids 10-19, controllers have ids 0-9
-    }else{
-        controllers[ID] = EventPlayer();
-    }
-}
+
+
