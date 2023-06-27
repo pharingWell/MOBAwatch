@@ -13,4 +13,6 @@ Event.OngoingPlayer
 {
     SetMatchTime(0);
     ForcePlayerHero(EventPlayer(),Hero.Zenyatta);
-}
+    //printToScreen("■/▣/□\nΠ/Γ/Ι\nㄇ/ㄒ/ㅣ\n〣/〢/〡");
+    CreateInWorldText(LocalPlayer(), hpbar_symbols[1][0],Vector(0,0,0), 4, Clipping.DoNotClip, InworldTextRev.VisibleTo, Color.White, Spectators.DefaultVisibility);
+}//ǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀ

@@ -36,9 +36,6 @@ define controllerhp_empty: $"{controllerhp_nohealth}{controllerhp_divider}{contr
 define controllerhp_symbols: [" ", ".", "‧", ":", "ı", "Ι"];
 // define percentage(Number base): ((health/maxHealth*100)-base)*4;
 // String singleSegment(Number base, Number percentage): symbols[Min(6, Max(0, RoundToInteger((percentage-base)*(.6), Rounding.Up)))];
-//ǀ /102:                [901-1250](30-35)[3060-3570]
-//Π/Γ /Ι   /   /370:278 [250-349](10-13)[3700-4810]
-//Ι/ı/./ /142:721   [750-899](30-35)
 
 //900+ restart with size 6, now with each square representing 150. This continues infinitely (growing by a factor of 6 each time)
 
@@ -50,10 +47,10 @@ define controllerhp_symbols: [" ", ".", "‧", ":", "ı", "Ι"];
 // //■■■■/■■□□/□□□□/            /1708:[26-50](2)[3416]
 //■■■■■■■■/■■■■□□□□/□□□□□□□□/                        /3416:[1-25](1)[3416]
 //bar = 25
-//115200 
-//115,768
+
 
 // //■/▣/□/   /427:240
+String hpbar_sep: "|";
 Number[] hpbar_dictionary: [0,1,2,3,3,3,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,7];
 String[][] hpbar_symbols: [
 /*0: [empty]*/ ['','','',''],
