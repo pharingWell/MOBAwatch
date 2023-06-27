@@ -35,22 +35,6 @@ void gridConstructor() "Grid Constructor"
     READY = true;
 }
 
-void Cell_fromGridCoord(ref Cell cellptr, in Number xcord, in Number ycord){
-    Boolean outOfBounds! = (xcord >= GRID_COLUMNS || xcord < 0 || ycord >= GRID_ROWS || ycord < 0);
-    if(outOfBounds){
-        cellptr = null;
-    }else{
-        cellptr = grid.cells[xcord + ycord * GRID_COLUMNS];
-    }  
-}
-
-void Cell_byPosition(ref Cell cellptr, in Vector inputPosition)
-{
-    Number xcord! = RoundToInteger((inputPosition-GRID_BASE).X/CELL_WIDTH,Rounding.Down);
-    Number ycord! = RoundToInteger((inputPosition-GRID_BASE).Z/CELL_HEIGHT,Rounding.Down);
-    Cell_fromGridCoord(cellptr, xcord,ycord);
-}
-
 void getAllCellsOnScreen(ref Cell[] retCells, in Vector position){
     retCells = [];
     // Cell given!;
