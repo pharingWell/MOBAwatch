@@ -1,59 +1,57 @@
 import "../customGameSettings.json";
-import "../Header Files/main.del";
-
-import "../error.ostw";
-import "../debug.ostw";
-import "../tests.ostw";
-
-import "state.ostw";
-import "ui.ostw";
-import "entity.ostw";
-import "structures.ostw";
-import "creature.ostw"; 
-import "minion.ostw";
-import "controller-puppet model/player_controller.ostw";
-import "async.ostw";
+import "features.ostw";
 globalvar String debugString;
 rule: 'Setup Phase'
 {   
+    StartGameMode();
     DisableInspectorRecording();
-    gamePhase = EGamePhase.LOADING;
-    gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
-    WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
-    gamePhase = EGamePhase.BATTLE;
+    SetMatchTime(0);
+    PauseMatchTime();
+    READY = true;
+    // gamePhase = EGamePhase.LOADING;
+    // gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
+    // WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
+    // gamePhase = EGamePhase.BATTLE;
     //printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
+}
+rule: 'Setup Player'
+Event.OngoingPlayer
+if(EventPlayer() == HostPlayer())
+{
+    WaitUntil(READY, 999);
+    ForcePlayerHero(EventPlayer(),Hero.Ana);
+    DisableHeroHud();
 }
 
 rule: 'Debug Tings'
 {
     printToScreen("Resources Remaining: "+ClassMemoryRemaining(),Location.Right);
     printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
-    printToScreen($"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}");
-    printToScreen_noRev("Reload to summon minions",Location.Top);
-    printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top);
-    printToScreen_noRev("Left click to move the camera",Location.Top);
+    serverLoad();
+    // printToScreen_noRev("Reload to summon minions",Location.Top);
+    // printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top);
+    // printToScreen_noRev("Left click to move the camera",Location.Top);
     //printToScreen(toString(MappedArray(LocalPlayer().playerCells,(<Cell>ArrayElement()).id)));
     //printToScreen("current cell:" + toString_extended(LocalPlayer().playerCells[1].dynamic));
     //printToScreen("ends:\n\n" + toString_extended(LocalPlayer().edgeEnds));
-    //Mapp  edArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))
+    //Mapp  edArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))s
     //printToScreen("rendered creatures: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,TEAM1_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,TEAM2_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.White,LocalPlayer().cameraPos,0.1,EffectRev.VisibleToPositionRadiusAndColor);
-    SetMatchTime(0);
-    PauseMatchTime();
-    CreateDummyBot(Hero.Ana,Team.Team2,PLAYER_COUNT+3,Vector(0,0,0), Vector(0,0,0));
-    CreateDummyBot(Hero.Roadhog,Team.Team1,PLAYER_COUNT+3,Vector(0,0,3), Vector(0,0,3));
+
+    CreateDummyBot(Hero.Ana,Team.Team2,PLAYER_COUNT,Vector(0,0,0), Vector(0,0,0));
+    CreateDummyBot(Hero.Roadhog,Team.Team1,PLAYER_COUNT,Vector(0,0,3), Vector(0,0,3));
 }
     
-Button CREATE_MINION : Button.Reload;
-rule: 'Create Minion For Host'
-if(IsButtonHeld(HostPlayer(),CREATE_MINION))
-{
-    newWave();
-    //debugString = toString(tickOffsetSorted);
-    WaitUntil(IsButtonHeld(HostPlayer(),CREATE_MINION)==false, 10);
-}
+// Button CREATE_MINION : Button.Reload;
+// rule: 'Create Minion For Host'
+// if(IsButtonHeld(HostPlayer(),CREATE_MINION))
+// {
+//     newWave();
+//     //debugString = toString(tickOffsetSorted);
+//     WaitUntil(IsButtonHeld(HostPlayer(),CREATE_MINION)==false, 10);
+// }
 
 
 rule: 'toggle controller state'
@@ -61,7 +59,7 @@ Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
 if(HasSpawned(EventPlayer()))
 if(IsButtonHeld(EventPlayer(), Button.Interact))
-{
+{   
     if(controllers[EventPlayer().ID]){
         controllers[EventPlayer().ID] = null;
     }else{

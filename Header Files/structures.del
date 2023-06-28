@@ -27,14 +27,15 @@ class Core : Structure{
 }
 
 void addStructures(){
-    Number x! = 0;
-    Number y! = RoundToInteger(GRID_ROWS/2,Rounding.Up)-1;
-    Core t1Core = new Core(positionFromGridCoord(x,y), Team.Team1);
-    grid.cells[x+y*GRID_COLUMNS].statics += t1Core;
-    x = GRID_COLUMNS-1;
-    y = RoundToInteger(GRID_ROWS/2,Rounding.Up)-1;
-    Core t2Core = new Core(positionFromGridCoord(x,y), Team.Team1);
-    grid.cells[x+y*GRID_COLUMNS].statics += t2Core;
+    Cell cell1!;
+    Cell_byPosition(cell1, CORE_POSITIONS[0]);
+    Cell cell2!;
+    Cell_byPosition(cell2, CORE_POSITIONS[1]);
+    
+    Core t1Core = new Core(CORE_POSITIONS[0], Team.Team1);
+    cell1.statics += t1Core;
+    Core t2Core = new Core(CORE_POSITIONS[1], Team.Team2);
+    cell2.statics += t2Core;
     Wait(1);
     LogToInspector($"{GRID_BASE},{t1Core.position},{t2Core.position}");
 }
