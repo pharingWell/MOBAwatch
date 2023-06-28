@@ -3,9 +3,8 @@ import "../Header Files/state.del";
 import "../Header Files/main.del";
 import "../debug.ostw";
 import "../debug.del";
-import "../const.del";
 
-rule: 'Global Camera Setup'
+rule: 'Global UI Setup'
 {
     //cursor
     define cursorPosition: uiPos(LocalPlayer(),HorizontalFacingAngleOf(LocalPlayer()),-VerticalFacingAngleOf(LocalPlayer()));

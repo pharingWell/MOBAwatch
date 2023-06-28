@@ -1,18 +1,11 @@
 import "../Header Files/ui.del";
+import "../debug.ostw";
 import "../customGameSettings.json";
 Vector calculateDisplacement(Player p, Number dispX, Number dispY): Vector(uiPos(p,dispX, dispY).X-uiPos(p,0,0).X,uiPos(p,dispX, dispY).Y-uiPos(p,0,0).Y, uiPos(p,dispX, dispY).Z-uiPos(p,0,0).Z);
 Vector calculateWorldDisplacement(Player p, Number dispX, Number dispY): Vector(uiToWorld(p,dispX, dispY).X-uiToWorld(p,0,0).X,uiToWorld(p,dispX, dispY).Y-uiToWorld(p,0,0).Y, uiToWorld(p,dispX, dispY).Z-uiToWorld(p,0,0).Z);
 rule: 'My Rule'
 {
+    serverLoad();
     printToScreen(calculateWorldDisplacement(LocalPlayer(), 0, 0.45));
     printToScreen(calculateDisplacement(LocalPlayer(), 0, 0.45));
 }
-
-rule: 'My Rule'
-Event.OngoingPlayer
-{
-    SetMatchTime(0);
-    ForcePlayerHero(EventPlayer(),Hero.Zenyatta);
-    //printToScreen("■/▣/□\nΠ/Γ/Ι\nㄇ/ㄒ/ㅣ\n〣/〢/〡");
-    CreateInWorldText(LocalPlayer(), hpbar_symbols[1][0],Vector(0,0,0), 4, Clipping.DoNotClip, InworldTextRev.VisibleTo, Color.White, Spectators.DefaultVisibility);
-}//ǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀǀ

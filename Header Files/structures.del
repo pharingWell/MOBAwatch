@@ -31,7 +31,7 @@ void addStructures(){
     Cell_byPosition(cell1, CORE_POSITIONS[0]);
     Cell cell2!;
     Cell_byPosition(cell2, CORE_POSITIONS[1]);
-    
+
     Core t1Core = new Core(CORE_POSITIONS[0], Team.Team1);
     cell1.statics += t1Core;
     Core t2Core = new Core(CORE_POSITIONS[1], Team.Team2);

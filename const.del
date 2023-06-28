@@ -18,5 +18,19 @@
 
 # core positions
     
-    Vector[] CORE_POSITIONS: [Vector()];
+    Vector[] CORE_POSITIONS: [Vector(85,0,0), Vector(-85,0,0)];
+    Vector TEAM1_MINION_SPAWN: CORE_POSITIONS[0] + Vector(-5,0,0);
+    Vector TEAM2_MINION_SPAWN: CORE_POSITIONS[1] + Vector(5,0,0);
 
+
+# camera
+    
+    Number CAMERA_INTERP: 40;
+
+# buttons
+
+    define BUTTON_CAMERA: Button.Jump;
+
+# resources
+
+    globalvar Number[] heroSizes: [0.40, 0.35, 0.35, 0.45, 0.55, 0.8, 0.55, 1.05, 0.45, 0.90, 0.40, 0.45, 0.45, 0.95, 0.45, 0.4, 0.7, 0.45, 0.6, 1.1, 0.6, 0.5, 0.85, 0.5, 0.9, 0.60, 0.45, 0.95, 0.45, 0.4, 0.6, 0.65, 0.5, 0.7, 0.9, 0.65, 0.55];

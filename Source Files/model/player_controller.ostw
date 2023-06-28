@@ -1,6 +1,4 @@
-import "../../Header Files/controller-puppet model/player_controller.del";
-import "../creature.ostw";
-import "../render.ostw";
+import "../../Header Files/model/player_controller.del";
 import "puppet.ostw";
 import "../../Header Files/ui.del";
 import "../../Header Files/main.del";
@@ -18,14 +16,17 @@ if(!IsDummyBot(EventPlayer()))
     StopForcingPlayerPosition(EventPlayer());
     DisallowButton(EventPlayer(),Button.PrimaryFire);
     async betterForcing();
+    setPlayerInfo(EPlayerInfo.IS_READY, true);
 }
 
 rule: 'Setup player'
 Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
-if(canSetup)
+if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
 {
     DisableNameplates(puppets, EventPlayer());
+    otherModelMember = puppets[ID];
+    isCameraLocked = true; //todo: grab player's settings on load
     //printToScreen("\n\n"+toString(puppets));
 }
 

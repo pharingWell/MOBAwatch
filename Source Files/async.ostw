@@ -1,5 +1,7 @@
 import "grid.ostw";
 
+playervar Boolean async_workaround_updateCells! = false;
+
 rule: 'Grid Render Loop'
 Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
@@ -7,7 +9,8 @@ if(gameState[EGamePhase.LOADING] > ELoadingState.RENDER_SETUP)
 if(READY == true)
 {
     LOCK = true;
-    async updateCells();
+    async_workaround_updateCells = true;
+    //async updateCells();
     LOCK = false;
     Wait(0.4);
     //Loop();
@@ -24,8 +27,8 @@ if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
     Vector toRevert! = EventPlayer().cursorWorldPositon;
     EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer()));
     // if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
-        EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
-        async updateCells();
+    EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+    async_workaround_updateCells = true;
     // }else{
     //     SmallMessage(EventPlayer(),"Out of bounds");
     //     EventPlayer().cursorWorldPositon = toRevert;
@@ -38,8 +41,13 @@ if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
 /// SUBROUTINES ///
 
 
-void updateCells() "Update Observed Cells"
+//void updateCells() "Update Observed Cells"
+rule: "Update Observed Cells"
+Event.OngoingPlayer
+if(!IsDummyBot())
+if(EventPlayer().async_workaround_updateCells == true)
 {
+    EventPlayer().async_workaround_updateCells = false;
     Cell[] observedCells;
     getAllCellsOnScreen(observedCells,EventPlayer().cameraPos);
     Cell[] noLongerObservedCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
@@ -80,5 +88,6 @@ void updateCells() "Update Observed Cells"
 //todo: an observable list of cells per team
     EventPlayer().playerCells = observedCells;
     Wait();
+    LoopIfConditionIsTrue();
 
 }

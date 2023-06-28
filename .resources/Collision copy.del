@@ -9,7 +9,6 @@ globalvar Vector normal = DirectionFromAngles(RandomReal(-90,90),0);
 //globalvar Vector wallDirection = ;
 rule: 'My Rule'
 {
-    printToScreen($"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}");
     // printToScreen($"Position:{PositionOf(LocalPlayer())}");
     // printToScreen($"Delta Pos:{PositionOf(LocalPlayer())-LocalPlayer().lastposition}");
     // printToScreen($"Velocity:{VelocityOf(LocalPlayer())}");

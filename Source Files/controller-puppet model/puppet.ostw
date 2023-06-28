@@ -1,9 +1,0 @@
-import "../../Header Files/controller-puppet model/puppet.del";
-
-rule: 'Puppet Setup'
-Event.OngoingPlayer
-if(IsDummyBot())
-if(HasSpawned())
-{
-    
-}

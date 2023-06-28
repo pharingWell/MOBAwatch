@@ -3,7 +3,7 @@ import "../debug.del";
 import "grid.ostw";
 import "../Header Files/ui.del";
 import "../Header Files/render.del";
-import "../Header Files/controller-puppet model/player_controller.del";
+import "../Header Files/model/player_controller.del";
 
 rule: 'Global Render Setup' 
 if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
