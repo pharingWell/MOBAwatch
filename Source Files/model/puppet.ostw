@@ -6,13 +6,6 @@ Event.OngoingPlayer
 if(IsDummyBot())
 if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
 {
-    //define color: Color.Red;
-    // CreateInWorldText(LocalPlayer(), "|⁆⁆⁆⁆|⁆⁆⁆⁆|⁆⁆⁆⁆|⁆⁆⁆⁆|⁆⁆⁆⁆|⁆⁆⁆⁆|", uiPos(LocalPlayer(), 0, 10*size), size, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, color, Spectators.DefaultVisibility);
-    // CreateInWorldText(LocalPlayer(), "Iฺ]]]]|]]]]|]]]]|]]]]|]]]]|]]]]|", uiPos(LocalPlayer(), 0, 8*size), size, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, color, Spectators.DefaultVisibility);
-    // CreateInWorldText(LocalPlayer(), "Iฺ[][]|[][]|[][]|[][]|[][]|[][]|", uiPos(LocalPlayer(), 0, 6*size), size, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, color, Spectators.DefaultVisibility);
-    // CreateInWorldText(LocalPlayer(), "|ІฺІฺІฺ|ІฺІฺІฺ|ІฺІฺІฺ|ІฺІฺІฺ|ІฺІฺІฺ|ІฺІฺІฺ|ІฺІฺІฺ|ІฺІฺІฺ|", uiPos(LocalPlayer(), 0, 4*size), size, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, color, Spectators.DefaultVisibility);
-        // CreateInWorldText(
-    //     IsAlive() ? (visible ? LocalPlayer() : AllPlayers(TeamOf())) : null, //if the player is alive, show the healthbar to either their team or everyone depending on visibility
     heroSize = heroSizes[IndexOfArrayValue(AllHeroes(), HeroOf())];
     define size: 0.9;
     define healthBarSocket: UpdateEveryFrame(EyePosition()) + Vector(0,0.27,0.44); //+ Vector(0,0.22,0.39); //0.45 
@@ -23,26 +16,29 @@ if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
     define teamSpecificColor: LocalPlayer() == EventPlayer() ? Color.Green : getPlayerInfo(EPlayerInfo.TEAM_NUM) == 0 ? Color.Team1 : Color.Team2;
     define bufferChars: StringSlice("＿＿＿", 0, getPlayerInfo(EPlayerInfo.NAME_BUFFER_CHARS));
     CreateInWorldText(visibility, $"{bufferChars}{getPlayerInfo(EPlayerInfo.NAME_STRING)}{bufferChars}", healthBarTitleSocket, size, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, teamSpecificColor, Spectators.DefaultVisibility);
-    CreateInWorldText(visibility, healthbarString[0], healthBarSocket, size, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, Color.White, Spectators.DefaultVisibility);
     CreateInWorldText(visibility, healthbarString[1], healthBarSocket, size, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, teamSpecificColor, Spectators.DefaultVisibility);
+    CreateInWorldText(visibility, healthbarString[0], healthBarSocket, size, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, Color.White, Spectators.DefaultVisibility);
     health = 0;
     WaitUntil(HasSpawned(), 9999);
     maxHealth = MaxHealth();
     Wait();
+    updateHealthBar();
     while(true){
-        StartThrottleInDirection(EventPlayer(), Left(), 0.4*200/maxHealth, Relative.ToPlayer, ThrottleBehavior.ReplaceExistingThrottle, ThrottleRev.None);
+        StartThrottleInDirection(EventPlayer(), Left(), 200/maxHealth, Relative.ToPlayer, ThrottleBehavior.ReplaceExistingThrottle, ThrottleRev.None);
         while(health < maxHealth){
-            health++;
+            health += 5;
             updateHealthBar();
             Wait(0.02);
         }
-        StartThrottleInDirection(EventPlayer(), Right(), 0.4*200/maxHealth, Relative.ToPlayer, ThrottleBehavior.ReplaceExistingThrottle, ThrottleRev.None);
+        maxHealth += 25;
+        StartThrottleInDirection(EventPlayer(), Right(), 200/maxHealth, Relative.ToPlayer, ThrottleBehavior.ReplaceExistingThrottle, ThrottleRev.None);
         while(health > 0){
-            health--;
+            health -= 5;
             updateHealthBar();
             Wait(0.02);
             
         }
+        maxHealth += 25;
     }
 }
 

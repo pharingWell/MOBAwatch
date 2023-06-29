@@ -23,7 +23,8 @@ enum EPlayerInfo{
     IS_READY,
     VISIBLE,
     NAME_STRING,
-    NAME_BUFFER_CHARS
+    NAME_BUFFER_CHARS,
+    HEALTHBAR_OFFSET
 }
 
 # 0 for Team.1, 1 for Team.2
@@ -47,5 +48,5 @@ playervar Number maxHealth;
 playervar Number heroSize; 
 
 Player getOther(in Player p = EventPlayer()): p.otherModelMember;
-Player getPuppet(in Player p = EventPlayer()): !IsDummyBot(p) ? p.otherModelMember : null;
-Player getController(in Player p = EventPlayer()): IsDummyBot(p) ? p.otherModelMember : null;
+Player getPuppet(in Player p = EventPlayer()): puppets[p.ID];
+Player getController(in Player p = EventPlayer()): controllers[p.ID];

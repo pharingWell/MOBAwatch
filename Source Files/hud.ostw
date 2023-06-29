@@ -8,13 +8,22 @@ rule: 'Healthbar'
     define uiColor: Color.White;
     //UpdateEveryFrame(LocalPlayer().showHUD ? LocalPlayer() : null)
     define scale: 10;
-    CreateInWorldText(uiVis, getOther(LocalPlayer()).healthbarString[1], UpdateEveryFrame(uiPos_customDistance(LocalPlayer(), 0.875*scale,-0.55*scale, scale)), 2, Clipping.DoNotClip, uiReev, Color.Green, Spectators.DefaultVisibility);
-    CreateInWorldText(uiVis, getOther(LocalPlayer()).healthbarString[0], UpdateEveryFrame(uiPos_customDistance(LocalPlayer(), 0.875*scale,-0.55*scale, scale)), 2, Clipping.DoNotClip, uiReev, uiColor, Spectators.DefaultVisibility);
-    CreateInWorldText(uiVis, HeroIconString(HeroOf(LocalPlayer().otherModelMember)), UpdateEveryFrame(uiPos_customDistance(LocalPlayer(), 1.12*scale,-0.56*scale, scale)), 4, Clipping.DoNotClip, uiReev, uiColor, Spectators.DefaultVisibility);
+    define healthBarAnchor: UpdateEveryFrame(uiPos_customDistance(LocalPlayer(),0.82*scale,-0.55*scale, scale));
+    define nameAnchor: UpdateEveryFrame(uiPos_customDistance(LocalPlayer(),1.12*scale,-0.615*scale, scale));
+    define playerIconAnchor: UpdateEveryFrame(uiPos_customDistance(LocalPlayer(), 1.12*scale,-0.56*scale, scale));
+
+    CreateInWorldText(uiVis, $"{getOther(LocalPlayer()).healthbarString[1]}{getPlayerInfo(EPlayerInfo.HEALTHBAR_OFFSET,getOther(LocalPlayer()))}{getPlayerInfo(EPlayerInfo.HEALTHBAR_OFFSET,getOther(LocalPlayer()))}.", healthBarAnchor , 2, Clipping.DoNotClip, uiReev, Color.Green, Spectators.DefaultVisibility);
+    CreateInWorldText(uiVis, $"{getOther(LocalPlayer()).healthbarString[0]}{getPlayerInfo(EPlayerInfo.HEALTHBAR_OFFSET,getOther(LocalPlayer()))}{getPlayerInfo(EPlayerInfo.HEALTHBAR_OFFSET,getOther(LocalPlayer()))}.", healthBarAnchor, 2, Clipping.DoNotClip, uiReev, uiColor, Spectators.DefaultVisibility);
+    define healthBufferChars: StringSlice("     ", 0, getPlayerInfo(EPlayerInfo.NAME_STRING, LocalPlayer()) > 7 ? 2 : 1);
+    define nameBufferChars: "";// StringSlice("￣￣￣￣", 0, getPlayerInfo(EPlayerInfo.NAME_BUFFER_CHARS, LocalPlayer()));
+    CreateInWorldText(uiVis, $"{healthBufferChars}{getOther(LocalPlayer()).health}｜{getOther(LocalPlayer()).maxHealth}\n\n\n\n\n{nameBufferChars}{getPlayerInfo(EPlayerInfo.NAME_STRING, LocalPlayer())}{nameBufferChars}", nameAnchor, 0.9, Clipping.DoNotClip, uiReev, uiColor, Spectators.DefaultVisibility);
+    CreateInWorldText(uiVis, HeroIconString(HeroOf(LocalPlayer().otherModelMember)), playerIconAnchor, 4, Clipping.DoNotClip, uiReev, uiColor, Spectators.DefaultVisibility);
 }
 
 
 void setName(in Any nameIn, in Player p = EventPlayer()){
+    String[] nameAssembler = [];
+
     //＿
     setPlayerInfo(EPlayerInfo.NAME_STRING, <String>nameIn, p);
     Number maxWidth: 14;
@@ -31,10 +40,10 @@ void updateHealthBar(Player p = EventPlayer()){
         perBlockHealthAmount *= 6;
     }
     Number id! = hpbar_dictionary[blocks];
+    setPlayerInfo(EPlayerInfo.HEALTHBAR_OFFSET, hpbar_offsets[id], p);
     String hpbar_sep: hpbar_symbols[id][4];
     String barOutput! = $"่";
     String blankOutput! = $"{hpbar_sep}่";
-    Number percentage: p.health/p.maxHealth;
     for (Number i! = 0; i < blocks; i++){
         if(i % hpbar_groupings[id] == 0 && i != 0){
             barOutput = $"{barOutput} ";

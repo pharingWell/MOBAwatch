@@ -34,7 +34,7 @@ rule: 'Debug Tings'
     //printToScreen(toString(MappedArray(LocalPlayer().playerCells,(<Cell>ArrayElement()).id)));
     //printToScreen("current cell:" + toString_extended(LocalPlayer().playerCells[1].dynamic));
     //printToScreen("ends:\n\n" + toString_extended(LocalPlayer().edgeEnds));
-    //Mapp  edArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))s
+    //MappedArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))s
     //printToScreen("rendered creatures: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,TEAM1_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,TEAM2_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
@@ -47,7 +47,7 @@ rule: 'Debug Tings'
 // Button CREATE_MINION : Button.Reload;
 // rule: 'Create Minion For Host'
 // if(IsButtonHeld(HostPlayer(),CREATE_MINION))
-// {
+// {    
 //     newWave();
 //     //debugString = toString(tickOffsetSorted);
 //     WaitUntil(IsButtonHeld(HostPlayer(),CREATE_MINION)==false, 10);
@@ -62,8 +62,10 @@ if(IsButtonHeld(EventPlayer(), Button.Interact))
 {   
     if(controllers[EventPlayer().ID]){
         controllers[EventPlayer().ID] = null;
+        otherModelMember = null;
     }else{
         controllers[EventPlayer().ID] = EventPlayer();
+        otherModelMember = getPuppet();
     }
     WaitUntil(IsButtonHeld(EventPlayer(), Button.Interact)==false,999);
 }

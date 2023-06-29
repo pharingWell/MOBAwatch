@@ -17,6 +17,7 @@ if(!IsDummyBot(EventPlayer()))
     DisallowButton(EventPlayer(),Button.PrimaryFire);
     async betterForcing();
     setPlayerInfo(EPlayerInfo.IS_READY, true);
+    setName(EventPlayer());
 }
 
 rule: 'Setup player'
