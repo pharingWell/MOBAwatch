@@ -23,4 +23,4 @@ Vector uiPos_customDistance(in Player p, in Number x, in Number y, in Number sca
 Vector towards(Number x, Number y): (FORWARD_VECTOR * SCALE + RIGHT_VECTOR * x + UP_VECTOR * y);
 Vector uiToWorld(in Player p, in Number x, in Number y) : (-cameraEye(p).Y/towards(x,y).Y)*towards(x,y) + cameraEye(p);
 
-playervar Number showHUD = 1; //sucks, but this needs to go here
+playervar Number showHUD; //sucks, but this needs to go here

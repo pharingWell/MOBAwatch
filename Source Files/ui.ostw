@@ -4,14 +4,7 @@ import "../Header Files/main.del";
 import "../debug.ostw";
 import "../debug.del";
 
-rule: 'Global UI Setup'
-{
-    //cursor
-    define cursorPosition: uiPos(LocalPlayer(),HorizontalFacingAngleOf(LocalPlayer()),-VerticalFacingAngleOf(LocalPlayer()));
-    CreateInWorldText(LocalPlayer(),"•",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition);
-    CreateEffect(LocalPlayer(),Effect.Sphere, Color.Aqua, UpdateEveryFrame(LocalPlayer().cursorWorldPositon),0.1,EffectRev.VisibleToPositionAndRadius);
 
-}
 
 rule: 'Player Camera Setup'
 Event.OngoingPlayer

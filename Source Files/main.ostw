@@ -29,7 +29,7 @@ rule: 'Debug Tings'
     printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
     serverLoad();
     // printToScreen_noRev("Reload to summon minions",Location.Top);
-    // printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top);
+    // printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top)
     // printToScreen_noRev("Left click to move the camera",Location.Top);
     //printToScreen(toString(MappedArray(LocalPlayer().playerCells,(<Cell>ArrayElement()).id)));
     //printToScreen("current cell:" + toString_extended(LocalPlayer().playerCells[1].dynamic));

@@ -18,6 +18,7 @@ if(!IsDummyBot(EventPlayer()))
     async betterForcing();
     setPlayerInfo(EPlayerInfo.IS_READY, true);
     setName(EventPlayer());
+    showHUD = 1;
 }
 
 rule: 'Setup player'
