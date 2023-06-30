@@ -6,6 +6,6 @@ Vector calculateWorldDisplacement(Player p, Number dispX, Number dispY): Vector(
 rule: 'My Rule'
 {
     serverLoad();
-    printToScreen(calculateWorldDisplacement(LocalPlayer(), 0, 0.45));
-    printToScreen(calculateDisplacement(LocalPlayer(), 0, 0.45));
+    LogToInspector(calculateDisplacement(LocalPlayer(), 0, 0.45));
+    LogToInspector(calculateDisplacement(LocalPlayer(), 0, 0.45));
 }

@@ -28,7 +28,7 @@ enum EPlayerInfo{
 
 # 0 for Team.1, 1 for Team.2
 
-void setPlayerInfo(EPlayerInfo e, Any value, Player p = EventPlayer()){
+void setPlayerInfo(in EPlayerInfo e, in Any value, in Player p = EventPlayer()){
     p.info[e] = value;
 }
 
@@ -41,11 +41,11 @@ Any getPlayerInfo(EPlayerInfo e, Player p = EventPlayer()): p.info[e];
 // playervar String name: info[EPlayerInfo.NAME_STRING];
 // playervar Number name_buffer: info[EPlayerInfo.NAME_BUFFER_CHARS];
 playervar Number health;
-playervar String[] healthbarString;
+
 playervar Number maxHealth;
 
 playervar Number heroSize; 
 
 Player getOther(in Player p = EventPlayer()): p.otherModelMember;
-Player getPuppet(in Player p = EventPlayer()): !IsDummyBot(p) ? p.otherModelMember : null;
-Player getController(in Player p = EventPlayer()): IsDummyBot(p) ? p.otherModelMember : null;
+Player getPuppet(in Player p = EventPlayer()): puppets[p.ID];
+Player getController(in Player p = EventPlayer()): controllers[p.ID];

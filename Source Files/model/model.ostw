@@ -8,6 +8,7 @@ Event.OngoingPlayer
     if(EventPlayer().IsDummy()){
         ID += PLAYER_COUNT;
         puppets[ID-PLAYER_COUNT*2] = EventPlayer();
+        Wait(2);
         setPlayerInfo(EPlayerInfo.CAN_SETUP, true);
     }else{
         WaitUntil(READY, 999);
