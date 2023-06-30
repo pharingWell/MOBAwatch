@@ -1,6 +1,6 @@
 import "../Header Files/hud.del";
 import "../Header Files/ui.del";
-Color uiColor(in Number r, in Number g, in Number b): CustomColor(r,b,g,LocalPlayer().showHUD*255);
+Color uiColor(in Number r, in Number g, in Number b): CustomColor(r,g,b,LocalPlayer().showHUD*255);
 
 rule: 'Global HUD Setup'
 {
@@ -15,13 +15,13 @@ rule: 'Global HUD Setup'
     define uiReev: InworldTextRev.VisibleToPositionStringAndColor;
     //UpdateEveryFrame(LocalPlayer().showHUD ? LocalPlayer() : null)
     define scale: 10;
-    define healthBarAnchor: UpdateEveryFrame(uiPos_customDistance(LocalPlayer(),0.80*scale,-0.575*scale, scale));
+    define healthBarAnchor: UpdateEveryFrame(uiPos_customDistance(LocalPlayer(),0.80*scale,-0.61*scale, scale));
     define nameAnchor: UpdateEveryFrame(uiPos_customDistance(LocalPlayer(),1.12*scale,-0.615*scale, scale));
     define playerIconAnchor: UpdateEveryFrame(uiPos_customDistance(LocalPlayer(), 1.12*scale,-0.56*scale, scale));
     define spaces: "                                         ";
     CreateInWorldText(uiVis, $"{getOther(LocalPlayer()).healthbarVariables[EHealthBarVars.FINAL_String]}\n{spaces}", healthBarAnchor, 2, Clipping.DoNotClip, uiReev, uiColor(255,255,255), Spectators.DefaultVisibility);
     Wait();
-    CreateInWorldText(uiVis, $"{getOther(LocalPlayer()).healthbarVariables[EHealthBarVars.BLANK_String]}\n{spaces}", healthBarAnchor , 2, Clipping.DoNotClip, uiReev, uiColor(0,30,200), Spectators.DefaultVisibility);
+    CreateInWorldText(uiVis, $"{getOther(LocalPlayer()).healthbarVariables[EHealthBarVars.BLANK_String]}\n{spaces}", healthBarAnchor , 2, Clipping.DoNotClip, uiReev, uiColor(67,242,82), Spectators.DefaultVisibility);
     define healthBufferChars: StringSlice("     ", 0, getPlayerInfo(EPlayerInfo.NAME_STRING, LocalPlayer()) > 7 ? 2 : 1);
     define nameBufferChars: "";// StringSlice("￣￣￣￣", 0, getPlayerInfo(EPlayerInfo.NAME_BUFFER_CHARS, LocalPlayer()));
     CreateInWorldText(uiVis, $"{healthBufferChars}{getOther(LocalPlayer()).health}｜{getOther(LocalPlayer()).maxHealth}\n\n\n\n\n{nameBufferChars}{getPlayerInfo(EPlayerInfo.NAME_STRING, LocalPlayer())}{nameBufferChars}", nameAnchor, 0.9, Clipping.DoNotClip, uiReev, uiColor(255,255,255), Spectators.DefaultVisibility);
@@ -40,7 +40,7 @@ void setName(in Any nameIn, in Player p = EventPlayer()){
 TO DEBUG
 Here are some options:
    1. Wait for references
-   2. Copy the code and replace all instances of _String], _Number] and healthbarVariables[EHealthBarVars. with nothing 
+   2. Copy the code and replace all instances of _String], _Number] and healthbarVariables[EHealthBarVars. with nothing
    3. Know what the code does
 */
 void updateHealthBar(in Player p = EventPlayer())
@@ -52,7 +52,7 @@ void updateHealthBar(in Player p = EventPlayer())
         healthbarVariables[EHealthBarVars.BLOCKS_Number] = RoundToInteger(p.maxHealth/healthbarVariables[EHealthBarVars.HP_PER_BLOCK_Number],Rounding.Down);
         Wait();
     }
-    
+
     healthbarVariables[EHealthBarVars.ID_Number] = hpbar_dictionary[healthbarVariables[EHealthBarVars.BLOCKS_Number]];
 
     String hpbar_sep: hpbar_symbols[healthbarVariables[EHealthBarVars.ID_Number]][4];
@@ -82,7 +82,7 @@ void updateHealthBar(in Player p = EventPlayer())
 
         healthbarVariables[EHealthBarVars.BLANK_WIP_String] = $"{healthbarVariables[EHealthBarVars.BLANK_WIP_String]}{hpbar_symbols[healthbarVariables[EHealthBarVars.ID_Number]][3]}";
     }
-   
+
     if(healthbarVariables[EHealthBarVars.BLOCKS_Number] < blocksAtWhichBlankSepIsInvalid){
         healthbarVariables[EHealthBarVars.FINAL_WIP_String] = $"{blank_sep}่{healthbarVariables[EHealthBarVars.FINAL_WIP_String]}{blank_sep}่";
     }else{

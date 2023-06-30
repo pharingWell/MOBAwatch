@@ -27,13 +27,14 @@ if(IsButtonHeld(EventPlayer(), BUTTON_CAMERA))
     WaitUntil(IsButtonHeld(EventPlayer(), BUTTON_CAMERA) == false, 0.3);
     if(IsButtonHeld(EventPlayer(), BUTTON_CAMERA) == false){
         if(isCameraLocked){
-            cameraPos = otherModelMember.Position();
+            teleportCamera(otherModelMember.Position());
         }
         isCameraLocked = !isCameraLocked;
         Abort();
     }
     CreateEffect(EventPlayer(), Effect.LightShaft, Color.Blue, otherModelMember.Position()*Vector(1,0,1), otherModelMember.heroSize, EffectRev.PositionAndRadius);
     define cameraLockEffect! = LastCreatedEntity();
+    teleportCamera(otherModelMember.Position());
     ChaseVariableAtRate(cameraPos, otherModelMember.Position(), 99999, RateChaseReevaluation.DestinationAndRate);
     WaitUntil(!IsButtonHeld(EventPlayer(), BUTTON_CAMERA), 999);
     StopChasingVariable(cameraPos);
@@ -43,7 +44,7 @@ if(IsButtonHeld(EventPlayer(), BUTTON_CAMERA))
 define log(Number x): (10000 * (RaiseToPower(x, 0.0001) - 1));
 
 # Caution! There is a 2 tick wait between when the variable is set and when it gets teleported
-void teleportCamera(ref Vector newPosition){
+void teleportCamera(in Vector newPosition){
     showHUD = 0;
     //async_workaround_updateCells = true;
     Wait(0.032);
