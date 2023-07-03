@@ -35,3 +35,16 @@ struct Dictionary<K, V>
 void BetterAppend(ref Any[] array, in Any value){
     array[array.Length] = value;
 }
+
+struct Vector2{
+    public Number x;
+    public Number y;
+    public static Vector2 make(in Number x_, in Number y_){
+        return {x: x_, y: y_};
+    }
+}
+
+struct Region{
+    public Vector2 topleft;
+    public Vector2 bottomright;
+}

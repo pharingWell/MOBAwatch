@@ -1,24 +1,4 @@
 define manaspace: "  ";
-//-.‧:ıΙ 
-// define controllerhp_nodmg: "ιιιιιι"; //"ΙΙΙΙΙΙ";
-// define controllerhp_nohealth: "     ";
-// define controllerhp_divider: "|"; //133
-// define controllerhp_full: $"{controllerhp_nodmg}{controllerhp_divider}{controllerhp_nodmg}{controllerhp_divider}{controllerhp_nodmg}{controllerhp_divider}{controllerhp_nodmg}{controllerhp_divider}{controllerhp_nodmg}";
-// define controllerhp_empty: $"{controllerhp_nohealth}{controllerhp_divider}{controllerhp_nohealth}{controllerhp_divider}{controllerhp_nohealth}{controllerhp_divider}{controllerhp_nohealth}{controllerhp_divider}{controllerhp_nohealth}";
-// define controllerhp_symbols: [" ", ".", "‧", ":", "ı", "Ι"];
-// define percentage(Number base): ((health/maxHealth*100)-base)*4;
-// String singleSegment(Number base, Number percentage): symbols[Min(6, Max(0, RoundToInteger((percentage-base)*(.6), Rounding.Up)))];
-// void updateHealthBarString() "update health bar string"
-// {
-//     define divider: "  ";
-//     String full: $"{nodmg}{divider}{nodmg}{divider}{nodmg}{divider}";
-//     String empty: $"{divider}{nohealth}{divider}{nohealth}{divider}{nohealth}";
-//     define section! = RoundToInteger(((health/maxHealth*100)-1)/25, Rounding.Down);
-//     //these numbers are calculated from the character counts of each divider + nodmg/nohealth section
-//     healthbarString = StringSlice(full, 0, section*5) + barSection(section*25) + StringSlice(empty, (section)*11, (3-section)*11);
-// }
-
-
 
 //900+ restart with size 6, now with each square representing 150. This continues infinitely (growing by a factor of 6 each time)
 // /128
@@ -48,6 +28,28 @@ globalvar String[][] hpbar_symbols! = [
 /*7: [27-35]*/ ['ί', 'і', 'ι', '‚','ḽ']
 ];
 Number[] hpbar_groupings: [0,1,1,1,3,4,5,7];
+
+define map: 
+"┏━━━━━━━━━━━━━━┓
+┃              ┃
+┃              ┃
+┃              ┃\n";
+define map2:
+"┃              ┃
+┃              ┃
+┃              ┃
+┃              ┃
+┗━━━━━━━━━━━━━━┛";
+
+define screen: 
+"┏━━━━━━━━━━━━━━┓
+┃              ┃
+┃              ┃
+┃              ┃
+┃              ┃
+┃              ┃
+┗━━━━━━━━━━━━━━┛";
+
 playervar Any[] healthbarVariables;
 enum EHealthBarVars{
     BLANK_String,

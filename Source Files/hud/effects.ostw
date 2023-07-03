@@ -1,15 +1,13 @@
-import "../Header Files/hud.del";
-import "../Header Files/ui.del";
+import "../../Header Files/hud/effects.del";
+import "../../Header Files/ui.del";
 Color uiColor(in Number r, in Number g, in Number b): CustomColor(r,g,b,LocalPlayer().showHUD*255);
 
 rule: 'Global HUD Setup'
 {
     Wait(2);
-//cursor
-    define cursorPosition: uiPos(LocalPlayer(),HorizontalFacingAngleOf(LocalPlayer()),-VerticalFacingAngleOf(LocalPlayer()));
-    CreateInWorldText(LocalPlayer(),"•",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition);
-    CreateEffect(LocalPlayer(),Effect.Sphere, Color.Aqua, UpdateEveryFrame(LocalPlayer().cursorWorldPositon),0.1,EffectRev.VisibleToPositionAndRadius);
-
+//map
+    define mapAnchor: UpdateEveryFrame(uiPos(LocalPlayer(), -103,-69));
+    CreateInWorldText(LocalPlayer(), $"{map}{map2}", mapAnchor, 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Color.White, Spectators.DefaultVisibility);
 //healthbar
     define uiVis: LocalPlayer();
     define uiReev: InworldTextRev.VisibleToPositionStringAndColor;
@@ -26,6 +24,12 @@ rule: 'Global HUD Setup'
     define nameBufferChars: "";// StringSlice("￣￣￣￣", 0, getPlayerInfo(EPlayerInfo.NAME_BUFFER_CHARS, LocalPlayer()));
     CreateInWorldText(uiVis, $"{healthBufferChars}{getOther(LocalPlayer()).health}｜{getOther(LocalPlayer()).maxHealth}\n\n\n\n\n{nameBufferChars}{getPlayerInfo(EPlayerInfo.NAME_STRING, LocalPlayer())}{nameBufferChars}", nameAnchor, 0.9, Clipping.DoNotClip, uiReev, uiColor(255,255,255), Spectators.DefaultVisibility);
     CreateInWorldText(uiVis, HeroIconString(HeroOf(LocalPlayer().otherModelMember)), playerIconAnchor, 4, Clipping.DoNotClip, uiReev, uiColor(255,255,255), Spectators.DefaultVisibility);
+    Wait(); 
+//cursor
+    define cursorPosition: uiPos(LocalPlayer(),cursorX(LocalPlayer()), cursorY(LocalPlayer()));
+    CreateInWorldText(LocalPlayer(),!IsButtonHeld(LocalPlayer(), Button.Interact) ? "•" : $"{HorizontalFacingAngleOf(LocalPlayer())}•{-VerticalFacingAngleOf(LocalPlayer())}",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString);
+    CreateEffect(LocalPlayer(),Effect.Sphere, Color.Aqua, UpdateEveryFrame(LocalPlayer().cursorWorldPositon),0.1,EffectRev.VisibleToPositionAndRadius);
+
 }
 
 

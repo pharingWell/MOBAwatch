@@ -26,7 +26,7 @@ struct GridStruct{ //only used once
 }
 globalvar GridStruct grid;
 
-define GRID_BASE: Vector(-GRID_COLUMNS/2 * CELL_WIDTH,0,-GRID_ROWS/2 * CELL_HEIGHT);
+
 
 
 

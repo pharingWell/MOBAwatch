@@ -8,7 +8,12 @@ define UP_VECTOR: Vector(0,VAL1,-VAL2);
 //playervar Number Setting_CAMERA_DISTANCE = 12;
 define Setting_CAMERA_DISTANCE : 12;
 playervar Vector cameraPos = Vector(0,0,0);
+
+define cursorX(Player p = EventPlayer()): HorizontalFacingAngleOf(p);
+define cursorY(Player p = EventPlayer()): -VerticalFacingAngleOf(p);
+
 playervar Vector cursorWorldPositon;
+
 
 playervar Boolean isCameraLocked = false;
 

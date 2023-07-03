@@ -1,0 +1,28 @@
+import "../../global.del";
+enum EHudRegion{
+    ID,
+    ZORDER,
+    X_LEFTTOP,
+    Y_LEFTTOP,
+    X_BOTTOMRIGHT,
+    Y_BOTTOMRIGHT
+}
+globalvar Number[][] hudRegions! = [[],
+/*1: map*/[1, 30, -84.5, -43.5, -121, -69]
+];
+
+enum EHudInteractionType{
+    LCLICK,
+    RCLICK,
+    LPRESS,
+    RPRESS
+}
+
+struct HudAction{
+    public Number hudID;
+    public Vector2 actionLocation;
+    public EHudInteractionType action;
+
+}
+# hudID: Number, actionLocation: Vector2, action: EHudInteractionType
+playervar HudAction hudAction;

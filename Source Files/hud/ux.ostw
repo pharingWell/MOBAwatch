@@ -1,0 +1,57 @@
+import "../../Header Files/hud/ux.del";
+import "../../Header Files/main.del";
+import "../../Header Files/ui.del";
+import "../../const.del";
+import "../../Header Files/async.del";
+import "actions/map.ostw";
+
+
+rule: 'Detect HUD Action'
+Event.OngoingPlayer
+if(IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(), Button.SecondaryFire))
+{
+    define array = SortedArray(FilteredArray(hudRegions, ArrayElement()[EHudRegion.ZORDER]), 
+        cursorX() <= ArrayElement()[EHudRegion.X_LEFTTOP] 
+        && cursorX() >= ArrayElement()[EHudRegion.X_BOTTOMRIGHT]
+        && cursorY() <= ArrayElement()[EHudRegion.Y_LEFTTOP]
+        && cursorY() >= ArrayElement()[EHudRegion.Y_BOTTOMRIGHT]
+    );
+    define button! = IsButtonHeld(EventPlayer(), Button.PrimaryFire) ? Button.PrimaryFire : Button.SecondaryFire;
+    define element = array[0];
+    EHudInteractionType action!;
+    WaitUntil(!IsButtonHeld(EventPlayer(),button),0.3);
+    if(!IsButtonHeld(EventPlayer(),button)){
+        if(button == Button.PrimaryFire){
+            action = EHudInteractionType.LCLICK;
+        }else{
+            action = EHudInteractionType.RCLICK;
+        }
+    }else{
+        if(button == Button.PrimaryFire){
+            action = EHudInteractionType.LPRESS;
+        }else{
+            action = EHudInteractionType.RPRESS;
+        }
+    }
+    hudAction = {hudID: element[EHudRegion.ID], actionLocation: {x: cursorX(), y: cursorY()}, action: action};
+}
+
+rule: 'Move camera to mouse on click'
+Event.OngoingPlayer
+if(READY == true)
+if(!IsDummyBot(EventPlayer()))
+if(HasSpawned(EventPlayer()))
+if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
+{   
+    Vector toRevert! = EventPlayer().cursorWorldPositon;
+    EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer()));
+    // if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
+    EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+    async_workaround_updateCells = true;
+    // }else{
+    //     SmallMessage(EventPlayer(),"Out of bounds");
+    //     EventPlayer().cursorWorldPositon = toRevert;
+    // }
+    Wait(0.25);
+    LoopIfConditionIsTrue();
+}

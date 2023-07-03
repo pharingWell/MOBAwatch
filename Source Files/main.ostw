@@ -50,22 +50,22 @@ rule: 'Debug Tings'
 // {
 //     newWave();
 //     //debugString = toString(tickOffsetSorted);
-//     WaitUntil(IsButtonHeld(HostPlayer(),CREATE_MINION)==false, 10);
+//     WaiStUntil(IsButtonHeld(HostPlayer(),CREATE_MINION)==false, 10);
 // }
 
-
+define TOGGLE_CONTROLLER: Button.Melee;
 rule: 'toggle controller state'
 Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
 if(HasSpawned(EventPlayer()))
-if(IsButtonHeld(EventPlayer(), Button.Interact))
+if(IsButtonHeld(EventPlayer(), TOGGLE_CONTROLLER))
 {   
     if(controllers[EventPlayer().ID]){
         controllers[EventPlayer().ID] = null;
     }else{
         controllers[EventPlayer().ID] = EventPlayer();
     }
-    WaitUntil(IsButtonHeld(EventPlayer(), Button.Interact)==false,999);
+    WaitUntil(IsButtonHeld(EventPlayer(), TOGGLE_CONTROLLER)==false,999);
 }
 
 // rule: 'update maxeffect count'

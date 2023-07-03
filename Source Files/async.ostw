@@ -1,6 +1,5 @@
 import "grid.ostw";
-
-playervar Boolean async_workaround_updateCells! = false;
+import "../Header Files/async.del";
 
 rule: 'Grid Render Loop'
 Event.OngoingPlayer
@@ -17,26 +16,7 @@ if(READY == true)
 }
 
 
-rule: 'Move camera to mouse on click'
-Event.OngoingPlayer
-if(READY == true)
-if(!IsDummyBot(EventPlayer()))
-if(HasSpawned(EventPlayer()))
-if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
-{   
-    Vector toRevert! = EventPlayer().cursorWorldPositon;
-    EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer()));
-    // if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
-    EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
-    async_workaround_updateCells = true;
-    // }else{
-    //     SmallMessage(EventPlayer(),"Out of bounds");
-    //     EventPlayer().cursorWorldPositon = toRevert;
-    // }
-    Wait(0.25);
-    LoopIfConditionIsTrue();
 
-}
 
 /// SUBROUTINES ///
 
