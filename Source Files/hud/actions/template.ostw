@@ -1,0 +1,29 @@
+import "../../../Header Files/hud/ux.del";
+import "../../../Header Files/hud/actions/template.del";
+// HUD_NAME
+
+define hudID: 0;
+//consumeInput()
+rule: 'HUD_NAME - Left Click/Drag'
+Event.OngoingPlayer
+if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
+if(hudAction.action == EHudInteractionType.LCLICK || hudAction.action == EHudInteractionType.LDRAG)
+{
+    yieldInput();
+}
+
+rule: 'HUD_NAME - Right Click'
+Event.OngoingPlayer
+if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
+if(hudAction.action == EHudInteractionType.RCLICK || hudAction.action == EHudInteractionType.RDRAG)
+{
+    yieldInput();
+}
+
+rule: 'HUD_NAME - Hover'
+Event.OngoingPlayer
+if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
+if(hudAction.action == EHudInteractionType.HOVER)
+{
+    yieldInput();
+}

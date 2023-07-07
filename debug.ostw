@@ -18,9 +18,16 @@ define printToScreen(in Any s): printToScreen(<String>s, Location.Left);
 
 define printToScreen(in String s, Location l): CreateHudText(DISPLAY_TO_SCREEN ? LocalPlayer() : null, s, null, null, l, 1,Color.White, null, null, HudTextRev.VisibleToAndString,Spectators.DefaultVisibility);
 
-
 define printToScreen_noRev(in String s, Location l){
     return CreateHudText(LocalPlayer(), s, null, null, l, 1, Color.White, null, null, HudTextRev.VisibleTo,Spectators.DefaultVisibility);
+}
+
+void forceLog(in Any a){
+    EnableInspectorRecording();
+    Wait();
+    LogToInspector(a);
+    Wait();
+    DisableInspectorRecording();
 }
 
 String toString(in Any[] arr){

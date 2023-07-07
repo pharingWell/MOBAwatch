@@ -1,6 +1,7 @@
 import "../../Header Files/model/puppet.del";
 import "model.ostw";
-import "../hud/effects.ostw";
+import "../../Header Files/hud/effects.del";
+import "..//hud/effects.ostw";
 rule: 'Puppet Setup'
 Event.OngoingPlayer
 if(IsDummyBot())

@@ -5,19 +5,57 @@ import "../../const.del";
 import "../../Header Files/async.del";
 import "actions/map.ostw";
 
-
-rule: 'Detect HUD Action'
+define isCursorStill: Vector2.isEqual(staticCursorPos, cursorX(), cursorY());
+rule: 'Static Cursor Position'
 Event.OngoingPlayer
-if(IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(), Button.SecondaryFire))
-{
-    define array = SortedArray(FilteredArray(hudRegions, ArrayElement()[EHudRegion.ZORDER]), 
-        cursorX() <= ArrayElement()[EHudRegion.X_LEFTTOP] 
+if(!isCursorStill){
+    isHovering = false;
+    if(hudAction.action == EHudInteractionType.HOVER){
+        hudAction = {hudIds: [], actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
+    }
+    staticCursorPos = Vector2.make(cursorX(), cursorY());
+    Wait(0.064);
+    if(isCursorStill){
+        isHovering = true;
+    }else{
+        Loop();
+    }
+}
+
+Number[] unsortedIdsUnderCursor(): FilteredArray(hudRegions, ArrayElement() != 0
+        && cursorX() <= ArrayElement()[EHudRegion.X_LEFTTOP] 
         && cursorX() >= ArrayElement()[EHudRegion.X_BOTTOMRIGHT]
         && cursorY() <= ArrayElement()[EHudRegion.Y_LEFTTOP]
         && cursorY() >= ArrayElement()[EHudRegion.Y_BOTTOMRIGHT]
     );
-    define button! = IsButtonHeld(EventPlayer(), Button.PrimaryFire) ? Button.PrimaryFire : Button.SecondaryFire;
-    define element = array[0];
+
+
+rule: 'Detect HUD Action'
+Event.OngoingPlayer
+if(READY == true)
+if(!IsDummyBot(EventPlayer()))
+if(HasSpawned(EventPlayer()))
+if (IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(), Button.SecondaryFire))
+{
+    Number[] idsUnderCursor! = unsortedIdsUnderCursor();
+    if(CountOf(idsUnderCursor) < 1){
+        if(IsButtonHeld(EventPlayer(), Button.SecondaryFire)){
+            EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),cursorX(),cursorY());
+        }
+        Abort();
+    }
+    
+    Number[] sortedIds: SortedArray(idsUnderCursor, ArrayElement()[EHudRegion.ZORDER]);
+    Button button;
+    if(IsButtonHeld(EventPlayer(), Button.PrimaryFire)){
+        button = Button.PrimaryFire;
+    }else if(IsButtonHeld(EventPlayer(), Button.SecondaryFire)){
+        button = Button.SecondaryFire;
+    }else{
+        forceLog("Warning: failed thing");
+        Abort();
+    }
+    forceLog(toString(idsUnderCursor));
     EHudInteractionType action!;
     WaitUntil(!IsButtonHeld(EventPlayer(),button),0.3);
     if(!IsButtonHeld(EventPlayer(),button)){
@@ -26,32 +64,50 @@ if(IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer()
         }else{
             action = EHudInteractionType.RCLICK;
         }
-    }else{
+    }else{ //button still held
         if(button == Button.PrimaryFire){
-            action = EHudInteractionType.LPRESS;
+            action = EHudInteractionType.LDRAG;
         }else{
-            action = EHudInteractionType.RPRESS;
+            action = EHudInteractionType.RDRAG;
         }
     }
-    hudAction = {hudID: element[EHudRegion.ID], actionLocation: {x: cursorX(), y: cursorY()}, action: action};
+    hudAction = {hudIds: sortedIds, actionLocation: Vector2.make(cursorX(),cursorY()), action: action};
+    forceLog("bunigs");
+    WaitUntil(hudAction.hudIds.Length < 1, 9999);
+    LoopIfConditionIsTrue();
 }
 
-rule: 'Move camera to mouse on click'
+rule: 'Detect Hover'
 Event.OngoingPlayer
 if(READY == true)
 if(!IsDummyBot(EventPlayer()))
 if(HasSpawned(EventPlayer()))
-if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
-{   
-    Vector toRevert! = EventPlayer().cursorWorldPositon;
-    EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),HorizontalFacingAngleOf(EventPlayer()),-VerticalFacingAngleOf(EventPlayer()));
-    // if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
-    EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
-    async_workaround_updateCells = true;
-    // }else{
-    //     SmallMessage(EventPlayer(),"Out of bounds");
-    //     EventPlayer().cursorWorldPositon = toRevert;
-    // }
-    Wait(0.25);
-    LoopIfConditionIsTrue();
+if(hudAction.hudIds.Length < 1)
+if(isHovering)
+{
+    Wait(0.2, WaitBehavior.AbortWhenFalse);
+    Number[] unsortedIds! = unsortedIdsUnderCursor();
+    if(unsortedIds.Length > 0){
+        hudAction = {hudIds: SortedArray(unsortedIds, ArrayElement()[EHudRegion.ZORDER]), actionLocation: staticCursorPos, action: EHudInteractionType.HOVER};
+        WaitUntil(hudAction.hudIds.Length < 1, 9999);
+    }
+    hudAction = {hudIds: [], actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
 }
+
+// rule: 'Move camera to mouse on click'
+// Event.OngoingPlayer
+
+// if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
+// {   
+//     Vector toRevert! = EventPlayer().cursorWorldPositon;
+    
+//     // if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
+//     EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
+//     async_workaround_updateCells = true;
+//     // }else{
+//     //     SmallMessage(EventPlayer(),"Out of bounds");
+//     //     EventPlayer().cursorWorldPositon = toRevert;
+//     // }
+//     Wait(0.25);
+//     LoopIfConditionIsTrue();
+// }

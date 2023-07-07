@@ -1,5 +1,5 @@
 import "../Header Files/model/model.del";
-
+import "../global.del";
 define VAL1: 0.5;
 define VAL2: -0.866;
 define FORWARD_VECTOR: Vector(0, VAL2, VAL1);
@@ -12,10 +12,12 @@ playervar Vector cameraPos = Vector(0,0,0);
 define cursorX(Player p = EventPlayer()): HorizontalFacingAngleOf(p);
 define cursorY(Player p = EventPlayer()): -VerticalFacingAngleOf(p);
 
+playervar Boolean isHovering;
 playervar Vector cursorWorldPositon;
 
-
+playervar Vector2 staticCursorPos!;
 playervar Boolean isCameraLocked = false;
+playervar Boolean isMouseMoving;
 
 Vector cameraEye(in Player p = EventPlayer()): FORWARD_VECTOR * -Setting_CAMERA_DISTANCE + cameraPosition(p);
 

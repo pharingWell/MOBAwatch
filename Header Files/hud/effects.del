@@ -29,6 +29,8 @@ globalvar String[][] hpbar_symbols! = [
 ];
 Number[] hpbar_groupings: [0,1,1,1,3,4,5,7];
 
+import "actions/map.del";
+
 define map: 
 "┏━━━━━━━━━━━━━━┓
 ┃              ┃

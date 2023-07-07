@@ -7,7 +7,7 @@ rule: 'Global HUD Setup'
     Wait(2);
 //map
     define mapAnchor: UpdateEveryFrame(uiPos(LocalPlayer(), -103,-69));
-    CreateInWorldText(LocalPlayer(), $"{map}{map2}", mapAnchor, 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Color.White, Spectators.DefaultVisibility);
+    CreateInWorldText(LocalPlayer(), $"{map}{map2}", mapAnchor, 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
 //healthbar
     define uiVis: LocalPlayer();
     define uiReev: InworldTextRev.VisibleToPositionStringAndColor;
@@ -26,6 +26,10 @@ rule: 'Global HUD Setup'
     CreateInWorldText(uiVis, HeroIconString(HeroOf(LocalPlayer().otherModelMember)), playerIconAnchor, 4, Clipping.DoNotClip, uiReev, uiColor(255,255,255), Spectators.DefaultVisibility);
     Wait(); 
 //cursor
+
+    // define shadowCursorPosition: uiPos(LocalPlayer(),LocalPlayer().staticCursorPos.x(), LocalPlayer().staticCursorPos.y());
+    // CreateInWorldText(LocalPlayer(),"•",UpdateEveryFrame(shadowCursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, Color.Black);
+
     define cursorPosition: uiPos(LocalPlayer(),cursorX(LocalPlayer()), cursorY(LocalPlayer()));
     CreateInWorldText(LocalPlayer(),!IsButtonHeld(LocalPlayer(), Button.Interact) ? "•" : $"{HorizontalFacingAngleOf(LocalPlayer())}•{-VerticalFacingAngleOf(LocalPlayer())}",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString);
     CreateEffect(LocalPlayer(),Effect.Sphere, Color.Aqua, UpdateEveryFrame(LocalPlayer().cursorWorldPositon),0.1,EffectRev.VisibleToPositionAndRadius);

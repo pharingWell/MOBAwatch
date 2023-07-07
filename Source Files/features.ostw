@@ -6,8 +6,9 @@ import "../debug.ostw";
 
 import "state.ostw";
 import "ui.ostw";
+import "hud/ux.ostw";
 import "model/model.ostw";
-import "model/player_controller.ostw";
+import "model/player_controller.ostw"; //contains puppet which contains effects
 
 
 

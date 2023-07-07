@@ -1,4 +1,5 @@
 import "../../global.del";
+import "../../debug.ostw";
 enum EHudRegion{
     ID,
     ZORDER,
@@ -12,17 +13,33 @@ globalvar Number[][] hudRegions! = [[],
 ];
 
 enum EHudInteractionType{
+    NONE,
     LCLICK,
     RCLICK,
-    LPRESS,
-    RPRESS
+    LDRAG,
+    RDRAG,
+    HOVER
 }
 
+String[] EString_HudInteractionType: ["none","lclick","rclick", "ldrag", "rdrag", "hover"];
+
 struct HudAction{
-    public Number hudID;
+    public Number[] hudIds;
     public Vector2 actionLocation;
     public EHudInteractionType action;
 
 }
+
+playervar Number[] sortedAffectedIds;
+
 # hudID: Number, actionLocation: Vector2, action: EHudInteractionType
 playervar HudAction hudAction;
+
+void consumeInput(){
+    hudAction = {hudIds: null, actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
+}
+
+void yieldInput(){
+    hudAction.hudIds = hudAction.hudIds.ModRemoveByIndex(0);
+    forceLog(toString(hudAction.hudIds));
+}

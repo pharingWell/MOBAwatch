@@ -28,6 +28,9 @@ rule: 'Debug Tings'
     printToScreen("Resources Remaining: "+ClassMemoryRemaining(),Location.Right);
     printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
     serverLoad();
+   // printToScreen($"{toString(LocalPlayer().hudAction.hudIds)}, {LocalPlayer().hudAction.actionLocation.getVect()}, {EString_HudInteractionType[LocalPlayer().hudAction.action]}");
+    printToScreen(LocalPlayer().isHovering);
+    printToScreen(LocalPlayer().IsButtonHeld(Button.PrimaryFire));
     // printToScreen_noRev("Reload to summon minions",Location.Top);
     // printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top);
     // printToScreen_noRev("Left click to move the camera",Location.Top);

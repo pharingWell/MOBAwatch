@@ -1,0 +1,52 @@
+import "../../../Header Files/ui.del";
+import "../../../Header Files/hud/ux.del";
+import "../../../Header Files/hud/actions/map.del";
+// Minimap
+
+define hudID: 1;
+//consumeInput()
+rule: 'Minimap - Left Click/Drag'
+Event.OngoingPlayer
+if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
+if(hudAction.action == EHudInteractionType.LCLICK || hudAction.action == EHudInteractionType.LDRAG)
+{
+    if(mapColor == Color.White)
+        mapColor = Color.Green;
+    else{
+        mapColor = Color.White;
+    }
+    Wait();
+    if(hudAction.action == EHudInteractionType.LDRAG)
+        WaitUntil(!IsButtonHeld(EventPlayer(), Button.PrimaryFire), 999);
+    consumeInput();
+}
+//    WaitUntil(hudAction.action != EHudInteractionType.HOVER || Vector2.isEqual(staticCursorPos, cursorX(), cursorY()), 999);
+rule: 'Minimap - Right Click'
+Event.OngoingPlayer
+if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
+if(hudAction.action == EHudInteractionType.RCLICK)
+{
+    yieldInput();
+}
+
+rule: 'Minimap - Hover'
+Event.OngoingPlayer
+if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
+if(hudAction.action == EHudInteractionType.HOVER)
+{
+    if(mapColor == Color.Green){
+        mapColor = Color.Blue;
+    }else if(mapColor == Color.White){
+        mapColor = Color.SkyBlue;
+    }
+    WaitUntil(cursorX() > hudAction.hudIds[0][EHudRegion.X_LEFTTOP] 
+        && cursorX() < hudAction.hudIds[0][EHudRegion.X_BOTTOMRIGHT]
+        && cursorY() > hudAction.hudIds[0][EHudRegion.Y_LEFTTOP]
+        && cursorY() < hudAction.hudIds[0][EHudRegion.Y_BOTTOMRIGHT], 9999);
+    if(mapColor == Color.Blue){
+        mapColor = Color.Green;
+    }else if(mapColor == Color.SkyBlue){
+        mapColor = Color.White;
+    }
+    consumeInput();
+}
