@@ -12,10 +12,10 @@ playervar Vector cameraPos = Vector(0,0,0);
 define cursorX(Player p = EventPlayer()): HorizontalFacingAngleOf(p);
 define cursorY(Player p = EventPlayer()): -VerticalFacingAngleOf(p);
 
-playervar Boolean isHovering;
+playervar Boolean mouseStill;
 playervar Vector cursorWorldPositon;
 
-playervar Vector2 staticCursorPos!;
+playervar Vector chasedCursorPosition!;
 playervar Boolean isCameraLocked = false;
 playervar Boolean isMouseMoving;
 

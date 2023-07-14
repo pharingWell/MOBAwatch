@@ -47,6 +47,9 @@ struct Vector2{
     public Vector getVect(){
         return vect;
     }
+    public static Boolean isEqual(in Vector vect, in Number x, in Number y){
+        return vect == Vector(x, y, 0);
+    }
     public static Boolean isEqual(in Vector2 vect, in Number x, in Number y){
         return vect.getVect() == Vector(x, y, 0);
     }
@@ -57,9 +60,4 @@ struct Vector2{
         return {vect:Vector(x, y, 0)};
     }
 
-}
-
-struct Region{
-    public Vector2 topleft;
-    public Vector2 bottomright;
 }
