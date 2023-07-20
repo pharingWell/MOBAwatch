@@ -2,63 +2,65 @@ import "../../Header Files/hud/ux.del";
 import "../../Header Files/main.del";
 import "../../Header Files/ui.del";
 import "../../const.del";
+import "../../error.ostw";
 import "../../Header Files/async.del";
 import "actions/map.ostw";
+import "actions/button.ostw";
 
-define isCursorStill: Vector2.isEqual(staticCursorPos, cursorX(), cursorY());
+define mouseNotStill: chasedCursorPosition != Vector(cursorX(), cursorY());
+
 rule: 'Static Cursor Position'
 Event.OngoingPlayer
-if(!isCursorStill){
-    isHovering = false;
-    if(hudAction.action == EHudInteractionType.HOVER){
-        hudAction = {hudIds: [], actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
-    }
-    staticCursorPos = Vector2.make(cursorX(), cursorY());
-    Wait(0.064);
-    if(isCursorStill){
-        isHovering = true;
-    }else{
+if(mouseNotStill)
+{
+    chasedCursorPosition = cursor_Vect2D;
+    actionConditions[EActionConditions.MOUSE_STILL] = false;
+    actionConditions[EActionConditions.HOVER_AVAILABLE] = false;
+    Wait(HUD_UPDATE_DELAY, WaitBehavior.RestartWhenTrue);
+    hudIdList = SortedArray(unsortedIdsUnderCursor(), hudRegions[ArrayElement()].zOrder);
+    actionConditions[EActionConditions.HOVER_AVAILABLE] = true;
+    define actionTaken: hudAction.action != EHudInteractionType.NONE;
+    WaitUntil(actionTaken || mouseNotStill, HOVER_DELAY);
+    if(mouseNotStill){
         Loop();
+    }else if(!actionTaken){
+        hudAction = {actionLocation: cursor_Vect2D, action: EHudInteractionType.HOVER};
+        triggerAction();
     }
+    Wait(9999, WaitBehavior.RestartWhenTrue);
+    Loop();
 }
 
-Number[] unsortedIdsUnderCursor(): FilteredArray(hudRegions, ArrayElement() != 0
-        && cursorX() <= ArrayElement()[EHudRegion.X_LEFTTOP] 
-        && cursorX() >= ArrayElement()[EHudRegion.X_BOTTOMRIGHT]
-        && cursorY() <= ArrayElement()[EHudRegion.Y_LEFTTOP]
-        && cursorY() >= ArrayElement()[EHudRegion.Y_BOTTOMRIGHT]
-    );
+void triggerAction(){
+    activeHudId = FilteredArray(hudIdList, hudRegions[<Number>ArrayElement()].acceptedActions.Contains(hudAction.action))[0];
+    if(activeHudId == null){
+        consumeInput();
+    }
+    
+}
 
+
+globalvar Number c;
+
+//todo: problem is that the well designed mouse still loop is causing hud action to retrigger.
 
 rule: 'Detect HUD Action'
 Event.OngoingPlayer
-if(READY == true)
 if(!IsDummyBot(EventPlayer()))
 if(HasSpawned(EventPlayer()))
 if (IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(), Button.SecondaryFire))
 {
-    Number[] idsUnderCursor! = unsortedIdsUnderCursor();
-    if(CountOf(idsUnderCursor) < 1){
-        if(IsButtonHeld(EventPlayer(), Button.SecondaryFire)){
-            EventPlayer().cursorWorldPositon = uiToWorld(EventPlayer(),cursorX(),cursorY());
-        }
-        Abort();
-    }
-    
-    Number[] sortedIds: SortedArray(idsUnderCursor, ArrayElement()[EHudRegion.ZORDER]);
-    Button button;
+    c++;
+    Button button! = null;
+    EHudInteractionType action!;
     if(IsButtonHeld(EventPlayer(), Button.PrimaryFire)){
         button = Button.PrimaryFire;
     }else if(IsButtonHeld(EventPlayer(), Button.SecondaryFire)){
         button = Button.SecondaryFire;
-    }else{
-        forceLog("Warning: failed thing");
-        Abort();
     }
-    forceLog(toString(idsUnderCursor));
-    EHudInteractionType action!;
-    WaitUntil(!IsButtonHeld(EventPlayer(),button),0.3);
-    if(!IsButtonHeld(EventPlayer(),button)){
+    define buttonHeld: IsButtonHeld(EventPlayer(),button)==false;
+    WaitUntil(buttonHeld, HELD_DELAY);
+    if(buttonHeld){
         if(button == Button.PrimaryFire){
             action = EHudInteractionType.LCLICK;
         }else{
@@ -66,33 +68,35 @@ if (IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(
         }
     }else{ //button still held
         if(button == Button.PrimaryFire){
-            action = EHudInteractionType.LDRAG;
+            action = EHudInteractionType.LHELD;
         }else{
-            action = EHudInteractionType.RDRAG;
+            action = EHudInteractionType.RHELD;
         }
     }
-    hudAction = {hudIds: sortedIds, actionLocation: Vector2.make(cursorX(),cursorY()), action: action};
-    forceLog("bunigs");
-    WaitUntil(hudAction.hudIds.Length < 1, 9999);
-    LoopIfConditionIsTrue();
+    hudAction = {actionLocation: Vector(cursorX(),cursorY()), action: action};
+    triggerAction();
+    Wait(0.064);
+   // WaitUntil(hudAction.action == EHudInteractionType.NONE, 9999);
+    // WaitUntil((IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(), Button.SecondaryFire) || mouseStill), 9999);
+    // LoopIfConditionIsTrue();
 }
 
-rule: 'Detect Hover'
-Event.OngoingPlayer
-if(READY == true)
-if(!IsDummyBot(EventPlayer()))
-if(HasSpawned(EventPlayer()))
-if(hudAction.hudIds.Length < 1)
-if(isHovering)
-{
-    Wait(0.2, WaitBehavior.AbortWhenFalse);
-    Number[] unsortedIds! = unsortedIdsUnderCursor();
-    if(unsortedIds.Length > 0){
-        hudAction = {hudIds: SortedArray(unsortedIds, ArrayElement()[EHudRegion.ZORDER]), actionLocation: staticCursorPos, action: EHudInteractionType.HOVER};
-        WaitUntil(hudAction.hudIds.Length < 1, 9999);
-    }
-    hudAction = {hudIds: [], actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
-}
+// rule: 'Detect Hover'
+// Event.OngoingPlayer
+// if(READY == true)
+// if(!IsDummyBot(EventPlayer()))
+// if(HasSpawned(EventPlayer()))
+// if(hudIdList.Length < 1)
+// if(mouseStill)
+// {
+//     Wait(0.2, WaitBehavior.AbortWhenFalse);
+//     Number[] unsortedIds! = unsortedIdsUnderCursor();
+//     if(unsortedIds.Length > 0){
+//         hudAction = {hudIds: SortedArray(unsortedIds, ArrayElement()[EHudRegion.ZORDER]), actionLocation: chasedCursorPosition, action: EHudInteractionType.HOVER};
+//         WaitUntil(hudIdList.Length < 1, 9999);
+//     }
+//     hudAction = {hudIds: [], actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
+// }
 
 // rule: 'Move camera to mouse on click'
 // Event.OngoingPlayer

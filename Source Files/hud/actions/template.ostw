@@ -1,29 +1,27 @@
+import "../../../Header Files/ui.del";
 import "../../../Header Files/hud/ux.del";
 import "../../../Header Files/hud/actions/template.del";
-// HUD_NAME
 
-define hudID: 0;
-//consumeInput()
-rule: 'HUD_NAME - Left Click/Drag'
+// Minimap
+rule: 'Template'
 Event.OngoingPlayer
-if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
-if(hudAction.action == EHudInteractionType.LCLICK || hudAction.action == EHudInteractionType.LDRAG)
+if(panelIds.Contains(activeHudId))
 {
-    yieldInput();
-}
-
-rule: 'HUD_NAME - Right Click'
-Event.OngoingPlayer
-if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
-if(hudAction.action == EHudInteractionType.RCLICK || hudAction.action == EHudInteractionType.RDRAG)
-{
-    yieldInput();
-}
-
-rule: 'HUD_NAME - Hover'
-Event.OngoingPlayer
-if(hudAction.hudIds[0][EHudRegion.ID] == hudID)
-if(hudAction.action == EHudInteractionType.HOVER)
-{
-    yieldInput();
+    switch(hudAction.action){
+        case EHudInteractionType.LCLICK:
+            break;
+        case EHudInteractionType.LHELD:
+            notHolding_Left();
+            break;
+        case EHudInteractionType.RCLICK:
+            break;
+        case EHudInteractionType.RHELD:
+            notHolding_Right();
+            break;
+        case EHudInteractionType.HOVER:
+            notHovering();
+            break;
+    }
+    Wait();
+    consumeInput();
 }

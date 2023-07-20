@@ -12,7 +12,8 @@ playervar Vector cameraPos = Vector(0,0,0);
 define cursorX(Player p = EventPlayer()): HorizontalFacingAngleOf(p);
 define cursorY(Player p = EventPlayer()): -VerticalFacingAngleOf(p);
 
-playervar Boolean mouseStill;
+
+define cursor_Vect2D: Vector(cursorX(), cursorY());
 playervar Vector cursorWorldPositon;
 
 playervar Vector chasedCursorPosition!;

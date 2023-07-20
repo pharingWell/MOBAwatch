@@ -1,5 +1,6 @@
 import "../../Header Files/hud/effects.del";
 import "../../Header Files/ui.del";
+import "../../Header Files/hud/ux.del";
 Color uiColor(in Number r, in Number g, in Number b): CustomColor(r,g,b,LocalPlayer().showHUD*255);
 
 rule: 'Global HUD Setup'
@@ -8,6 +9,7 @@ rule: 'Global HUD Setup'
 //map
     define mapAnchor: UpdateEveryFrame(uiPos(LocalPlayer(), -103,-69));
     CreateInWorldText(LocalPlayer(), $"{map}{map2}", mapAnchor, 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
+    CreateInWorldText(LocalPlayer(), $"[ ]", uiPos(LocalPlayer(), 0, -60), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, getState(LocalPlayer(), 2)  == 0 ? Color.Black : Color.Aqua, Spectators.DefaultVisibility);
 //healthbar
     define uiVis: LocalPlayer();
     define uiReev: InworldTextRev.VisibleToPositionStringAndColor;
@@ -27,7 +29,7 @@ rule: 'Global HUD Setup'
     Wait(); 
 //cursor
 
-    // define shadowCursorPosition: uiPos(LocalPlayer(),LocalPlayer().staticCursorPos.x(), LocalPlayer().staticCursorPos.y());
+    // define shadowCursorPosition: uiPos(LocalPlayer(),LocalPlayer().chasedCursorPosition.x(), LocalPlayer().chasedCursorPosition.y());
     // CreateInWorldText(LocalPlayer(),"•",UpdateEveryFrame(shadowCursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, Color.Black);
 
     define cursorPosition: uiPos(LocalPlayer(),cursorX(LocalPlayer()), cursorY(LocalPlayer()));

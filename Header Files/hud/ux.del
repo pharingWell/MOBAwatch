@@ -1,45 +1,75 @@
+import "../ui.del";
 import "../../global.del";
 import "../../debug.ostw";
-enum EHudRegion{
-    ID,
-    ZORDER,
-    X_LEFTTOP,
-    Y_LEFTTOP,
-    X_BOTTOMRIGHT,
-    Y_BOTTOMRIGHT
-}
-globalvar Number[][] hudRegions! = [[],
-/*1: map*/[1, 30, -84.5, -43.5, -121, -69]
-];
+import "actions/common.del";
+import "actions/map.del";
+import "actions/button.del";
 
-enum EHudInteractionType{
-    NONE,
-    LCLICK,
-    RCLICK,
-    LDRAG,
-    RDRAG,
-    HOVER
+globalvar Number[] hudRegionIds: [0, 1, 2, 3]; //range(0, hudRegions.Length)
+playervar Region[] hudRegions = [Region.makeEmpty(), PANEL_Map, PANEL_Button];
+
+enum EActionConditions{
+    MOUSE_STILL,
+    HOVER_AVAILABLE
 }
+
+playervar Boolean[] actionConditions;
+
+
 
 String[] EString_HudInteractionType: ["none","lclick","rclick", "ldrag", "rdrag", "hover"];
 
+playervar Number[] hudIdList!;
+playervar Number|Number[] activeHudId;
+
 struct HudAction{
-    public Number[] hudIds;
-    public Vector2 actionLocation;
+    public Vector actionLocation;
     public EHudInteractionType action;
 
 }
 
 playervar Number[] sortedAffectedIds;
 
-# hudID: Number, actionLocation: Vector2, action: EHudInteractionType
+# actionLocation: Vector2, action: EHudInteractionType
 playervar HudAction hudAction;
 
+Number getState(Player player = EventPlayer(), Number id = activeHudId): player.hudRegions[id].state;
+
+void setState(in Any state, Player player = EventPlayer(), in Number id = activeHudId){
+    player.hudRegions[id].state = state;
+}
+
+Number[] unsortedIdsUnderCursor(): FilteredArray(hudRegionIds, ArrayElement() != 0
+        && cursorX() <= hudRegions[ArrayElement()].x_TopLeft
+        && cursorX() >= hudRegions[ArrayElement()].x_BottomRight
+        && cursorY() <= hudRegions[ArrayElement()].y_TopLeft
+        && cursorY() >= hudRegions[ArrayElement()].y_BottomRight
+    );
+
 void consumeInput(){
-    hudAction = {hudIds: null, actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
+    hudAction = {actionLocation: Vector(), action: EHudInteractionType.NONE};
+    activeHudId = null;
 }
 
 void yieldInput(){
-    hudAction.hudIds = hudAction.hudIds.ModRemoveByIndex(0);
-    forceLog(toString(hudAction.hudIds));
+    hudIdList = hudIdList.ModRemoveByIndex(0);
+    forceLog(toString(hudIdList));
+    Abort();
+}
+
+void notHolding_Left(){
+    WaitUntil(!IsButtonHeld(EventPlayer(), Button.PrimaryFire), 9999);
+}
+
+void notHolding_Right(){
+    WaitUntil(!IsButtonHeld(EventPlayer(), Button.SecondaryFire), 9999);
+}
+
+void notHovering(){
+    WaitUntil(hudAction.action != EHudInteractionType.HOVER ||
+        cursorX() > hudRegions[activeHudId].x_TopLeft
+        || cursorX() < hudRegions[activeHudId].x_BottomRight
+        || cursorY() > hudRegions[activeHudId].y_TopLeft
+        || cursorY() < hudRegions[activeHudId].y_BottomRight, 9999
+    );
 }

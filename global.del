@@ -36,28 +36,3 @@ void BetterAppend(ref Any[] array, in Any value){
     array[array.Length] = value;
 }
 
-struct Vector2{
-    private Vector vect;
-    public Number x(){
-        return vect.X;
-    }
-    public Number y(){
-        return vect.Y;
-    }
-    public Vector getVect(){
-        return vect;
-    }
-    public static Boolean isEqual(in Vector vect, in Number x, in Number y){
-        return vect == Vector(x, y, 0);
-    }
-    public static Boolean isEqual(in Vector2 vect, in Number x, in Number y){
-        return vect.getVect() == Vector(x, y, 0);
-    }
-    public static Boolean isEqual(in Vector2 vect1, in Vector2 vect2){
-        return vect1.getVect() == vect2.getVect();
-    }
-    public static Vector2 make(in Number x, in Number y){
-        return {vect:Vector(x, y, 0)};
-    }
-
-}

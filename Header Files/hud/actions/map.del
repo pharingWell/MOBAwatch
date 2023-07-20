@@ -1,1 +1,11 @@
+import "common.del";
+
+enum EUX_MapState{
+    OFF,
+    ON
+}
+
+Number[] mapIds: [1];
+
+Region PANEL_Map: {zOrder: 30, state: 0, x_TopLeft: -84.5, y_TopLeft: -43.5, x_BottomRight: -121, y_BottomRight: -69, acceptedActions: [EHudInteractionType.LCLICK, EHudInteractionType.LHELD]};
 playervar Color mapColor = Color.White;
