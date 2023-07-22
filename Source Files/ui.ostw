@@ -28,6 +28,9 @@ if(IsButtonHeld(EventPlayer(), BUTTON_CAMERA))
     if(IsButtonHeld(EventPlayer(), BUTTON_CAMERA) == false){
         if(isCameraLocked){
             teleportCamera(otherModelMember.Position());
+            if(viewingMap){
+                viewingMap = false;
+            }
         }
         isCameraLocked = !isCameraLocked;
         Abort();

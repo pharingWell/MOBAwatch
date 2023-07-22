@@ -51,6 +51,21 @@ define screen:
 ┃              ┃
 ┃              ┃
 ┗━━━━━━━━━━━━━━┛";
+// define map_inside:
+// "\\‾‾‾‾‾‾‾‾‾‾‾‾‾/
+//  |           |
+//  \\______/";
+
+// define map_inside:
+// "|‾‾‾‾‾‾‾‾‾‾‾‾‾|
+// |             |
+// |_______|
+// ";
+
+define map_inside:
+"┏━━━┓
+┃   ┃
+┗━━━┛";
 
 playervar Any[] healthbarVariables;
 enum EHealthBarVars{
@@ -64,5 +79,8 @@ enum EHealthBarVars{
     ITERATOR_Number,
     REMAINING_Number
 }
+define symbolString: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒";
+define effectRow(Number width): StringSlice(symbolString, 0, width)+"\n";
+String makeEffect(Number width, Number height): StringSlice($"{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}", 0, (width+1)*height);
 
 

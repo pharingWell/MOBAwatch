@@ -8,10 +8,10 @@ rule: 'Setup Phase'
     SetMatchTime(0);
     PauseMatchTime();
     READY = true;
-    // gamePhase = EGamePhase.LOADING;
-    // gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
-    // WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
-    // gamePhase = EGamePhase.BATTLE;
+    gamePhase = EGamePhase.LOADING;
+    gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
+    WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
+    gamePhase = EGamePhase.BATTLE;
     //printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
 }
 rule: 'Setup Player'
@@ -28,15 +28,16 @@ rule: 'Debug Tings'
     printToScreen("Resources Remaining: "+ClassMemoryRemaining(),Location.Right);
     printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
     serverLoad();
-    printToScreen($"{LocalPlayer().chasedCursorPosition}, {Vector(cursorX(LocalPlayer()), cursorY(LocalPlayer()))}");
+    printToScreen($"{Vector(cursorX(LocalPlayer()), cursorY(LocalPlayer()))}");
     printToScreen(c);
-    // printToScreen($" x1{cursorX(LocalPlayer()) < hudRegions[1].x_TopLeft}, x2{cursorX(LocalPlayer()) > hudRegions[1].x_BottomRight},y1{cursorY(LocalPlayer()) < hudRegions[1].y_TopLeft}, y2{cursorY(LocalPlayer()) > hudRegions[1].y_BottomRight}");
+    // printToScreen($" x1{cursorX(LocalPlayer()) < hudRegions[1].x_TopLeft}, x2{cursorX(LocalPlayer()) > hudRegions[1].x_BottomRight},y    1{cursorY(LocalPlayer()) < hudRegions[1].y_TopLeft}, y2{cursorY(LocalPlayer()) > hudRegions[1].y_BottomRight}");
    // printToScreen($"{toString(LocalPlayer().hudIdList)}, {LocalPlayer().hudAction.actionLocation.getVect()}, {EString_HudInteractionType[LocalPlayer().hudAction.action]}");
     printToScreen(toString(LocalPlayer().actionConditions));
     printToScreen(EString_HudInteractionType[LocalPlayer().hudAction.action]);
-    printToScreen(toString(LocalPlayer().activeHudId));
+    printToScreen($"{getRegion(LocalPlayer(), mapIds[0]).state},{getRegion(LocalPlayer(), mapIds[0]).state2}");
     printToScreen($"LEN: {LocalPlayer().hudIdList.Length}");
-    printToScreen(getState(LocalPlayer(), 1));
+    printToScreen(LocalPlayer().activeHudId);
+    
     // printToScreen_noRev("Reload to summon minions",Location.Top);
     // printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top);
     // printToScreen_noRev("Left click to move the camera",Location.Top);
@@ -75,6 +76,8 @@ if(IsButtonHeld(EventPlayer(), TOGGLE_CONTROLLER))
         controllers[EventPlayer().ID] = EventPlayer();
     }
     WaitUntil(IsButtonHeld(EventPlayer(), TOGGLE_CONTROLLER)==false,999);
+    StopCamera();   
+    DisableMovementCollisionWithEnvironment(HostPlayer(), true);
 }
 
 // rule: 'update maxeffect count'

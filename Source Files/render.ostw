@@ -1,4 +1,4 @@
-import "../global.del";
+import "../global.ostw";
 import "../debug.del";
 import "grid.ostw";
 import "../Header Files/ui.del";

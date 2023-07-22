@@ -6,5 +6,4 @@ enum EUX_ButtonState{
 }
 
 Number[] buttonIds: [2,3];
-
-Region PANEL_Button: {zOrder: 20, state: 0, x_TopLeft: 16, y_TopLeft: -55, x_BottomRight: -16, y_BottomRight: -65, acceptedActions: [EHudInteractionType.LCLICK, EHudInteractionType.HOVER]};
+Region PANEL_Button: Region.make(20, 0, -60, 16, 5, [EHudInteractionType.LCLICK, EHudInteractionType.HOVER]);

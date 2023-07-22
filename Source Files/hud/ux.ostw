@@ -7,6 +7,7 @@ import "../../Header Files/async.del";
 import "actions/map.ostw";
 import "actions/button.ostw";
 
+#todo: define objects in relation to their centerpoint, width and height
 define mouseNotStill: chasedCursorPosition != Vector(cursorX(), cursorY());
 
 rule: 'Static Cursor Position'
@@ -15,10 +16,10 @@ if(mouseNotStill)
 {
     chasedCursorPosition = cursor_Vect2D;
     actionConditions[EActionConditions.MOUSE_STILL] = false;
-    actionConditions[EActionConditions.HOVER_AVAILABLE] = false;
+   // actionConditions[EActionConditions.HOVER_AVAILABLE] = false;
     Wait(HUD_UPDATE_DELAY, WaitBehavior.RestartWhenTrue);
     hudIdList = SortedArray(unsortedIdsUnderCursor(), hudRegions[ArrayElement()].zOrder);
-    actionConditions[EActionConditions.HOVER_AVAILABLE] = true;
+    //actionConditions[EActionConditions.HOVER_AVAILABLE] = true;
     define actionTaken: hudAction.action != EHudInteractionType.NONE;
     WaitUntil(actionTaken || mouseNotStill, HOVER_DELAY);
     if(mouseNotStill){
@@ -32,9 +33,13 @@ if(mouseNotStill)
 }
 
 void triggerAction(){
-    activeHudId = FilteredArray(hudIdList, hudRegions[<Number>ArrayElement()].acceptedActions.Contains(hudAction.action))[0];
-    if(activeHudId == null){
+    Number[] temp! = FilteredArray(hudIdList, hudRegions[<Number>ArrayElement()].acceptedActions.Contains(hudAction.action))[0];
+    if(temp == null){
         consumeInput();
+        Abort();
+    }else{
+        activeHudId = temp;
+        c++;
     }
     
 }
@@ -50,7 +55,7 @@ if(!IsDummyBot(EventPlayer()))
 if(HasSpawned(EventPlayer()))
 if (IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(), Button.SecondaryFire))
 {
-    c++;
+
     Button button! = null;
     EHudInteractionType action!;
     if(IsButtonHeld(EventPlayer(), Button.PrimaryFire)){
@@ -76,42 +81,4 @@ if (IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(
     hudAction = {actionLocation: Vector(cursorX(),cursorY()), action: action};
     triggerAction();
     Wait(0.064);
-   // WaitUntil(hudAction.action == EHudInteractionType.NONE, 9999);
-    // WaitUntil((IsButtonHeld(EventPlayer(), Button.PrimaryFire) || IsButtonHeld(EventPlayer(), Button.SecondaryFire) || mouseStill), 9999);
-    // LoopIfConditionIsTrue();
 }
-
-// rule: 'Detect Hover'
-// Event.OngoingPlayer
-// if(READY == true)
-// if(!IsDummyBot(EventPlayer()))
-// if(HasSpawned(EventPlayer()))
-// if(hudIdList.Length < 1)
-// if(mouseStill)
-// {
-//     Wait(0.2, WaitBehavior.AbortWhenFalse);
-//     Number[] unsortedIds! = unsortedIdsUnderCursor();
-//     if(unsortedIds.Length > 0){
-//         hudAction = {hudIds: SortedArray(unsortedIds, ArrayElement()[EHudRegion.ZORDER]), actionLocation: chasedCursorPosition, action: EHudInteractionType.HOVER};
-//         WaitUntil(hudIdList.Length < 1, 9999);
-//     }
-//     hudAction = {hudIds: [], actionLocation: Vector2.make(0,0), action: EHudInteractionType.NONE};
-// }
-
-// rule: 'Move camera to mouse on click'
-// Event.OngoingPlayer
-
-// if(IsButtonHeld(EventPlayer(), Button.PrimaryFire))
-// {   
-//     Vector toRevert! = EventPlayer().cursorWorldPositon;
-    
-//     // if(EventPlayer().cursorWorldPositon.X > -85 && EventPlayer().cursorWorldPositon.X < 85 && EventPlayer().cursorWorldPositon.Z > -70 && EventPlayer().cursorWorldPositon.Z < 70){
-//     EventPlayer().cameraPos = EventPlayer().cursorWorldPositon;
-//     async_workaround_updateCells = true;
-//     // }else{
-//     //     SmallMessage(EventPlayer(),"Out of bounds");
-//     //     EventPlayer().cursorWorldPositon = toRevert;
-//     // }
-//     Wait(0.25);
-//     LoopIfConditionIsTrue();
-// }

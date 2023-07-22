@@ -7,9 +7,11 @@ rule: 'Global HUD Setup'
 {
     Wait(2);
 //map
-    define mapAnchor: UpdateEveryFrame(uiPos(LocalPlayer(), -103,-69));
-    CreateInWorldText(LocalPlayer(), $"{map}{map2}", mapAnchor, 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
-    CreateInWorldText(LocalPlayer(), $"[ ]", uiPos(LocalPlayer(), 0, -60), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, getState(LocalPlayer(), 2)  == 0 ? Color.Black : Color.Aqua, Spectators.DefaultVisibility);
+    CreateInWorldText(LocalPlayer(), $"{map}{map2}", uiPos(LocalPlayer(), PANEL_Map.x,PANEL_Map.y), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
+    CreateInWorldText(LocalPlayer(), $"{map_inside}", uiPos(LocalPlayer(), getRegion(LocalPlayer(), mapIds[0]).x+getRegion(LocalPlayer(), mapIds[0]).state, getRegion(LocalPlayer(), mapIds[0]).y + getRegion(LocalPlayer(), mapIds[0]).height/2 + mapInside_yOffset + getRegion(LocalPlayer(), mapIds[0]).state2), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
+    CreateInWorldText(LocalPlayer(), $"[      ]\n[      ]", uiPos(LocalPlayer(), PANEL_Button.x,PANEL_Button.y), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, getState(LocalPlayer(), 2) > 1 ? Color.White : getState(LocalPlayer(), 2)  == 0 ? Color.Black : Color.Aqua, Spectators.DefaultVisibility);
+    // CreateBeamEffect(LocalPlayer(), BeamType.GrappleBeam, textPosToWorld(LocalPlayer(), PANEL_Button.x-PANEL_Button.halfwidth, PANEL_Button.y), uiToWorld(LocalPlayer(), PANEL_Button.x+PANEL_Button.halfwidth, PANEL_Button.y+PANEL_Button.height), Color.Aqua, EffectRev.VisibleToPositionAndRadius);
+    CreateEffect(LocalPlayer(), Effect.Sphere, Color.Aqua, uiToWorld(LocalPlayer(), PANEL_Button.x, PANEL_Button.y));
 //healthbar
     define uiVis: LocalPlayer();
     define uiReev: InworldTextRev.VisibleToPositionStringAndColor;
@@ -28,13 +30,21 @@ rule: 'Global HUD Setup'
     CreateInWorldText(uiVis, HeroIconString(HeroOf(LocalPlayer().otherModelMember)), playerIconAnchor, 4, Clipping.DoNotClip, uiReev, uiColor(255,255,255), Spectators.DefaultVisibility);
     Wait(); 
 //cursor
-
+    define boxWidth: 11;
+    define boxHeight: 6;
+    define boxSize: 2;
+    // CreateInWorldText(LocalPlayer(), makeEffect(boxWidth, boxHeight), uiPos(LocalPlayer(), cursorX(LocalPlayer()),cursorY(LocalPlayer())), boxSize, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, Color.White, Spectators.DefaultVisibility);
+    // CreateInWorldText(LocalPlayer(), makeEffect(boxWidth, boxHeight-1), uiPos(LocalPlayer(), cursorX(LocalPlayer()),cursorY(LocalPlayer())+1*boxSize*0.5), boxSize, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, Color.White, Spectators.DefaultVisibility);
     // define shadowCursorPosition: uiPos(LocalPlayer(),LocalPlayer().chasedCursorPosition.x(), LocalPlayer().chasedCursorPosition.y());
     // CreateInWorldText(LocalPlayer(),"•",UpdateEveryFrame(shadowCursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, Color.Black);
 
     define cursorPosition: uiPos(LocalPlayer(),cursorX(LocalPlayer()), cursorY(LocalPlayer()));
-    CreateInWorldText(LocalPlayer(),!IsButtonHeld(LocalPlayer(), Button.Interact) ? "•" : $"{HorizontalFacingAngleOf(LocalPlayer())}•{-VerticalFacingAngleOf(LocalPlayer())}",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString);
+    CreateInWorldText(LocalPlayer(),LocalPlayer().showCursor ? "•" : " ",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString);
+    CreateEffect(LocalPlayer(),Effect.Sphere, Color.Black, UpdateEveryFrame(LocalPlayer().cursorWorldPositon),0.1,EffectRev.VisibleToPositionAndRadius);
+    CreateInWorldText(LocalPlayer(),!IsButtonHeld(LocalPlayer(), Button.Interact) ? "" : $"{HorizontalFacingAngleOf(LocalPlayer())}   {-VerticalFacingAngleOf(LocalPlayer())}",UpdateEveryFrame(cursorPosition), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString);
     CreateEffect(LocalPlayer(),Effect.Sphere, Color.Aqua, UpdateEveryFrame(LocalPlayer().cursorWorldPositon),0.1,EffectRev.VisibleToPositionAndRadius);
+    CreateInWorldText(LocalPlayer(),!IsButtonHeld(LocalPlayer(), Button.Interact) ? "" : <"<0>",cursorPosition>,UpdateEveryFrame(uiPos(LocalPlayer(),cursorX(LocalPlayer()), cursorY(LocalPlayer())-10)), 2.5, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString);
+    CreateEffect(LocalPlayer(),Effect.Sphere, Color.Aqua, UpdateEveryFrame(textPosToWorld(LocalPlayer(), cursorX(LocalPlayer()), cursorY(LocalPlayer()))),0.09,EffectRev.VisibleToPositionAndRadius);
 
 }
 
