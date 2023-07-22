@@ -2,7 +2,7 @@ import "../../../Header Files/ui.del";
 import "../../../Header Files/hud/ux.del";
 import "../../../Header Files/hud/actions/button.del";
 
-// Minimap
+// button
 rule: 'button'
 Event.OngoingPlayer
 if(buttonIds.Contains(activeHudId))
@@ -11,16 +11,10 @@ if(buttonIds.Contains(activeHudId))
         case EHudInteractionType.LCLICK:
             setState(!getState());
             break;
-        // case EHudInteractionType.LHELD:
-        //     notHolding_Left();
-        //     break;
-        // case EHudInteractionType.RCLICK:
-        //     break;
-        // case EHudInteractionType.RHELD:
-        //     notHolding_Right();
-        //     break;
         case EHudInteractionType.HOVER:
+            setState(2);
             notHovering();
+            setState(0);
             break;
     }
     Wait();

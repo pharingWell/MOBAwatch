@@ -1,4 +1,4 @@
-import "../global.del";
+import "../global.ostw";
 import "../debug.ostw";
 import "render.ostw";
 import "../Header Files/main.del";
