@@ -1,5 +1,5 @@
 import "../ui.del";
-import "../../global.del";
+import "../../global.ostw";
 import "../../debug.ostw";
 import "actions/common.del";
 import "actions/map.del";
@@ -33,17 +33,22 @@ playervar Number[] sortedAffectedIds;
 # actionLocation: Vector2, action: EHudInteractionType
 playervar HudAction hudAction;
 
-Number getState(Player player = EventPlayer(), Number id = activeHudId): player.hudRegions[id].state;
-
-void setState(in Any state, Player player = EventPlayer(), in Number id = activeHudId){
+Region getRegion(Player player = EventPlayer(), Number id = activeHudId): player.hudRegions[id];
+Number getState(Player player = EventPlayer(), Number id = activeHudId): getRegion(player, id).state;
+void setState(in Any state, in Player player = EventPlayer(), in Number id = activeHudId){
     player.hudRegions[id].state = state;
 }
-
+void setState2(in Any state, in Player player = EventPlayer(), in Number id = activeHudId){
+    player.hudRegions[id].state2 = state;
+}
+void setState3(in Any state, in Player player = EventPlayer(), in Number id = activeHudId){
+    player.hudRegions[id].state3 = state;
+}
 Number[] unsortedIdsUnderCursor(): FilteredArray(hudRegionIds, ArrayElement() != 0
-        && cursorX() <= hudRegions[ArrayElement()].x_TopLeft
-        && cursorX() >= hudRegions[ArrayElement()].x_BottomRight
-        && cursorY() <= hudRegions[ArrayElement()].y_TopLeft
-        && cursorY() >= hudRegions[ArrayElement()].y_BottomRight
+        && cursorX() <= hudRegions[ArrayElement()].x + hudRegions[ArrayElement()].halfwidth
+        && cursorX() >= hudRegions[ArrayElement()].x - hudRegions[ArrayElement()].halfwidth
+        && cursorY() <= hudRegions[ArrayElement()].y + hudRegions[ArrayElement()].height
+        && cursorY() >= hudRegions[ArrayElement()].y
     );
 
 void consumeInput(){
@@ -67,9 +72,9 @@ void notHolding_Right(){
 
 void notHovering(){
     WaitUntil(hudAction.action != EHudInteractionType.HOVER ||
-        cursorX() > hudRegions[activeHudId].x_TopLeft
-        || cursorX() < hudRegions[activeHudId].x_BottomRight
-        || cursorY() > hudRegions[activeHudId].y_TopLeft
-        || cursorY() < hudRegions[activeHudId].y_BottomRight, 9999
-    );
+        cursorX() > hudRegions[activeHudId].x + hudRegions[activeHudId].halfwidth
+        || cursorX() < hudRegions[activeHudId].x - hudRegions[activeHudId].halfwidth
+        || cursorY() > hudRegions[activeHudId].y + hudRegions[activeHudId].height
+        || cursorY() < hudRegions[activeHudId].y
+    , 9999);
 }

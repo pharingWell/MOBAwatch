@@ -1,7 +1,7 @@
 import "model.del";
 import "..\ui.del";
 
-
+playervar Boolean startedMoving!;
 
 
 // void colorThing(Color color, Number i){

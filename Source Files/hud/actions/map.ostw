@@ -8,7 +8,14 @@ void mapInside_setCoord(){
     viewingMap = true;
     setState(clamp(cursorX() - getRegion().x, minX, maxX));
     setState2(clamp(cursorY() - getRegion().y - PANEL_Map.height/2, minY, maxY));
-    teleportCamera(Vector(getRegion().state * xMult, 0, getRegion().state2 * yMult));
+    define newPosition! = Vector(getRegion().state * xMult, 0, getRegion().state2 * yMult);
+    if(DistanceBetween(newPosition, cameraPosition())<50){
+        cameraPos = newPosition;
+        ChaseVariableAtRate(cameraPos, newPosition, 10, RateChaseReevaluation.DestinationAndRate);
+    }else{
+        teleportCamera(newPosition);
+    }
+    
 }
 
 
@@ -19,17 +26,16 @@ if(!IsDummyBot())
 if(mapIds.Contains(activeHudId))
 {
     switch(hudAction.action){
-        // case EHudInteractionType.LHELD:
-        //     showCursor = false;
-        //     while(IsButtonHeld(EventPlayer(), Button.PrimaryFire)){
-        //         mapInside_setCoord();
-        //         Wait();
-        //     }
-        //     showCursor = true;
-        //     break;
+        case EHudInteractionType.LHELD:
+            showCursor = false;
+            while(IsButtonHeld(EventPlayer(), Button.PrimaryFire)){
+                mapInside_setCoord();
+                Wait();
+            }
+            showCursor = true;
+            break;
         case EHudInteractionType.LCLICK:
             mapInside_setCoord();
-            
             break;
     }
     Wait();

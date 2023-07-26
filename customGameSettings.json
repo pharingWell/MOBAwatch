@@ -11,7 +11,11 @@
     "Extensions": {
         "Beam Effects": true,
         "Play More Effects": true,
-        "Spawn More Dummy Bots": true
+        "Spawn More Dummy Bots": true,
+        "Buff Status Effects": true,
+        "Energy Explosion Effects": true,
+        "Kinetic Explosion Effects": true,
+        "Debuff Status Effects": true
     },
     "Modes": {
         "Team Deathmatch": {

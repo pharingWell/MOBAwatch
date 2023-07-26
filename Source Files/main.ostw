@@ -19,7 +19,7 @@ Event.OngoingPlayer
 if(EventPlayer() == HostPlayer())
 {
     WaitUntil(READY, 999);
-    ForcePlayerHero(EventPlayer(),Hero.Ana);
+    ForcePlayerHero(EventPlayer(),Hero.Ana); 
     DisableHeroHud();
 }
 

@@ -14,7 +14,7 @@ Region PANEL_Map: Region.make(30, -102.75, -56.25, 36.5, 25.5, [EHudInteractionT
 // define mapInside_yOffset: -3;
 define mapInside_halfWidth: 4.5;
 define mapInside_height: 8;
-define mapInside_yOffset: -6;
+define mapInside_yOffset: -1.25;
 
 define maxX: PANEL_Map.halfwidth-mapInside_halfWidth;
 define minX: -PANEL_Map.halfwidth+mapInside_halfWidth;

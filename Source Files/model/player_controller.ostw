@@ -29,7 +29,7 @@ if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
     DisableNameplates(puppets, EventPlayer());
     otherModelMember = puppets[ID];
     isCameraLocked = true; //todo: grab player's settings on load
-    //printToScreen("\n\n"+toString(puppets));
+    printToScreen($"Setup:{EventPlayer()}, cam locked: {isCameraLocked}");
 }
 
 
