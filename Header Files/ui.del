@@ -22,7 +22,7 @@ playervar Boolean isMouseMoving;
 
 Vector cameraEye(in Player p = EventPlayer()): FORWARD_VECTOR * -Setting_CAMERA_DISTANCE + cameraPosition(p);
 
-Vector cameraPosition(in Player p = EventPlayer()): p.isCameraLocked && !p.viewingMap ? UpdateEveryFrame(getPuppet(p).Position()) : p.cameraPos;
+Vector cameraPosition(in Player p = EventPlayer()): p.isCameraLocked && !p.viewingMap ? UpdateEveryFrame(getPuppet(p)) : p.cameraPos;
 
 define SCALE: 100;
 Vector uiPos(in Player p, in Number x, in Number y): (cameraEye(p) +  FORWARD_VECTOR * SCALE+ RIGHT_VECTOR * x + UP_VECTOR * y);

@@ -1,0 +1,7 @@
+//coords must be in (x, 0, z) format
+globalvar Vector[] Visible_Team1 = [Vector(0,0,0)];
+globalvar Number[] Visible_Team1_distance = [30];
+globalvar Vector[] Visible_Team2;
+globalvar Number[] Visible_Team2_distance; 
+
+playervar Number[] visionTiles;

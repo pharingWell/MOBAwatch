@@ -6,13 +6,14 @@ rule: 'Global HUD Setup'
 {
     Wait(2);
 //map
-    CreateInWorldText(LocalPlayer(), $"{map}{map2}", uiPos(LocalPlayer(), PANEL_Map.x,PANEL_Map.y), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
-    CreateInWorldText(LocalPlayer(), $"{map_inside}", uiPos(LocalPlayer(), getRegion(LocalPlayer(), mapIds[0]).x+getRegion(LocalPlayer(), mapIds[0]).state, getRegion(LocalPlayer(), mapIds[0]).y + getRegion(LocalPlayer(), mapIds[0]).height/2 + mapInside_yOffset + getRegion(LocalPlayer(), mapIds[0]).state2), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
-    CreateInWorldText(LocalPlayer(), $"[      ]\n[      ]", uiPos(LocalPlayer(), PANEL_Button.x,PANEL_Button.y), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, getState(LocalPlayer(), 2) > 1 ? Color.White : getState(LocalPlayer(), 2)  == 0 ? Color.Black : Color.Aqua, Spectators.DefaultVisibility);
+define uiVis: controllers;
+    CreateInWorldText(uiVis, $"{map}{map2}", uiPos(LocalPlayer(), PANEL_Map.x,PANEL_Map.y), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
+    CreateInWorldText(uiVis, $"{map_inside}", uiPos(LocalPlayer(), getRegion(LocalPlayer(), mapIds[0]).x+getRegion(LocalPlayer(), mapIds[0]).state, getRegion(LocalPlayer(), mapIds[0]).y + getRegion(LocalPlayer(), mapIds[0]).height/2 + mapInside_yOffset + getRegion(LocalPlayer(), mapIds[0]).state2), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, LocalPlayer().mapColor, Spectators.DefaultVisibility);
+    CreateInWorldText(controllers, $"[      ]\n[      ]", uiPos(LocalPlayer(), PANEL_Button.x,PANEL_Button.y), 1.45, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, getState(LocalPlayer(), 2) > 1 ? Color.White : getState(LocalPlayer(), 2)  == 0 ? Color.Black : Color.Aqua, Spectators.DefaultVisibility);
     // CreateBeamEffect(LocalPlayer(), BeamType.GrappleBeam, textPosToWorld(LocalPlayer(), PANEL_Button.x-PANEL_Button.halfwidth, PANEL_Button.y), uiToWorld(LocalPlayer(), PANEL_Button.x+PANEL_Button.halfwidth, PANEL_Button.y+PANEL_Button.height), Color.Aqua, EffectRev.VisibleToPositionAndRadius);
-    CreateEffect(LocalPlayer(), Effect.Sphere, Color.Aqua, uiToWorld(LocalPlayer(), PANEL_Button.x, PANEL_Button.y));
+    CreateEffect(uiVis, Effect.Sphere, Color.Aqua, uiToWorld(LocalPlayer(), PANEL_Button.x, PANEL_Button.y));
 //healthbar
-    define uiVis: LocalPlayer();
+    
     define uiReev: InworldTextRev.VisibleToPositionStringAndColor;
     //UpdateEveryFrame(LocalPlayer().showHUD ? LocalPlayer() : null)
     define scale: 10;
@@ -29,11 +30,7 @@ rule: 'Global HUD Setup'
     CreateInWorldText(uiVis, HeroIconString(HeroOf(LocalPlayer().otherModelMember)), playerIconAnchor, 4, Clipping.DoNotClip, uiReev, uiColor(255,255,255), Spectators.DefaultVisibility);
     Wait(); 
    
-    for (define i = 0; 9; 1) {
-        for(define j = 0; 6; 1){
-            CreateEffect(LocalPlayer(), Effect.Cloud, Color.White, cameraPosition(LocalPlayer())+Vector(EvaluateOnce(i)*1-4.3,3,EvaluateOnce(j)*1-2.1), 15, EffectRev.VisibleToPositionAndRadius);
-            }
-    }
+
     
 //cursor
     define boxWidth: 11;

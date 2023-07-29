@@ -39,13 +39,10 @@ void triggerAction(){
         Abort();
     }else{
         activeHudId = temp;
-        c++;
     }
     
 }
 
-
-globalvar Number c;
 
 //todo: problem is that the well designed mouse still loop is causing hud action to retrigger.
 

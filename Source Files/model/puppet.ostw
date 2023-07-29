@@ -9,7 +9,7 @@ import "../hud/effects.ostw";
 rule: 'Puppet Setup'
 Event.OngoingPlayer
 if(IsDummyBot())
-if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
+if(isSetup())
 {
     heroSize = heroSizes[IndexOfArrayValue(AllHeroes(), HeroOf())];
     define size: 0.9;
@@ -22,7 +22,7 @@ if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
     # Only display if they are: alive, ready and either on the same team as the player or visible. 
     define shouldBeVisible: IsAlive() && getPlayerInfo(EPlayerInfo.IS_READY) && 
     (getPlayerInfo(EPlayerInfo.VISIBLE)|| TeamOf(LocalPlayer()) == TeamOf(EventPlayer()));
-    define visibility: shouldBeVisible ? LocalPlayer() : null;
+    define visibility: shouldBeVisible ? controllers : null;
     define teamSpecificColor: 
         shouldBeVisible
             ? (getPuppet(LocalPlayer()) == EventPlayer() 
@@ -80,7 +80,7 @@ Event.OngoingPlayer
 if(IsDummyBot())
 if(READY)
 {
-    WaitUntil(getPlayerInfo(EPlayerInfo.CAN_SETUP), 1000);
+    WaitUntil(isSetup(), 1000);
     setPlayerInfo(EPlayerInfo.IS_READY, true);
     setPlayerInfo(EPlayerInfo.VISIBLE, true);
 }

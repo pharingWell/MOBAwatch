@@ -17,9 +17,9 @@ class Structure : Statics{
 
 class Core : Structure{
     public constructor(Vector pos, Team team){
+        this.position = pos;
         this.points = GetLines("../.resources/meshes/core.obj");
         LogToInspector(points[0]);
-        this.position = pos;
         this.health = 100;
         this.team = team;
     }

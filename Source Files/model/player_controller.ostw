@@ -24,7 +24,7 @@ if(!IsDummyBot(EventPlayer()))
 rule: 'Setup player'
 Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
-if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
+if(isSetup())
 {
     DisableNameplates(puppets, EventPlayer());
     otherModelMember = puppets[ID];
