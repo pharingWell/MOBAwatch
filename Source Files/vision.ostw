@@ -1,73 +1,56 @@
 import "../Header Files/vision.del";
 import "../Header Files/model/player_controller.del";
 import "../Header Files/ui.del";
-define xOffset: 0;
-define zOffset: 0;
-// define vision_isShown(Number index, Player p = LocalPlayer()): p.visionTiles[index] == 0;
-// define visionColor(Number index, Player p = LocalPlayer()): CustomColor(255, 255, 255, p.visionTiles[index]*255);
-define visionEffectWidth: 13; 
-define visionEffectHeight: 6;  
-define visionEffectSlopeShift: 1;
-define visionEffectSlopeShiftScalar: 2.25;
-define visionScale: 4;
-define visionEffect_getYfromIndex(Number index): RoundToInteger((SquareRoot(8*index + 121)-11)/2 , Rounding.Down);
-define visionEffect_getXfromIndex(Number index): (index % visionEffect_getYfromIndex(index));
-define visionEffectPosition_index(Number index):  Vector((index % visionEffectWidth)*visionScale+xOffset,3,RoundToInteger(index/visionEffectWidth, Rounding.Up)*visionScale+zOffset);
-//cameraPosition(p)
-define visionEffectPosition(Number i, Number j, Player p = LocalPlayer()): Vector()+EvaluateOnce(Vector((i-(visionEffectWidth-visionEffectHeight+j+visionEffectSlopeShift)/2)*visionScale+xOffset,0,(j+visionEffectSlopeShift*visionEffectSlopeShiftScalar-(visionEffectHeight/2))*visionScale+zOffset));
-rule: 'Vision'
+
+globalvar Vector[] visionEffect = [Vector(-16, 0, -3), Vector(-12, 0, -3), Vector(-8, 0, -3), Vector(-4, 0, -3), Vector(0, 0, -3), Vector(4, 0, -3), Vector(8, 0, -3), Vector(12, 0, -3), Vector(-18, 0, 1), Vector(-14, 0, 1), Vector(-10, 0, 1), Vector(-6, 0, 1), Vector(-2, 0, 1), Vector(2, 0, 1), Vector(6, 0, 1), Vector(10, 0, 1), Vector(14, 0, 1), Vector(-20, 0, 5), Vector(-16, 0, 5), Vector(-12, 0, 5), Vector(-8, 0, 5), Vector(-4, 0, 5), Vector(0, 0, 5), Vector(4, 0, 5), Vector(8, 0, 5), Vector(12, 0, 5), Vector(16, 0, 5), Vector(-22, 0, 9), Vector(-18, 0, 9), Vector(-14, 0, 9), Vector(-10, 0, 9), Vector(-6, 0, 9), Vector(-2, 0, 9), Vector(2, 0, 9), Vector(6, 0, 9), Vector(10, 0, 9), Vector(14, 0, 9), Vector(18, 0, 9), Vector(-24, 0, 13), Vector(-20, 0, 13), Vector(-16, 0, 13), Vector(-12, 0, 13), Vector(-8, 0, 13), Vector(-4, 0, 13), Vector(0, 0, 13), Vector(4, 0, 13), Vector(8, 0, 13), Vector(12, 0, 13), Vector(16, 0, 13), Vector(20, 0, 13), Vector(-26, 0, 17), Vector(-22, 0, 17), Vector(-18, 0, 17), Vector(-14, 0, 17), Vector(-10, 0, 17), Vector(-6, 0, 17), Vector(-2, 0, 17), Vector(2, 0, 17), Vector(6, 0, 17), Vector(10, 0, 17), Vector(14, 0, 17), Vector(18, 0, 17), Vector(22, 0, 17)]; //-30, 30, -5, 20
+define visionPosition(Number index): visionEffect[EvaluateOnce(index)] + Vector(0,3,-2)+ cameraPosition(LocalPlayer());
+rule: 'Create Vision Effects'
+Event.OngoingGlobal
 {
-    Wait(4);
-    define k! = 0;
-    //for (define i = 0; visionEffectWidth-visionEffectHeight+j+visionEffectSlopeShift; 1) { 
-    for(define j = 0; visionEffectHeight; 1){
-        CreateEffect(controllers, Effect.Cloud,CustomColor(255, 255, 255, LocalPlayer().visionTiles[k]*255), visionEffectPosition(i, j), 0.05, EffectRev.PositionRadiusAndColor);
-                Wait(0.032);
-            CreateInWorldText(LocalPlayer(), $"{k}: {visionEffectPosition(i, j)}", visionEffectPosition(i, j), 1, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, Color.Black);
-            k++;
-        }
-        Wait(0.032);
+    Wait(3);
+    for(Number i! = 0; i < visionEffect.Length; i++){
+        CreateEffect(LocalPlayer().visionTiles[EvaluateOnce(i)] > 0.5 ? controllers : null, Effect.Cloud, CustomColor(255/63*i, 255, 255),  visionPosition(i), 1*Min(1,LocalPlayer().visionTiles[EvaluateOnce(i)]), EffectRev.VisibleToPositionAndRadius);
+        // Wait(0.064);
+        // CreateInWorldText(LocalPlayer(), i,  visionPosition(i), 1, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Color.Black);
+        // Wait(0.064);
     }
-    // CreateEffect(LocalPlayer(), Effect.Soldier76SprintingEffect, Color.Aqua, cameraEye(LocalPlayer())  + FORWARD_VECTOR * 0.1 * (RoundToInteger(TotalTimeElapsed()/0.016,Rounding.Down)%2==0 ? -1 : 1), 100, EffectRev.VisibleToPositionRadiusAndColor);
-    // CreateEffect(LocalPlayer(), Effect.Sphere, CustomColor(255,255,255, 1), Vector(0,0,0), 10, EffectRev.VisibleToPositionRadiusAndColor);
-    // printToScreen(RoundToInteger(TotalTimeElapsed()/0.016,Rounding.Down)%2==0);
-    // CreateEffect(LocalPlayer(), Effect.Soldier76SprintingEffect, Color.Aqua, sprintPos, 40, EffectRev.VisibleToPositionRadiusAndColor);
-    // CreateEffect(LocalPlayer(), Effect.AsheDynamiteBurningParticleEffect, Color.Aqua, sprintPos, 0.03, EffectRev.VisibleToPositionRadiusAndColor);
 }
 
+rule: 'Setup '
+Event.OngoingPlayer
+{
+   Wait(1);
+   visionTiles[visionEffect.Length] = 1000;
+   visionTiles = MappedArray(visionTiles, 1);
+}
 
-define playerVisibilityArray(Player p = EventPlayer()): TeamOf(p) == Team.Team1 ? Visible_Team1 : Visible_Team2;
-define playerVisibilityArray_distance(Player p = EventPlayer()): TeamOf(p) == Team.Team1 ? Visible_Team1_distance : Visible_Team2_distance;
+define playerVisibilityArray: TeamOf(EventPlayer()) == Team.Team1 ? Visible_Team1 : Visible_Team2;
+define playerVisibilityArray_distance: TeamOf(EventPlayer()) == Team.Team1 ? Visible_Team1_distance : Visible_Team2_distance;
 
-define optimized2dDistance(Vector a, Vector b, Vector mask): MagnitudeOf((b - a)*mask);
-
-define visionDistanceFromArrayElement(Number i, Number j): DistanceBetween(visionEffectPosition(i,j, EventPlayer())*Vector(1,0,1), ArrayElement()*Vector(1,0,1));
-
-// rule: "update Vision"
-// Event.OngoingPlayer
-// if(!IsDummyBot())
-// if(isSetup())
-// {
-//     Vector[] test = MappedArray(playerVisibilityArray(), ArrayElement() - cameraPosition() + Up() * playerVisibilityArray_distance()[CurrentArrayIndex()]);
-//     test = FilteredArray(test, 
-//         XOf(ArrayElement()) <= visionEffectWidth*visionScale+xOffset 
-//         && XOf(ArrayElement()) >= xOffset
-//         && ZOf(ArrayElement()) <= visionEffectHeight*visionScale+zOffset
-//         && ZOf(ArrayElement()) >= zOffset
-//     );
-//     visionTiles = [];
-//     visionTiles[visionEffectHeight*visionEffectWidth+1] = 0;
-//     foreach(Vector v in test){
-//         visionTiles = MappedArray(visionTiles, Max(v.Y/DistanceBetween(v * Vector(1, 0, 1),  visionEffectPosition_index(CurrentArrayIndex()) * Vector(0, 1, 0)), ArrayElement()));
-//     }
-//     // for (define i = 0; visionEffectWidth; 1) {
-//     //     for(define j = 0; 6; 1){
-//     //         define index! = EvaluateOnce(i*j);
-//     //         visionTiles[index] = SortedArray(playerVisibilityArray(), playerVisibilityArray_distance()[CurrentArrayIndex()]/visionDistanceFromArrayElement(i,j));
-//     //         forceLog(toString(visionTiles[index]));
-//     //         visionTiles[index] = visionTiles[index][0];
-//     //     }
-//     // }
-//     Wait(0.064);
-//     Loop();
-// }
+rule: "update Vision"
+Event.OngoingPlayer
+if(!IsDummyBot())
+if(isSetup())
+{
+    Vector[] test = MappedArray(playerVisibilityArray, (ArrayElement() - cameraPosition()) * Vector(1, 0, 1) + Up() * playerVisibilityArray_distance[CurrentArrayIndex()]);
+    test = FilteredArray(test, 
+        XOf(ArrayElement()) >= -30
+        && XOf(ArrayElement()) <= 30
+        && ZOf(ArrayElement()) >= -5
+        && ZOf(ArrayElement()) <= 20
+    );
+    visionTiles = MappedArray(visionTiles,1);
+    foreach(Vector v in test){
+        visionTiles = MappedArray(visionTiles, Min(DistanceBetween(v * Vector(1, 0, 1),  visionEffect[CurrentArrayIndex()]* Vector(1, 0, 1))/v.Y, ArrayElement()));
+    }
+    // for (define i = 0; visionEffectWidth; 1) {
+    //     for(define j = 0; 6; 1){
+    //         define index! = EvaluateOnce(i*j);
+    //         visionTiles[index] = SortedArray(playerVisibilityArray(), playerVisibilityArray_distance()[CurrentArrayIndex()]/visionDistanceFromArrayElement(i,j));
+    //         forceLog(toString(visionTiles[index]));
+    //         visionTiles[index] = visionTiles[index][0];
+    //     }
+    // }
+    Wait(0.064);
+    Loop();
+}
