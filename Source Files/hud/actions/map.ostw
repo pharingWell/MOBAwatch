@@ -9,12 +9,13 @@ void mapInside_setCoord(){
     setState(clamp(cursorX() - getRegion().x, minX, maxX));
     setState2(clamp(cursorY() - getRegion().y - PANEL_Map.height/2, minY, maxY));
     define newPosition! = Vector(getRegion().state * xMult, 0, getRegion().state2 * yMult);
-    if(DistanceBetween(newPosition, cameraPosition())<50){
-        cameraPos = newPosition;
-        ChaseVariableAtRate(cameraPos, newPosition, 10, RateChaseReevaluation.DestinationAndRate);
-    }else{
-        teleportCamera(newPosition);
-    }
+    teleportCamera(newPosition);
+    // if(DistanceBetween(newPosition, renderPosition)<50){
+    //     renderPosition = newPosition;
+    //     ChaseVariableAtRate(cameraPos, newPosition, 10, RateChaseReevaluation.DestinationAndRate);
+    // }else{
+        
+    // }
     
 }
 

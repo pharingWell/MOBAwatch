@@ -26,7 +26,7 @@
 
 # camera
     
-    Number CAMERA_INTERP: 40;
+    Number CAMERA_INTERP: 0;
 
 # buttons
 

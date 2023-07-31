@@ -13,7 +13,6 @@ define visionEffectSlopeShiftScalar: 2.25;
 define visionScale: 4;
 define visionEffect_getYfromIndex(Number index): RoundToInteger((SquareRoot(8*index + 121)-11)/2 , Rounding.Down);
 define visionEffectPosition_index(Number index):  Vector((index % visionEffectWidth)*visionScale+xOffset,3,RoundToInteger(index/visionEffectWidth, Rounding.Up)*visionScale+zOffset);
-//cameraPosition(p)
 define visionEffectPosition(Number i, Number j, Player p = LocalPlayer()): Vector()+EvaluateOnce(Vector((i-(visionEffectWidth-visionEffectHeight+j+visionEffectSlopeShift)/2)*visionScale+xOffset,0,(j+visionEffectSlopeShift*visionEffectSlopeShiftScalar-(visionEffectHeight/2))*visionScale+zOffset));
 rule: 'Vision'
 {

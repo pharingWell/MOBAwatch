@@ -2,18 +2,40 @@ import "../Header Files/vision.del";
 import "../Header Files/model/player_controller.del";
 import "../Header Files/ui.del";
 
-globalvar Vector[] visionEffect = [Vector(-16, 0, -3), Vector(-12, 0, -3), Vector(-8, 0, -3), Vector(-4, 0, -3), Vector(0, 0, -3), Vector(4, 0, -3), Vector(8, 0, -3), Vector(12, 0, -3), Vector(-18, 0, 1), Vector(-14, 0, 1), Vector(-10, 0, 1), Vector(-6, 0, 1), Vector(-2, 0, 1), Vector(2, 0, 1), Vector(6, 0, 1), Vector(10, 0, 1), Vector(14, 0, 1), Vector(-20, 0, 5), Vector(-16, 0, 5), Vector(-12, 0, 5), Vector(-8, 0, 5), Vector(-4, 0, 5), Vector(0, 0, 5), Vector(4, 0, 5), Vector(8, 0, 5), Vector(12, 0, 5), Vector(16, 0, 5), Vector(-22, 0, 9), Vector(-18, 0, 9), Vector(-14, 0, 9), Vector(-10, 0, 9), Vector(-6, 0, 9), Vector(-2, 0, 9), Vector(2, 0, 9), Vector(6, 0, 9), Vector(10, 0, 9), Vector(14, 0, 9), Vector(18, 0, 9), Vector(-24, 0, 13), Vector(-20, 0, 13), Vector(-16, 0, 13), Vector(-12, 0, 13), Vector(-8, 0, 13), Vector(-4, 0, 13), Vector(0, 0, 13), Vector(4, 0, 13), Vector(8, 0, 13), Vector(12, 0, 13), Vector(16, 0, 13), Vector(20, 0, 13), Vector(-26, 0, 17), Vector(-22, 0, 17), Vector(-18, 0, 17), Vector(-14, 0, 17), Vector(-10, 0, 17), Vector(-6, 0, 17), Vector(-2, 0, 17), Vector(2, 0, 17), Vector(6, 0, 17), Vector(10, 0, 17), Vector(14, 0, 17), Vector(18, 0, 17), Vector(22, 0, 17)]; //-30, 30, -5, 20
-define visionPosition(Number index): visionEffect[EvaluateOnce(index)] + Vector(0,3,-2)+ cameraPosition(LocalPlayer());
+
+define visionOffset:  Vector(0,3,-2);
+define visionPosition(Number index, Player p = LocalPlayer()): EvaluateOnce(visionEffect[index] + visionOffset) +  UpdateEveryFrame(p.renderPosition);
 rule: 'Create Vision Effects'
 Event.OngoingGlobal
 {
+    printToScreen(cameraPosition(LocalPlayer()));
     Wait(3);
+    define target! = 6;
+    define x! = 0;
+    define y! = 0;
+    define visionEffectColor: Color.Gray;
+    for (define i = 0; i < 15; i++)
+    {
+        CreateEffect(IsTrueForAll(LocalPlayer().visionTiles, ArrayElement() >= 1)  || LocalPlayer().loading ? LocalPlayer() : null, Effect.Sphere, Color.Black, UpdateEveryFrame(cameraPosition(LocalPlayer()))+Vector(0,-12-EvaluateOnce(i)/15,2), 20, EffectRev.VisibleToPositionAndRadius);
+    }
+    
     for(Number i! = 0; i < visionEffect.Length; i++){
-        CreateEffect(LocalPlayer().visionTiles[EvaluateOnce(i)] > 0.5 ? controllers : null, Effect.Cloud, CustomColor(255/63*i, 255, 255),  visionPosition(i), 1*Min(1,LocalPlayer().visionTiles[EvaluateOnce(i)]), EffectRev.VisibleToPositionAndRadius);
-        // Wait(0.064);
+        define visionEffectVisibility: LocalPlayer().visionTiles[EvaluateOnce(i)] >= 0.5 ? controllers : null;
+        define effectArray: [Effect.AnaBioticGrenadeIncreasedHealingEffect, Effect.AnaBioticGrenadeNoHealingEffect, Effect.AnaNanoBoostedEffect, Effect.AnaSleepingEffect, Effect.AsheDynamiteBurningMaterialEffect, Effect.AsheDynamiteBurningParticleEffect, Effect.BadAura, Effect.BaptisteImmortalityFieldProtectedEffect, Effect.CassidyFlashbangStunnedEffect, Effect.Cloud, Effect.EchoCloningEffect, Effect.GoodAura, Effect.HealTargetActiveEffect, Effect.HealTargetEffect, Effect.LightShaft, Effect.LucioSoundBarrierProtectedEffect, Effect.MeiFrozenEffect, Effect.MercyDamageBoostedEffect, Effect.Orb, Effect.ReaperWraithFormEffect, Effect.Ring, Effect.SigmaGraviticFluxTargetEffect, Effect.Soldier76SprintingEffect, Effect.SombraHackedLoopingEffect, Effect.Sparkles, Effect.Sphere, Effect.TorbjornOverloadingEffect, Effect.WidowmakerVenomMineTargetEffect, Effect.WinstonPrimalRageEffect, Effect.WinstonTeslaCannonTargetEffect, Effect.WreckingBallAdaptiveShieldTargetEffect, Effect.WreckingBallAdaptiveShieldTargetEffect, Effect.ZenyattaOrbOfDiscordTargetEffect];
+
+        //CustomColor(255/(target+y)*x, 200, 255/4*y)
+        CreateEffect(visionEffectVisibility, Effect.BadAura, visionEffectColor, visionPosition(i), 4, EffectRev.VisibleToPositionAndRadius); //*Min(1,LocalPlayer().visionTiles[EvaluateOnce(i)])
+        //CreateProjectileEffect(visionEffectVisibility, ProjectileType.BaptisteBioticLauncher, LocalPlayer(), visionPosition(i), Down(), 0.5, ProjectileEffectReeval.VisibleToPositionDirectionAndSize);
+        Wait(0.064);
         // CreateInWorldText(LocalPlayer(), i,  visionPosition(i), 1, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Color.Black);
         // Wait(0.064);
+        x++;
+        if(x >= target + y){
+            x = 0;
+            y++;
+        }
     }
+    CreateEffect(LocalPlayer(), Effect.Sphere, Color.Aqua, Visible_Team1[0], 1, EffectRev.VisibleTo);
 }
 
 rule: 'Setup '
@@ -32,12 +54,12 @@ Event.OngoingPlayer
 if(!IsDummyBot())
 if(isSetup())
 {
-    Vector[] test = MappedArray(playerVisibilityArray, (ArrayElement() - cameraPosition()) * Vector(1, 0, 1) + Up() * playerVisibilityArray_distance[CurrentArrayIndex()]);
+    Vector[] test = MappedArray(playerVisibilityArray, (ArrayElement() - visionOffset - renderPosition) * Vector(1, 0, 1) + Up() * playerVisibilityArray_distance[CurrentArrayIndex()]);
     test = FilteredArray(test, 
-        XOf(ArrayElement()) >= -30
-        && XOf(ArrayElement()) <= 30
-        && ZOf(ArrayElement()) >= -5
-        && ZOf(ArrayElement()) <= 20
+        XOf(ArrayElement()) >= -30-YOf(ArrayElement())
+        && XOf(ArrayElement()) <= 30+YOf(ArrayElement())
+        && ZOf(ArrayElement()) >= -5-YOf(ArrayElement())
+        && ZOf(ArrayElement()) <= 20+YOf(ArrayElement())
     );
     visionTiles = MappedArray(visionTiles,1);
     foreach(Vector v in test){
@@ -51,6 +73,6 @@ if(isSetup())
     //         visionTiles[index] = visionTiles[index][0];
     //     }
     // }
-    Wait(0.064);
+    WaitUntil(renderPosition != EvaluateOnce(renderPosition), 0.064); //causes it to instally reevaluate when teleporting
     Loop();
 }

@@ -6,9 +6,9 @@ define FORWARD_VECTOR: Vector(0, VAL2, VAL1);
 define RIGHT_VECTOR: Vector(1,0,0);
 define UP_VECTOR: Vector(0,VAL1,-VAL2);
 //playervar Number Setting_CAMERA_DISTANCE = 12;
-define Setting_CAMERA_DISTANCE : 12;
-playervar Vector cameraPos = Vector(0,0,0);
-
+define Setting_CAMERA_DISTANCE : 12; //12
+playervar Vector cameraPos = Vector(0,0,1);
+playervar Vector renderPosition = Vector(0,0,1);
 define cursorX(Player p = EventPlayer()): HorizontalFacingAngleOf(p);
 define cursorY(Player p = EventPlayer()): -VerticalFacingAngleOf(p);
 
@@ -20,10 +20,11 @@ playervar Vector chasedCursorPosition!;
 playervar Boolean isCameraLocked = false;
 playervar Boolean isMouseMoving;
 
+playervar Boolean loading!;
+
 Vector cameraEye(in Player p = EventPlayer()): FORWARD_VECTOR * -Setting_CAMERA_DISTANCE + cameraPosition(p);
 
 Vector cameraPosition(in Player p = EventPlayer()): p.isCameraLocked && !p.viewingMap ? UpdateEveryFrame(getPuppet(p)) : p.cameraPos;
-
 define SCALE: 100;
 Vector uiPos(in Player p, in Number x, in Number y): (cameraEye(p) +  FORWARD_VECTOR * SCALE+ RIGHT_VECTOR * x + UP_VECTOR * y);
 

@@ -29,7 +29,7 @@ if(EventPlayer().async_workaround_updateCells == true)
 {
     EventPlayer().async_workaround_updateCells = false;
     Cell[] observedCells;
-    getAllCellsOnScreen(observedCells,EventPlayer().cameraPos);
+    getAllCellsOnScreen(observedCells,renderPosition);
     Cell[] noLongerObservedCells! = FilteredArray(EventPlayer().playerCells, !ArrayContains(observedCells,ArrayElement()));
     Cell[] newlyObservedCells! = FilteredArray(observedCells, !ArrayContains(EventPlayer().playerCells,ArrayElement()));
     if(noLongerObservedCells.Length > 0){

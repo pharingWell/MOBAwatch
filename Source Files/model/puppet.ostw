@@ -49,13 +49,23 @@ if(isSetup())
     Wait();
     health = maxHealth/2;
     SetInvisible(EventPlayer(), InvisibleTo.All);
+    setPlayerInfo(EPlayerInfo.VISIBLE, false);
+    updateHealthBar();
     while(true){
-        PressButton(EventPlayer(), Button.PrimaryFire);
-        SetAmmo(EventPlayer(), 0, 100);
+        if(HeroOf() == Hero.Ana){
+            PressButton(EventPlayer(), Button.PrimaryFire);
+            Wait();
+            SetAmmo(EventPlayer(), 0, 100);
+        }else{
+            define puppetAbilitybutton: Button.Ability2;
+            PressButton(EventPlayer(), puppetAbilitybutton);
+            Wait();
+            SetAbilityCooldown(EventPlayer(),puppetAbilitybutton, 0);
+        }
         Wait();
     }
 
-    updateHealthBar();
+    
     // while(true){
     //     //StartThrottleInDirection(EventPlayer(), Left(), 200/maxHealth, Relative.ToPlayer, ThrottleBehavior.ReplaceExistingThrottle, ThrottleRev.None);
     //     while(health < maxHealth){

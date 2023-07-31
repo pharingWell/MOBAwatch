@@ -25,13 +25,12 @@ if(EventPlayer() == HostPlayer())
 
 rule: 'Debug Tings'
 {
-    printToScreen("Resources R  emaining: "+ClassMemoryRemaining(),Location.Right);
+    printToScreen("Resources Remaining: "+ClassMemoryRemaining(),Location.Right);
     printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
     serverLoad();
     printToScreen($"{Vector(cursorX(LocalPlayer()), cursorY(LocalPlayer()))}");
    // printToScreen($"{toString(LocalPlayer().hudIdList)}, {LocalPlayer().hudAction.actionLocation.getVect()}, {EString_HudInteractionType[LocalPlayer().hudAction.action]}");
-    printToScreen(toString_extended(LocalPlayer().visionTiles));
-    printToScreen(EString_HudInteractionType[LocalPlayer().hudAction.action]);
+    printToScreen(EString_HudInteractionType[LocalPlayer(). hudAction.action]);
     printToScreen($"{getRegion(LocalPlayer(), mapIds[0]).state},{getRegion(LocalPlayer(), mapIds[0]).state2}");
     printToScreen($"LEN: {LocalPlayer().hudIdList.Length}");
     printToScreen(LocalPlayer().activeHudId);
@@ -40,16 +39,16 @@ rule: 'Debug Tings'
     // printToScreen("Interact to toggle rendered objects: "+(controllers.Contains(LocalPlayer()) ? "On" : "Off"),Location.Top);
     // printToScreen_noRev("Left click to move the camera",Location.Top);
     //printToScreen(toString(MappedArray(LocalPlayer().playerCells,(<Cell>ArrayElement()).id)));
-    //printToScreen("current cell:" + toString_extended(LocalPlayer().playerCells[1].dynamic));
+    //printToScreen("current cell:" + toString_extended(LocalPlayer().playerCells[1].dynamic)); 
     //printToS*een("ends:\n\n" + toString_extended(LocalPlayer().edgeEnds));
     //Mapp  edArray(grid.cells,$"{CurrentArrayIndex()}: {CountOf((<Cell>ArrayElement()).statics)}"))s
     //printToScreen("rendered creatures: " + toString_extended(LocalPlayer().renderCreatures.Slice(1,LocalPlayer().renderCreatures.Length)));
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Aqua,TEAM1_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor) ;
     CreateEffect(LocalPlayer(),Effect.Sphere,Color.Red,TEAM2_MINION_SPAWN,0.3,EffectRev.VisibleToPositionRadiusAndColor);
-    CreateEffect(LocalPlayer(),Effect.Sphere,Color.White,LocalPlayer().cameraPos,0.1,EffectRev.VisibleToPositionRadiusAndColor);
+    CreateEffect(LocalPlayer(),Effect.Sphere,Color.White,LocalPlayer().renderPosition,0.1,EffectRev.VisibleToPositionRadiusAndColor);
 
     CreateDummyBot(Hero.Ana,Team.Team2,PLAYER_COUNT,Vector(0,0,0), Vector(0,0,0));
-    CreateDummyBot(Hero.Roadhog,Team.Team1,PLAYER_COUNT,Vector(0,0,3), Vector(0,0,3));
+    CreateDummyBot(Hero.Reinhardt,Team.Team1,PLAYER_COUNT,Vector(0,0,3), Vector(0,0,3));
 }
     
 // Button CREATE_MINION : Button.Reload;
@@ -74,7 +73,7 @@ if(IsButtonHeld(EventPlayer(), TOGGLE_CONTROLLER))
         controllers[EventPlayer().ID] = EventPlayer();
     }
     WaitUntil(IsButtonHeld(EventPlayer(), TOGGLE_CONTROLLER)==false,999);
-    StopCamera();   
+    //StopCamera();   
     DisableMovementCollisionWithEnvironment(HostPlayer(), true);
 }
 

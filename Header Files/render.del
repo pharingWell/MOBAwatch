@@ -3,7 +3,6 @@ import "creature.del";
 import "projectile.del";
 import "../debug.del";
 import "../const.del";
-
 playervar Cell[] playerCells = [<Cell>(-1)];
 playervar Vector[] edgeStarts;
 playervar Vector[] edgeEnds;
