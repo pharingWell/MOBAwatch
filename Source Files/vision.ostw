@@ -13,6 +13,7 @@ Event.OngoingGlobal
     define target! = 6;
     define x! = 0;
     define y! = 0;
+    
     define visionEffectColor: Color.Gray;
     for (define i = 0; i < 15; i++)
     {
