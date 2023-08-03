@@ -36,9 +36,10 @@ if(isSetup())
     define BarColor: shouldBeVisible ? Color.White : null; 
     define bufferChars: StringSlice("＿＿＿", 0, getPlayerInfo(EPlayerInfo.NAME_BUFFER_CHARS));
     define iconSize: 1.2;
-    define mapIconVisiblity: startedMoving ? null : LocalPlayer();
+    define mapIconVisiblity: !startedMoving ? LocalPlayer() : null;
+    //define mapIconVisiblity:  !startedMoving) ? LocalPlayer() : null;
     CreateInWorldText(mapIconVisiblity, "▒", mapCoordShift(0.12), iconSize*1.2, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, teamSpecificColor);
-    CreateInWorldText(mapIconVisiblity, HeroIconString(HeroOf()),mapCoordShift(), 1, Clipping.DoNotClip, InworldTextRev.VisibleToAndPosition, Color.White);
+    CreateInWorldText(mapIconVisiblity, HeroIconString(HeroOf()),mapCoordShift(), 1, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor,  shouldBeVisible ? Color.White : null);
     
     CreateInWorldText(visibility, healthbarVariables[EHealthBarVars.FINAL_String], healthBarSocket, 0.9, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, BarColor, Spectators.DefaultVisibility);
     Wait();
@@ -48,7 +49,6 @@ if(isSetup())
     maxHealth = MaxHealth();
     Wait();
     health = maxHealth/2;
-    SetInvisible(EventPlayer(), InvisibleTo.All);
     setPlayerInfo(EPlayerInfo.VISIBLE, false);
     updateHealthBar();
     while(true){
@@ -95,3 +95,16 @@ if(READY)
     setPlayerInfo(EPlayerInfo.VISIBLE, true);
 }
 
+rule: 'Hide'
+Event.OngoingPlayer
+if(IsDummyBot())
+if(READY)
+{
+    WaitUntil(getPlayerInfo(EPlayerInfo.VISIBLE) != EvaluateOnce(getPlayerInfo(EPlayerInfo.VISIBLE)), 99999);
+    if(getPlayerInfo(EPlayerInfo.VISIBLE)){
+        SetInvisible(EventPlayer(), InvisibleTo.None);
+    }else{
+        SetInvisible(EventPlayer(), InvisibleTo.Enemies);
+    }
+    Loop();
+}

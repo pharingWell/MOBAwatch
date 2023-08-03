@@ -13,8 +13,8 @@ void gridConstructor() "Grid Constructor"
     for(define j! = 0; j < GRID_COLUMNS * GRID_ROWS; j++){
         
         Number x: j%GRID_COLUMNS;
-        Number y: RoundToInteger(j/GRID_COLUMNS, Rounding.Down);
-        grid.cells[j] = new Cell(x,y);
+        Number z: RoundToInteger(j/GRID_COLUMNS, Rounding.Down);
+        grid.cells[j] = new Cell(x,z);
     //DEBUG
         // 
         // Creature c! = new Creature();
@@ -23,7 +23,7 @@ void gridConstructor() "Grid Constructor"
         // c.visibility = true;
         // addEntityToCell(grid.cells[j],c);
         Statics s! = new Statics();
-        Vector bottomCorner! = GRID_BASE + Vector(CELL_WIDTH * grid.cells[j].x, 0, CELL_HEIGHT * grid.cells[j].y);
+        Vector bottomCorner! = GRID_BASE + Vector(CELL_WIDTH * grid.cells[j].x, 0, CELL_HEIGHT * grid.cells[j].z);
         s.points = [Vector(0,0,0),Vector(CELL_WIDTH,0,CELL_HEIGHT),Vector(0,0,CELL_HEIGHT),Vector(CELL_WIDTH,0,0),Vector(0,0,0),Vector(CELL_WIDTH,0,0),Vector(0,0,0),Vector(0,0,CELL_HEIGHT)]; //,Vector(CELL_WIDTH,0,0),Vector(CELL_WIDTH,0,CELL_HEIGHT),Vector(0,0,CELL_HEIGHT),Vector(CELL_WIDTH,0,CELL_HEIGHT)
         s.position = bottomCorner;
         grid.cells[j].statics += s;
