@@ -32,7 +32,7 @@ private void createMinion_perTeam(in Team team, in EMinionType type){
     Cell_fromGridCoord(temp, minion.getCellCoord().X, minion.getCellCoord().Z);
     //Cell_byPosition(temp, minion.getPosition());
     addEntityToCell(temp, minion);
-    entities.ModAppend(minion);
+   // entities.ModAppend(minion);
 }
 
 

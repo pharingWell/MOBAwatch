@@ -32,5 +32,5 @@ String toString(in Any[] arr): $"{arr[0]}, {arr[1]}, {arr[2]}, {arr[3]}, {arr[4]
 String toString_extended(in Any[] arr): $"{arr[0]}, {arr[1]}, {arr[2]}, {arr[3]}, {arr[4]}, {arr[5]}, {arr[6]}, {arr[7]}, {arr[8]}, {arr[9]}, {arr[10]}, {arr[11]}, {arr[12]}, {arr[13]}, {arr[14]}, {arr[15]}, {arr[16]}, {arr[17]}, {arr[18]}, {arr[19]}, {arr[20]}, {arr[21]}, {arr[22]}, {arr[23]}, {arr[24]}, {arr[25]}, {arr[26]}, {arr[27]}, {arr[28]}, {arr[29]},".Slice(0,(textLength(arr)+2)*arr.Length);
 
 void serverLoad(){
-    printToScreen($"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}");
+    CreateHudText(LocalPlayer(), $"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}", null, null, Location.Top, 1, Color.White, null, null, HudTextRev.VisibleToAndString);
 }

@@ -12,30 +12,22 @@ rule: 'Setup Phase'
     gameState[EGamePhase.LOADING] = ELoadingState.RENDER_SETUP;
     WaitUntil(gameState[EGamePhase.LOADING] >= ELoadingState.FINISHED, 9999);
     gamePhase = EGamePhase.BATTLE;
-    newWave();
     //printToScreen($"{CountOf(tickOffsetSorted)}",Location.Left,true);
-}
-rule: 'Setup Player'
-Event.OngoingPlayer
-if(EventPlayer() == HostPlayer())
-{
-    WaitUntil(READY, 999);
-    ForcePlayerHero(EventPlayer(),Hero.Ana); 
-    DisableHeroHud();
 }
 
 rule: 'Debug Tings'
 {
+    serverLoad();
     printToScreen("Resources Remaining: "+ClassMemoryRemaining(),Location.Right);
-    printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
-   // printToScreen($"{Vector(cursorX(LocalPlayer()), cursorY(LocalPlayer()))}");
+    //printToScreen(<String>LocalPlayer().cameraPos,Location.Right);
+   printToScreen($"{Vector(cursorX(LocalPlayer()), cursorY(LocalPlayer()))}");
    printToScreen($"{toString(Entity_list)}:{Entity_list.Length}");
-    printToScreen($"{toString(Entity_cellCoord)}:{Entity_cellCoord.Length}");
+    printToScreen($"{toString(Entity_cellCoords)}:{Entity_cellCoords.Length}");
     printToScreen($"{toString(Entity_position)}:{Entity_position.Length}");
     printToScreen(d);
     printToScreen(TotalTimeElapsed()%1);
    // printToScreen($"{toString(LocalPlayer().hudIdList)}, {LocalPlayer().hudAction.actionLocation.getVect()}, {EString_HudInteractionType[LocalPlayer().hudAction.action]}");
-    // printToScreen(EString_HudInteractionType[LocalPlayer(). hudAction.action]);
+    // printToScreen(EString_HudInteractionType[Loca    Player(). hudAction.action]);
     // printToScreen($"{getRegion(LocalPlayer(), mapIds[0]).state},{getRegion(LocalPlayer(), mapIds[0]).state2}");
     // printToScreen($"LEN: {LocalPlayer().hudIdList.Length}");
     // printToScreen(LocalPlayer().activeHudId);

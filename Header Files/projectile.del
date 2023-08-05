@@ -1,14 +1,21 @@
 import "entity.del";
 import "structures.del";
-
+# boolean isStructure, CreaturePlayer (Boolean isPlayer, Entity creatureRef, Player playerRef), Structure structureSource
 struct ProjectileSource{
-    Boolean isStructure;
-    CreaturePlayer creaturePlayerSource;
-    Structure structureSource;
+    public Boolean isStructure;
+    public CreaturePlayer creaturePlayerSource;
+    public Structure structureSource;
 }
 
-class Projectile : Entity{
-    
+class Projectile : Entity
+{
     public EEntitySubclass subclass: EEntitySubclass.PROJECTILE;
-    Any render; //stores the effect id of the projectile (or projectile effect id)
+    ProjectileSource source;
+    public Any render; //stores the effect id of the projectile (or projectile effect id)
+    
+    public constructor(ProjectileSource source){
+        entity_constructor();
+        this.source = source;
+    }
+    
 }

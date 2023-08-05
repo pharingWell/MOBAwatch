@@ -54,8 +54,9 @@ if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 
 //ADD
 
-void addEntityToViewer(
-    ref Any[] renderBuffer, ref Number[] renderIndexContainer, 
+//, ref Number[] renderIndexContainer
+void addEntityToViewer( 
+    ref Any[] renderBuffer, 
     in Number ID, in Cell cell, in Entity e
 ){      
     if(e == null){
@@ -65,16 +66,16 @@ void addEntityToViewer(
     while(renderBuffer[indexOfFirstNull] != null){
         indexOfFirstNull++;
     }
-    renderIndexContainer += indexOfFirstNull;
-    e.viewerIndex[ID] = indexOfFirstNull;
+    //renderIndexContainer += indexOfFirstNull;
+    //e.viewerIndex[ID] = indexOfFirstNull;
     renderBuffer[indexOfFirstNull] = e;
 }
-
+//EventPlayer().creatureRenderIndexes[cell.id]
 void addEntityToViewer(Cell cell, Entity e){
     if(e.subclass == EEntitySubclass.CREATURE){
-        addEntityToViewer(EventPlayer().renderCreatures,EventPlayer().creatureRenderIndexes[cell.id],EventPlayer().ID,cell,e);
+        addEntityToViewer(EventPlayer().renderCreatures,EventPlayer().ID,cell,e);
     }else if(e.subclass == EEntitySubclass.PROJECTILE){
-        addEntityToViewer(EventPlayer().renderProjectiles,EventPlayer().projectileRenderIndexes[cell.id],EventPlayer().ID,cell,e);
+        addEntityToViewer(EventPlayer().renderProjectiles,EventPlayer().ID,cell,e);
     } 
 }
 
@@ -83,12 +84,12 @@ void addEntityToCell(Cell cell, Entity e) "Add Entity To Cell"
     cell.dynamic.ModAppend(e);
     foreach(Player player! in cell.viewers){
         if(e.subclass == EEntitySubclass.CREATURE){
-            addEntityToViewer(player.renderCreatures,player.creatureRenderIndexes[cell.id],player.ID, cell, e);
+            addEntityToViewer(player.renderCreatures,player.ID, cell, e);
         }else if(e.subclass == EEntitySubclass.PROJECTILE){
-            addEntityToViewer(player.renderProjectiles,player.projectileRenderIndexes[cell.id],player.ID, cell, e);
+            addEntityToViewer(player.renderProjectiles,player.ID, cell, e);
         }
     }
-    e.cell = cell;
+    e.setCellCoord(cell.x, cell.z);
 }
 
 void addAllStaticsInCellToViewer(in Player player, in Cell cell){
@@ -110,18 +111,18 @@ void addAllStaticsInCellToViewer(in Player player, in Cell cell){
 }
 
 //REMOVE
-
+//, ref Number[][] renderIndexContainer
 private void removeEntityFromViewer(
-    ref Any[] renderBuffer, ref Number[][] renderIndexContainer,
+    ref Any[] renderBuffer,
     in Number ID, in Cell cell, in Entity e
 ){
-    Number indexOfRenderData: e.viewerIndex[ID];
-    renderIndexContainer[cell.id] -= indexOfRenderData;
-    renderBuffer[indexOfRenderData] = null;
-    e.viewerIndex[ID] = null; //must be last
+    // Number indexOfRenderData: e.viewerIndex[ID];
+    // renderIndexContainer[cell.id] -= indexOfRenderData;
+    renderBuffer[renderBuffer.IndexOf(e)] = null;
+    //e.viewerIndex[ID] = null; //must be last
 }
 
-todo: remove entity from cell
+//todo: remove entity from cell
 
 private void removeAllStaticsInCellFromViewer(in Player player, in Cell cell){
     for(define i! = 0; i < player.staticsRenderIndexes[cell.id].Length; i++){
@@ -130,6 +131,17 @@ private void removeAllStaticsInCellFromViewer(in Player player, in Cell cell){
         player.edgeEnds[index] = null;
     }
     player.staticsRenderIndexes[cell.id] = null;
+}
+
+void removeEntityFromCell(Cell cell, Entity entity){
+    cell.dynamic -= entity;
+    foreach(Player p! in cell.viewers){
+        if(entity.subclass == EEntitySubclass.CREATURE){
+            removeEntityFromViewer(p.renderCreatures,p.ID,cell,entity);
+        }else if(entity.subclass == EEntitySubclass.PROJECTILE){
+            removeEntityFromViewer(p.renderProjectiles,p.ID,cell,entity);
+        }
+    }
 }
 
 //MOVE
@@ -149,31 +161,36 @@ void moveEntityBetweenCells(Entity e, Cell from, Cell to) "move Entity between C
     }
     foreach(Player p! in addEntityTo){
         if(e.subclass == EEntitySubclass.CREATURE){
-            addEntityToViewer(p.renderCreatures,p.creatureRenderIndexes[to.id],p.ID,to,e);
+            addEntityToViewer(p.renderCreatures,p.ID,to,e);
         }else if(e.subclass == EEntitySubclass.PROJECTILE){
-            addEntityToViewer(p.renderProjectiles,p.projectileRenderIndexes[to.id],p.ID,to,e);
+            addEntityToViewer(p.renderProjectiles,p.ID,to,e);
         }
     }
-    foreach(Player p! in moveEntityBetween){
-        Number index: e.viewerIndex[p.ID];
-        if(e.subclass == EEntitySubclass.CREATURE){
-            p.creatureRenderIndexes[from.id] -= index;
-            p.creatureRenderIndexes[to.id] += index;
-        }else if(e.subclass == EEntitySubclass.PROJECTILE){
-            p.projectileRenderIndexes[from.id] -= index;
-            p.projectileRenderIndexes[to.id] += index;
-        }
-    }
+    // foreach(Player p! in moveEntityBetween){
+    //     Number index: e.viewerIndex[p.ID];
+    //     if(e.subclass == EEntitySubclass.CREATURE){
+    //         p.creatureRenderIndexes[from.id] -= index;
+    //         p.creatureRenderIndexes[to.id] += index;
+    //     }else if(e.subclass == EEntitySubclass.PROJECTILE){
+    //         p.projectileRenderIndexes[from.id] -= index;
+    //         p.projectileRenderIndexes[to.id] += index;
+    //     }
+    // }
     foreach(Player p! in removeEntityFrom){
         if(e.subclass == EEntitySubclass.CREATURE){
-            removeEntityFromViewer(p.renderCreatures,p.creatureRenderIndexes,p.ID,from,e);
+            removeEntityFromViewer(p.renderCreatures,p.ID,from,e);
         }else if(e.subclass == EEntitySubclass.PROJECTILE){
-            removeEntityFromViewer(p.renderProjectiles,p.projectileRenderIndexes,p.ID,from,e);
+            removeEntityFromViewer(p.renderProjectiles,p.ID,from,e);
         }
     }
     to.dynamic += e;
-    e.cell = to;
+    e.setCellCoord(to.x, to.z);
 }
 
 
 //Update cells is called async only and is thus in async.ostw 
+
+void updateEntityPosition(in Entity e){
+    e.setPosition(e.getPosition() + e.getVelocity() * (TotalTimeElapsed()-e.getTickOffset()));
+    e.setTickOffset(TotalTimeElapsed());
+}

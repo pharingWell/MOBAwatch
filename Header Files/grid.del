@@ -54,7 +54,7 @@ void Cell_fromGridCoord(ref Cell cellptr, in Number xcord, in Number zcord){
     }  
 }
 
-define Cell_fromGridCoord_unsafeInline(in Number xcord, in Number zcord): grid.cells[xcord + zcord * GRID_COLUMNS];
+Cell Cell_fromGridCoord_unsafeInline(in Number xcord, in Number zcord): grid.cells[xcord + zcord * GRID_COLUMNS];
 Number CoordX_byPosition_unsafeInline(in Vector inputPosition): RoundToInteger((inputPosition-GRID_BASE).X/CELL_WIDTH,Rounding.Down);
 Number CoordZ_byPosition_unsafeInline(in Vector inputPosition): RoundToInteger((inputPosition-GRID_BASE).Z/CELL_HEIGHT,Rounding.Down);
 Number TEAM1_MINION_SPAWN_COORDX: CoordX_byPosition_unsafeInline(TEAM1_MINION_SPAWN);

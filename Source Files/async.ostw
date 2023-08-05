@@ -37,9 +37,9 @@ if(EventPlayer().async_workaround_updateCells == true)
         removeAllStaticsInCellFromViewer(EventPlayer(),cell);
         foreach(Entity e! in cell.dynamic){
             if(e.subclass == EEntitySubclass.CREATURE){
-                removeEntityFromViewer(EventPlayer().renderCreatures,EventPlayer().creatureRenderIndexes,EventPlayer().ID,cell,e);
+                removeEntityFromViewer(EventPlayer().renderCreatures,EventPlayer().ID,cell,e);
             }else if(e.subclass == EEntitySubclass.PROJECTILE){
-                removeEntityFromViewer(EventPlayer().renderProjectiles,EventPlayer().projectileRenderIndexes,EventPlayer().ID,cell,e);
+                removeEntityFromViewer(EventPlayer().renderProjectiles,EventPlayer().ID,cell,e);
             }   
         }
         cell.viewers -= EventPlayer();
@@ -51,20 +51,20 @@ if(EventPlayer().async_workaround_updateCells == true)
              define cell: newlyObservedCells[i];
                 addAllStaticsInCellToViewer(EventPlayer(),cell);
                 cell.viewers += EventPlayer();
-                Number[] creatureRenderTemp = []; //EventPlayer().creatureRenderIndexes
-                Number[] projectileRenderTemp = []; //EventPlayer().projectileRenderIndexes
+                // Number[] creatureRenderTemp = []; //EventPlayer().creatureRenderIndexes
+                // Number[] projectileRenderTemp = []; //EventPlayer().projectileRenderIndexes
                 foreach(Entity e! in cell.dynamic){
                     if(e.subclass == EEntitySubclass.CREATURE){
-                        addEntityToViewer(EventPlayer().renderCreatures,creatureRenderTemp,EventPlayer().ID,cell,e);
+                        addEntityToViewer(EventPlayer().renderCreatures,EventPlayer().ID,cell,e);
                     }else if(e.subclass == EEntitySubclass.PROJECTILE){
-                        addEntityToViewer(EventPlayer().renderProjectiles,projectileRenderTemp,EventPlayer().ID,cell,e);
+                        addEntityToViewer(EventPlayer().renderProjectiles,EventPlayer().ID,cell,e);
                     }
                     else{
                         throwError({message: "can't add entity without subclass",source: "newly observed cells",severity: EErrorSeverity.ERROR});
                     }
                 }
-                EventPlayer().creatureRenderIndexes[cell.id] = creatureRenderTemp;
-                EventPlayer().projectileRenderIndexes[cell.id] = projectileRenderTemp;
+                // EventPlayer().creatureRenderIndexes[cell.id] = creatureRenderTemp;
+                // EventPlayer().projectileRenderIndexes[cell.id] = projectileRenderTemp;
                 if(i % CELLS_BEFORE_DELAY == 0){
                     Wait();
                 }

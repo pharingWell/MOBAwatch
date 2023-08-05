@@ -17,24 +17,16 @@ if(CountOf(Entity_list) > 0)
     Wait(0.064);
     Vector[] cellChange = MappedArray(Entity_position, Vector(XOf(ArrayElement()) > CELL_WIDTH ? 1 : XOf(ArrayElement()) < 0 ? -1 : 0, CurrentArrayIndex(), ZOf(ArrayElement()) > CELL_HEIGHT ? 1 : ZOf(ArrayElement()) < 0 ? -1 : 0));
     Entity_position = MappedArray(Entity_position, ArrayElement() - cellChange[CurrentArrayIndex()] * Vector(CELL_WIDTH, 0, CELL_HEIGHT));
-    Entity_cellCoord = MappedArray(Entity_cellCoord, ArrayElement() + cellChange[CurrentArrayIndex()] * Vector(1,0,1));
+    Entity_cellCoords = MappedArray(Entity_cellCoords, ArrayElement() + cellChange[CurrentArrayIndex()] * Vector(1,0,1));
     Vector[] chagedEntities = FilteredArray(cellChange, ArrayElement() * Vector(1,0,1) != Vector(0, 0, 0));
     Wait(0.064);
     foreach(Vector change! in chagedEntities){
         Entity entity! = Entity.getByIndex(change.Y);
-        Vector oldCellCoord! = Entity_cellCoord[change.Y] - change * Vector(1,0,1) ;
-        Vector newCellCoord! = Entity_cellCoord[change.Y];
+        Vector oldCellCoord! = Entity_cellCoords[change.Y] - change * Vector(1,0,1) ;
+        Vector newCellCoord! = Entity_cellCoords[change.Y];
         if(outOfCellBounds(newCellCoord.X, newCellCoord.Z)){
             //  throwError({message: $"Entity {entity} of type {entity.subclass} with change: {change} from {oldCellCoord} to {newCellCoord}", source: "entity loop", severity: EErrorSeverity.WARNING});
-            for(Number viewer = 0; viewer < PLAYER_COUNT*2; viewer++){
-                Player player! = PlayersInSlot(viewer % PLAYER_COUNT, viewer >= PLAYER_COUNT ? Team.Team1 : Team.Team2);
-                if(entity.subclass == EEntitySubclass.CREATURE){
-                    player.renderCreatures[entity.viewerIndex[viewer]] = 0;
-                }else if(entity.subclass == EEntitySubclass.PROJECTILE){
-                    player.renderProjectiles[entity.viewerIndex[viewer]] = 0;
-                }
-            }
-            
+            removeEntityFromCell(Cell_fromGridCoord_unsafeInline(entity.getCellCoord().X, entity.getCellCoord().Z), entity);
             entity.destroy();
             continue;
         }
@@ -42,10 +34,10 @@ if(CountOf(Entity_list) > 0)
         moveEntityBetweenCells(entity, Cell_fromGridCoord_unsafeInline(oldCellCoord.X, oldCellCoord.Z), Cell_fromGridCoord_unsafeInline(newCellCoord.X, newCellCoord.Z));
 
     }
-    Wait(0.064);
+    Wait(ENTITY_TICK);
     Loop();
 
-    //Entity_cellCoord = MappedArray(Entity_cellCoord, )
+    //Entity_cellCoords = MappedArray(Entity_cellCoords, )
     
     // foreach(Entity entity! in entities){ 
     //     // Number tick! =;

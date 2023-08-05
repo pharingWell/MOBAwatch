@@ -2,6 +2,7 @@ import "grid.del";
 //Class for any object that is dynamic
 //Grid works with entities 
 
+# Boolean isPlayer, Entity creatureRef, Player playerRef
 struct CreaturePlayer {
     public Boolean isPlayer;
     public Entity creatureRef;
@@ -17,14 +18,13 @@ globalvar Entity[] Entity_list; //list by index
 globalvar Vector[] Entity_position;
 globalvar Vector[] Entity_velocity;
 globalvar Vector[] Entity_tickOffset;
-globalvar Vector[] Entity_cellCoord;
+globalvar Vector[] Entity_cellCoords;
 globalvar Number d;
 class Entity{
     public Boolean visibility;
     private Number index;
     public Team team;
     public CreaturePlayer target;
-    public Cell cell;
     //Render:
     public Number[] viewerIndex;
     public void setPosition(in Vector position){
@@ -37,18 +37,18 @@ class Entity{
         Entity_tickOffset[this.index] = tickOffset;
     }
     public void setCellCoord(in Number xCoord, in Number zCoord){
-        Entity_cellCoord[this.index] = Vector(xCoord, 0, zCoord);
+        Entity_cellCoords[this.index] = Vector(xCoord, 0, zCoord);
     }
     public Vector getPosition(): Entity_position[this.index];
     public Vector getVelocity(): Entity_velocity[this.index];
     public Vector getTickOffset(): Entity_tickOffset[this.index];
-    public Vector getCellCoord(): Entity_cellCoord[this.index];
+    public Vector getCellCoord(): Entity_cellCoords[this.index];
     public virtual EEntitySubclass subclass: EEntitySubclass.NONE;
     public static Entity getByIndex(in Number index): Entity_list[index];
     void entity_constructor(){
-        index = Entity_list.IndexOf(null);
-        if(index == -1){
-            index = Entity_list.Length;
+        index = 1;
+        while(Entity_list[index] != null){
+            index++;
         }
         forceLog(index);
         Entity_list[index] = this;
@@ -70,4 +70,4 @@ class Entity{
     }
 }
 
-globalvar Entity[] entities;
+//globalvar Entity[] entities;

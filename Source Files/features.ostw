@@ -11,6 +11,7 @@ import "entity.ostw";
 import "structures.ostw";
 import "creature.ostw"; 
 import "minion.ostw";
+import "projectile.ostw";
 import "model/player_controller.ostw";//contains puppet which contains effects
 import "async.ostw";
 //import "vision.ostw";

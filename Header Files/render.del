@@ -8,8 +8,8 @@ playervar Vector[] edgeStarts;
 playervar Vector[] edgeEnds;
 playervar Creature[] renderCreatures = [<Creature>(-1)];
 playervar Projectile[] renderProjectiles = [<Projectile>(-1)];
-playervar Number[][] creatureRenderIndexes;
-playervar Number[][] projectileRenderIndexes;
+// playervar Number[][] creatureRenderIndexes;
+// playervar Number[][] projectileRenderIndexes;
 playervar Number[][] staticsRenderIndexes;
 
 define TEXT_SIZE: 2.75;
