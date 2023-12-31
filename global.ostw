@@ -29,9 +29,6 @@ struct Dictionary<K, V>
     }
 }
 
-void BetterAppend(ref Any[] array, in Any value){
-    array[array.Length] = value;
-}
 
 
 

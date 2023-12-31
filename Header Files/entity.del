@@ -2,11 +2,17 @@ import "grid.del";
 //Class for any object that is dynamic
 //Grid works with entities 
 
+enum EEntityObjectType{
+    NULL,
+    CREATURE,
+    PLAYER,
+    STRUCTURE
+}
+
 # Boolean isPlayer, Entity creatureRef, Player playerRef
-struct CreaturePlayer {
-    public Boolean isPlayer;
-    public Entity creatureRef;
-    public Player playerRef;
+struct Targettable {
+    public EEntityObjectType type;
+    public Creature | Player objectRef;
 }
 
 enum EEntitySubclass{
@@ -17,14 +23,14 @@ enum EEntitySubclass{
 globalvar Entity[] Entity_list; //list by index
 globalvar Vector[] Entity_position;
 globalvar Vector[] Entity_velocity;
-globalvar Vector[] Entity_tickOffset;
+globalvar Number[] Entity_tickOffset;
 globalvar Vector[] Entity_cellCoords;
 globalvar Number d;
 class Entity{
     public Boolean visibility;
     private Number index;
     public Team team;
-    public CreaturePlayer target;
+    public Targettable target;
     //Render:
     public Number[] viewerIndex;
     public void setPosition(in Vector position){
@@ -41,7 +47,7 @@ class Entity{
     }
     public Vector getPosition(): Entity_position[this.index];
     public Vector getVelocity(): Entity_velocity[this.index];
-    public Vector getTickOffset(): Entity_tickOffset[this.index];
+    public Number getTickOffset(): Entity_tickOffset[this.index];
     public Vector getCellCoord(): Entity_cellCoords[this.index];
     public virtual EEntitySubclass subclass: EEntitySubclass.NONE;
     public static Entity getByIndex(in Number index): Entity_list[index];

@@ -51,7 +51,8 @@ if(isSetup())
     health = maxHealth/2;
     setPlayerInfo(EPlayerInfo.VISIBLE, false);
     updateHealthBar();
-    while(true){
+    while(false){
+        
         if(HeroOf() == Hero.Ana){
             PressButton(EventPlayer(), Button.PrimaryFire);
             Wait();

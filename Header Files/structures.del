@@ -8,18 +8,19 @@ enum EStructureStrength{
     CORE
 }
 
-class Structure : Statics{
+class Structure : Statics
+{
     public Number health;
     public Team team;
-    public CreaturePlayer target;
+    public Targettable target;
     
 }
 
-class Core : Structure{
+class Core : Structure
+{
     public constructor(Vector pos, Team team){
         this.position = pos;
         this.points = GetLines("../.resources/meshes/core.obj");
-        LogToInspector(points[0]);
         this.health = 100;
         this.team = team;
     }

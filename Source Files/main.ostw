@@ -1,7 +1,7 @@
 import "../customGameSettings.json";
 import "features.ostw";
 globalvar String debugString;
-rule: 'Setup Phase'
+rule: 'Setup Phase' 
 {   
     StartGameMode();
     //DisableInspectorRecording();
