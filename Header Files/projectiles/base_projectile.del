@@ -1,0 +1,20 @@
+import "..\entity.del";
+import "..\structures.del";
+# boolean isStructure, CreaturePlayer (Boolean isPlayer, Entity creatureRef, Player playerRef), Structure structureSource
+struct ProjectileSource{
+    public EEntityObjectType type;
+    public Structure | Player | Creature objectRef;
+}
+
+class Projectile : Entity
+{
+    public EEntitySubclass subclass: EEntitySubclass.PROJECTILE;
+    ProjectileSource source;
+    public Any render; //stores the effect id of the projectile (or projectile effect id)
+    
+    public void baseproj_constructor(ProjectileSource source){
+        entity_constructor();
+        this.source = source;
+    }
+    
+}
