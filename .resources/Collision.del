@@ -151,12 +151,9 @@ public void wallConstructor(Vector start, Vector end) "Wall Constructor"
     CreateInWorldText(LocalPlayer(),index,midpoints[index],2,Clipping.ClipAgainstSurfaces,InworldTextRev.VisibleTo,Color.White,Spectators.DefaultVisibility);
 }
 
-Number getIntersectionDistanceFromSegment(in Vector segmentStart, in Vector segmentDirection, in Vector planeNormal, in Vector pointOnPlane){
-    return DotProduct(pointOnPlane - segmentStart,planeNormal)/DotProduct(segmentDirection,planeNormal);
-}
-Vector getSegmentPlaneIntersection(in Vector segmentStart, in Vector segmentDirection, in Number intersectionDistance){
-    return segmentStart +  intersectionDistance * segmentDirection;
-}
+Number getIntersectionDistanceFromSegment(in Vector segmentStart, in Vector segmentDirection, in Vector planeNormal, in Vector pointOnPlane): DotProduct(pointOnPlane - segmentStart,planeNormal)/DotProduct(segmentDirection,planeNormal);
+
+Vector getSegmentPlaneIntersection(in Vector segmentStart, in Vector segmentDirection, in Number intersectionDistance): segmentStart +  intersectionDistance * segmentDirection;
 
 rule: 'My Rule'
 Event.OngoingPlayer

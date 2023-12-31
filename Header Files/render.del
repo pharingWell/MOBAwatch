@@ -1,16 +1,15 @@
 import "state.del";
 import "creature.del";
-import "projectile.del";
+import "projectiles/base_projectile.del";
 import "../debug.del";
 import "../const.del";
-
 playervar Cell[] playerCells = [<Cell>(-1)];
 playervar Vector[] edgeStarts;
 playervar Vector[] edgeEnds;
 playervar Creature[] renderCreatures = [<Creature>(-1)];
 playervar Projectile[] renderProjectiles = [<Projectile>(-1)];
-playervar Number[][] creatureRenderIndexes;
-playervar Number[][] projectileRenderIndexes;
+// playervar Number[][] creatureRenderIndexes;
+// playervar Number[][] projectileRenderIndexes;
 playervar Number[][] staticsRenderIndexes;
 
 define TEXT_SIZE: 2.75;

@@ -7,6 +7,6 @@ rule: 'My Rule'
 Event.OngoingPlayer
 {
     serverLoad();
-    LogToInspector(calculateDisplacement(EventPlayer(), 0, 0.7));
-    LogToInspector(calculateDisplacement(EventPlayer(), 0, 0.8));
+    LogToInspector(calculateDisplacement(LocalPlayer(), 0, 0.45));
+    LogToInspector(calculateDisplacement(LocalPlayer(), 0, 0.45));
 }
