@@ -149,9 +149,9 @@ void removeEntityFromCell(Cell cell, Entity entity){
 void moveEntityBetweenCells(Entity e, Cell from, Cell to) "move Entity between Cells"
 {
     
-    Player addEntityTo! = FilteredArray(to.viewers, !from.viewers.Contains(ArrayElement()));
-    Player moveEntityBetween = FilteredArray(to.viewers, from.viewers.Contains(ArrayElement()));
-    Player removeEntityFrom! = FilteredArray(from.viewers, !to.viewers.Contains(ArrayElement()));
+    Player[] addEntityTo! = FilteredArray(to.viewers, !from.viewers.Contains(ArrayElement()));
+    Player[] moveEntityBetween = FilteredArray(to.viewers, from.viewers.Contains(ArrayElement()));
+    Player[] removeEntityFrom! = FilteredArray(from.viewers, !to.viewers.Contains(ArrayElement()));
     
     if(from.dynamic.Contains(e)){
         from.dynamic -= e;
