@@ -1,6 +1,7 @@
 # counts
-    Number PLAYER_COUNT: NumberOfSlots(Team.Team1); //5
+    Number PLAYER_COUNT: 5;
     Number STATICS_COUNT: 150;//200;
+    Number PROJECTILE_COUNT: 30;//200;
     Number TEXT_COUNT: 64;//64;
 
 # waves
@@ -19,7 +20,7 @@
 
 # core positions
     
-    Vector[] CORE_POSITIONS: [Vector(15,0,0), Vector(-15,0,0)]; //85
+    Vector[] CORE_POSITIONS: [Vector(0,0,0), Vector(-30,0,0)]; //85
     Vector TEAM1_MINION_SPAWN: CORE_POSITIONS[0] + Vector(-5,0,0);
     Vector TEAM2_MINION_SPAWN: CORE_POSITIONS[1] + Vector(5,0,0);
   
@@ -48,16 +49,3 @@
 # optimization
 
     Number CELLS_BEFORE_DELAY: 30;
-
-// resources
-
-    enum EGroup{
-        ALLY_HEROES,
-        ENEMY_HEROES,
-        HEROES,
-        ALLY_MINONS,
-        ENEMY_MINONS,
-        MINONS,
-        ALLY_MERCENARIES,
-        MERCENARIES
-    }

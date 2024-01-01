@@ -9,11 +9,10 @@ rule: 'Create spinning projectile'
     
     // 
     // spinning
-    Projectile e = new Projectile();
-    CreateEffect(LocalPlayer(), Effect.Sphere, Color.Black,  (TotalTimeElapsed()-e.getTickOffset()+TICK_MAGIC)*e.getVelocity() + Vector(CELL_WIDTH, 0, CELL_HEIGHT) * e.getCellCoord() + GRID_BASE, 0.5, EffectRev.VisibleToPositionAndRadius);
+    Projectile e = new Projectile(null);
+    // CreateEffect(LocalPlayer(), Effect.Sphere, Color.Black,  (TotalTimeElapsed()-e.getTickOffset()+TICK_MAGIC)*e.getVelocity() + Vector(CELL_WIDTH, 0, CELL_HEIGHT) * e.getCellCoord() + GRID_BASE, 0.5, EffectRev.VisibleToPositionAndRadius);
+    e.render = LastCreatedEntity();
     e.setPosition(Vector());
-    CreateEffect(LocalPlayer(), Effect.Ring, Color.Blue, Vector(CELL_WIDTH, 0, CELL_HEIGHT) * Vector(5,0,3) + GRID_BASE, 1.5, EffectRev.VisibleTo);
-    CreateEffect(LocalPlayer(), Effect.Ring, Color.Blue, Vector(CELL_WIDTH, 0, CELL_HEIGHT) * Vector(5,0,3) + GRID_BASE, 0.5, EffectRev.VisibleTo);
     addEntityToCell(Cell_fromGridCoord_unsafeInline(GRID_COLUMNS/2, GRID_ROWS/2), e);
     while(true){
         Wait(ENTITY_TICK/4);

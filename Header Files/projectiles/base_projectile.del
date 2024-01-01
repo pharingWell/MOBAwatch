@@ -2,7 +2,7 @@ import "..\entity.del";
 import "..\structures.del";
 
 # EEntityObjectType type, Structure/Player/Creature objectRef
-struct ProjectileSource{
+single struct ProjectileSource{
     public EEntityObjectType type;
     public Structure | Player | Creature objectRef;
 }
@@ -16,6 +16,10 @@ class Projectile : Entity
     public void baseproj_constructor(ProjectileSource source){
         entity_constructor();
         this.source = source;
+    }
+
+    public constructor(ProjectileSource source){
+        this.baseproj_constructor(source);
     }
     
 }

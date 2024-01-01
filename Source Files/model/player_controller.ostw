@@ -9,7 +9,8 @@ if(!IsDummyBot(EventPlayer()))
     WaitUntil(READY, 999);
     ForcePlayerHero(EventPlayer(),Hero.Ana); 
     DisableHeroHud();
-    SetInvisible(EventPlayer(),InvisibleTo.All);  
+    SetInvisible(EventPlayer(),InvisibleTo.All);
+ //   SetAimSpeed(EventPlayer(), 0.01);
     SetGravity(EventPlayer(),0);
     Wait(0.5);
     StartForcingPlayerPosition(EventPlayer(),Vector(1,0,1)*cameraPosition(EventPlayer())+Vector(0,-10,0),true);

@@ -4,6 +4,8 @@ import "../Header Files/main.del";
 import "../error.ostw";
 import "../debug.ostw";
 
+import "../Header Files/collision.del";
+
 import "state.ostw";
 import "ui.ostw";
 import "hud/ux.ostw";

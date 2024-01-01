@@ -1,7 +1,7 @@
 import "..\entity.del";
 import "base_projectile.del";
 import "../../global.ostw";
-class PathedProjectile
+class PathedProjectile : Projectile
 {
     public Number tickOffset;
     public void fire(in Vector path_vector, Effect effect)

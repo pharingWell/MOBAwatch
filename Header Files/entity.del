@@ -10,7 +10,7 @@ enum EEntityObjectType{
 }
 
 # Boolean isPlayer, Entity creatureRef, Player playerRef
-struct Targettable {
+single struct Targettable {
     public EEntityObjectType type;
     public Creature | Player objectRef;
 }
@@ -56,7 +56,6 @@ class Entity{
         while(Entity_list[index] != null){
             index++;
         }
-        forceLog(index);
         Entity_list[index] = this;
         visibility = false;
         setTickOffset(TotalTimeElapsed());
