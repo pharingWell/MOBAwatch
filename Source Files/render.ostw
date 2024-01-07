@@ -8,7 +8,7 @@ import "../Header Files/model/player_controller.del";
 rule: 'Global Render Setup' 
 if(gameState[EGamePhase.LOADING] == ELoadingState.RENDER_SETUP)
 {
-    todo
+   # todo
     # projectile collision and visibility: make projectiles visible according to the people who can see it -> figure out vision. In the meantime, use an array that stores who can see the projectile. then display that projectile to those people. 
     # So, figure out vision, and figure out complex collision. Also, implement simple collision
     

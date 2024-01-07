@@ -38,5 +38,5 @@ void addStructures(){
     Core t2Core = new Core(CORE_POSITIONS[1], Team.Team2);
     cell2.statics += t2Core;
     Wait(1);
-    LogToInspector($"{GRID_BASE},{t1Core.position},{t2Core.position}");
+   // LogToInspector($"{GRID_BASE},{t1Core.position},{t2Core.position}");
 }

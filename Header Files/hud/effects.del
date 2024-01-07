@@ -67,18 +67,19 @@ define map_inside:
 // ┃   ┃
 // ┗━━━┛";
 
-playervar Any[] healthbarVariables;
-enum EHealthBarVars{
-    BLANK_String,
-    FINAL_String,
-    BLANK_WIP_String,
-    FINAL_WIP_String,
-    BLOCKS_Number,
-    ID_Number,
-    HP_PER_BLOCK_Number,
-    ITERATOR_Number,
-    REMAINING_Number
+playervar HealthBar healthbarVars;
+single struct HealthBar{
+  public String blank;
+  public String final;
+  public String blankTemp;
+  public String finalTemp;
+  public Number blocks;
+  public Number id;
+  public Number iterator;
+  public Number hpPerBlock;
+  public Number remainingHealth;
 }
+
 define symbolString: "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒";
 define effectRow(Number width): StringSlice(symbolString, 0, width)+"\n";
 String makeEffect(Number width, Number height): StringSlice($"{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}{effectRow(width)}", 0, (width+1)*height);

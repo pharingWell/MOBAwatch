@@ -41,9 +41,9 @@ if(isSetup())
     CreateInWorldText(mapIconVisiblity, "▒", mapCoordShift(0.12), iconSize*1.2, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor, teamSpecificColor);
     CreateInWorldText(mapIconVisiblity, HeroIconString(HeroOf()),mapCoordShift(), 1, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndColor,  shouldBeVisible ? Color.White : null);
 
-    CreateInWorldText(visibility, healthbarVariables[EHealthBarVars.FINAL_String], healthBarSocket, 0.9, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, BarColor, Spectators.DefaultVisibility);
+    CreateInWorldText(visibility, healthbarVars.final, healthBarSocket, 0.9, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, BarColor, Spectators.DefaultVisibility);
     Wait();
-    CreateInWorldText(visibility, healthbarVariables[EHealthBarVars.BLANK_String], healthBarSocket, size, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, teamSpecificColor, Spectators.DefaultVisibility);
+    CreateInWorldText(visibility, healthbarVars.blank, healthBarSocket, size, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, teamSpecificColor, Spectators.DefaultVisibility);
     CreateInWorldText(visibility, $"{bufferChars}{getPlayerInfo(EPlayerInfo.NAME_STRING)}{bufferChars}\n", healthBarTitleSocket, size, Clipping.DoNotClip, InworldTextRev.VisibleToPositionStringAndColor, teamSpecificColor, Spectators.DefaultVisibility);
     WaitUntil(HasSpawned(), 9999);
     maxHealth = MaxHealth()+400;
