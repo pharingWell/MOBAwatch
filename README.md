@@ -62,7 +62,7 @@ This project accomplishes this by:
 
 ### How can I get in touch with you?
 
-Either join the [discord server](https://discord.gg/7EmrUhx6gC) or add me on discord: PharingWell#7340
+Create an issue on this repository or add me on discord @pharingwell.
 
 ---
 
@@ -74,8 +74,8 @@ There is currently no stable version.
 
 ### How do I edit it?
 
-  First, get [overpy](https://github.com/Zezombye/overpy).
+  First, get [OSTW](https://github.com/ItsDeltin/Overwatch-Script-To-Workshop).
 
 Follow the instructions on how to compile, and modify or edit it to your heart's content. [^1]
 
-[^1]: You must keep both the link to this github, and the original author's name (PharingWell#7340) in the project files.
+[^1]: You must keep both the link to this github, and the original author's name (pharingwell) in the project files.
