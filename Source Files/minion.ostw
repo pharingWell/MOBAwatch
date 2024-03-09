@@ -24,15 +24,15 @@ public void newWave() "Wave Constructor"
 private void createMinion_perTeam(in Team team, in EMinionType type){
     Minion minion! = new Minion(team, type);
     if(team == Team.Team1){
-        minion.position = TEAM1_MINION_SPAWN;
+        minion.setCellCoord(TEAM1_MINION_SPAWN_COORDX, TEAM1_MINION_SPAWN_COORDZ);
     }else if(team == Team.Team2){
-        minion.position = TEAM2_MINION_SPAWN;
-
+        minion.setCellCoord(TEAM2_MINION_SPAWN_COORDX, TEAM2_MINION_SPAWN_COORDZ);
     }
     Cell temp!;
-    Cell_byPosition(temp, minion.position);
+    Cell_fromGridCoord(temp, minion.getCellCoord().X, minion.getCellCoord().Z);
+    //Cell_byPosition(temp, minion.getPosition());
     addEntityToCell(temp, minion);
-    entities.ModAppend(minion);
+   // entities.ModAppend(minion);
 }
 
 

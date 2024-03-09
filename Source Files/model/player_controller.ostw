@@ -4,11 +4,13 @@ import "../../Header Files/ui.del";
 import "../../Header Files/main.del";
 rule: 'Force to become observer'
 Event.OngoingPlayer
-if(HasSpawned(EventPlayer()))
 if(!IsDummyBot(EventPlayer()))
 {
-    SetInvisible(EventPlayer(),InvisibleTo.All);  
-    ForcePlayerHero(EventPlayer(),Hero.Ana);
+    WaitUntil(READY, 999);
+    ForcePlayerHero(EventPlayer(),Hero.Ana); 
+    DisableHeroHud();
+    SetInvisible(EventPlayer(),InvisibleTo.All);
+ //   SetAimSpeed(EventPlayer(), 0.01);
     SetGravity(EventPlayer(),0);
     Wait(0.5);
     StartForcingPlayerPosition(EventPlayer(),Vector(1,0,1)*cameraPosition(EventPlayer())+Vector(0,-10,0),true);
@@ -24,12 +26,12 @@ if(!IsDummyBot(EventPlayer()))
 rule: 'Setup player'
 Event.OngoingPlayer
 if(!IsDummyBot(EventPlayer()))
-if(getPlayerInfo(EPlayerInfo.CAN_SETUP))
+if(isSetup())
 {
     DisableNameplates(puppets, EventPlayer());
     otherModelMember = puppets[ID];
     isCameraLocked = true; //todo: grab player's settings on load
-    //printToScreen("\n\n"+toString(puppets));
+    printToScreen($"Setup:{EventPlayer()}, cam locked: {isCameraLocked}");
 }
 
 

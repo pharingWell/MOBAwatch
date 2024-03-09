@@ -11,7 +11,8 @@
     "Extensions": {
         "Beam Effects": true,
         "Play More Effects": true,
-        "Spawn More Dummy Bots": true
+        "Spawn More Dummy Bots": true,
+        "Projectiles": true
     },
     "Modes": {
         "Team Deathmatch": {

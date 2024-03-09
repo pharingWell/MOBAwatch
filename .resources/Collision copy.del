@@ -46,16 +46,11 @@ rule: 'My Rule'
     
     globalvar Number thickness:  0.75;
 
- Number getIntersectionDistanceFromSegment(in Vector segmentStart, in Vector segmentDirection, in Vector planeNormal, in Vector pointOnPlane){
-    return DotProduct(pointOnPlane - segmentStart,planeNormal)/DotProduct(segmentDirection,planeNormal);
-}
-Vector getSegmentPlaneIntersection(in Vector segmentStart, in Vector segmentDirection, in Number intersectionDistance){
-    return segmentStart +  intersectionDistance * segmentDirection;
-}
+ Number getIntersectionDistanceFromSegment(in Vector segmentStart, in Vector segmentDirection, in Vector planeNormal, in Vector pointOnPlane): DotProduct(pointOnPlane - segmentStart,planeNormal)/DotProduct(segmentDirection,planeNormal);
+Vector getSegmentPlaneIntersection(in Vector segmentStart, in Vector segmentDirection, in Number intersectionDistance): segmentStart +  intersectionDistance * segmentDirection;
 
-Vector getSegmentPlaneIntersection_full(in Vector segmentStart, in Vector segmentDirection, in Vector planeNormal, in Vector pointOnPlane){
-    return segmentStart +  DotProduct(pointOnPlane - segmentStart,planeNormal)/DotProduct(segmentDirection,planeNormal) * segmentDirection;
-}
+Vector getSegmentPlaneIntersection_full(in Vector segmentStart, in Vector segmentDirection, in Vector planeNormal, in Vector pointOnPlane): segmentStart +  DotProduct(pointOnPlane - segmentStart,planeNormal)/DotProduct(segmentDirection,planeNormal) * segmentDirection;
+
 playervar Boolean throttled;
 rule: 'My Rule'
 Event.OngoingPlayer
@@ -92,6 +87,4 @@ if (HasSpawned(EventPlayer()) == true)
     // CreateHudText(HostPlayer(), $"Load:{ServerLoad()},Peak:{ServerLoadPeak()},Avg:{ServerLoadAverage()}", null, null, Location.Top, 30, Color.White, null, null, HudTextRev.VisibleToAndString, Spectators.DefaultVisibility);
 }
 
-Vector vectorProjection(in Vector a, in Vector onto){
-    return onto * (DotProduct(a,onto)/DotProduct(onto,onto));
-}
+Vector vectorProjection(in Vector a, in Vector onto):  onto * (DotProduct(a,onto)/DotProduct(onto,onto));

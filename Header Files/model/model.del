@@ -26,6 +26,8 @@ enum EPlayerInfo{
     NAME_BUFFER_CHARS
 }
 
+define isSetup(Player p = EventPlayer()): getPlayerInfo(EPlayerInfo.CAN_SETUP, p);
+
 # 0 for Team.1, 1 for Team.2
 
 void setPlayerInfo(in EPlayerInfo e, in Any value, in Player p = EventPlayer()){

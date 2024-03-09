@@ -24,16 +24,15 @@ class Minion : Creature
         creature_constructor();
         this.team = team;
         this.type = type;
+        this.setPosition(Vector(CELL_WIDTH/2,0,CELL_HEIGHT/2));
         switch (team){
             case Team.Team1:
                 this.color = Color.Team1;
-                this.position = TEAM1_MINION_SPAWN;
-                this.velocity = Vector(-1,0,0);
+                setVelocity(Vector(-1,0,0));
                 break;
             case Team.Team2:
                 this.color = Color.Team2;
-                this.position = TEAM2_MINION_SPAWN;
-                this.velocity = Vector(1,0,0);
+                setVelocity(Vector(1,0,0));
                 break;
             case Team.All:
                 async throwError({
