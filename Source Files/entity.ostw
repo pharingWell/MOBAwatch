@@ -18,9 +18,9 @@ if(CountOf(Entity_list) > 0)
     Vector[] cellChange = MappedArray(Entity_position, Vector(XOf(ArrayElement()) > CELL_WIDTH ? 1 : XOf(ArrayElement()) < 0 ? -1 : 0, CurrentArrayIndex(), ZOf(ArrayElement()) > CELL_HEIGHT ? 1 : ZOf(ArrayElement()) < 0 ? -1 : 0));
     Entity_position = MappedArray(Entity_position, ArrayElement() - cellChange[CurrentArrayIndex()] * Vector(CELL_WIDTH, 0, CELL_HEIGHT));
     Entity_cellCoords = MappedArray(Entity_cellCoords, ArrayElement() + cellChange[CurrentArrayIndex()] * Vector(1,0,1));
-    Vector[] chagedEntities = FilteredArray(cellChange, ArrayElement() * Vector(1,0,1) != Vector(0, 0, 0));
+    Vector[] changedEntities = FilteredArray(cellChange, ArrayElement() * Vector(1,0,1) != Vector(0, 0, 0));
     Wait(0.064);
-    foreach(Vector change! in chagedEntities){
+    foreach(Vector change! in changedEntities){
         Entity entity! = Entity.getByIndex(change.Y);
         Vector oldCellCoord! = Entity_cellCoords[change.Y] - change * Vector(1,0,1) ;
         Vector newCellCoord! = Entity_cellCoords[change.Y];
