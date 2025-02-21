@@ -1,5 +1,7 @@
 # MOBAWatch
 
+# This project has halted development.
+
 ### Index
 
 - [What is MOBAWatch?](https://github.com/pharingWell/MOBAWatch#what-is-mobawatch)
@@ -38,23 +40,23 @@ This project accomplishes this by:
 - [ ] Simulate Minions:
   - [x] Are created
   - [x] Simulate movement
-  - [ ] Take damage
+  - [x] Take damage
   - [ ] Can be targeted
   - [ ] Are destroyed
   - [ ] Can be affected player abilities (Ice Wall, Graviton Surge)
 - [ ] Create structures
 - [x] Make lane
-  - [ ] Lane collisions/bounds
+  - [x] Lane collisions/bounds
   - [ ] Small jungle
     - [ ] Implement brutes/some jungle reward
 - [ ] Translate Heroes
-  - [ ] Targeting system / basic attacks
+  - [x] Targeting system / basic attacks
   - [ ] Implement mana
   - [ ] Can take/deal damage
     - [ ] Damage abstraction
   - [ ] Damage over time/healing over time
-  - [ ] Basic attacks
-     - [ ] Auto lock option
+  - [x] Basic attacks
+     - [x] Auto lock option
   - [ ] Visibility
 - [ ] UI
 
